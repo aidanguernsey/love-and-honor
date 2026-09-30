@@ -11,6 +11,8 @@ public sealed class RenderingConfig
     public BuildingsSection Buildings { get; init; } = new();
     public GroundSection Ground { get; init; } = new();
     public TerrainSection Terrain { get; init; } = new();
+    public ExtrusionSection Extrusion { get; init; } = new();
+    public SunSection Sun { get; init; } = new();
 
     public sealed class CrowdSection
     {
@@ -58,7 +60,9 @@ public sealed class RenderingConfig
         public int[] LodSteps { get; init; } = [];
         public float[] LodSwitchM { get; init; } = [];
         public float SkirtDepthM { get; init; }
-        public Dictionary<string, string> LandStateColors { get; init; } = [];
+        public Dictionary<string, Dictionary<string, string>> SeasonColors { get; init; } = [];
+        public Dictionary<string, int> SeasonAnchorDays { get; init; } = [];
+        public Dictionary<string, string> RoadSurfaceColors { get; init; } = [];
         public Dictionary<string, string> PathColors { get; init; } = [];
         public string Building { get; init; } = "";
         public string GridColor { get; init; } = "";
@@ -67,6 +71,28 @@ public sealed class RenderingConfig
         public float GridFadeEndM { get; init; }
         public string HoverColor { get; init; } = "";
         public float HoverOpacity { get; init; }
+    }
+
+    public sealed class ExtrusionSection
+    {
+        public float LevelHeightM { get; init; }
+        public float MinHeightM { get; init; }
+        public Dictionary<string, float> KindHeightM { get; init; } = [];
+        public float UndatedCampusHeightM { get; init; }
+        public float TownHeightM { get; init; }
+        public Dictionary<string, string> KindColors { get; init; } = [];
+        public string UndatedCampusColor { get; init; } = "";
+        public string TownColor { get; init; } = "";
+        public string ApproximateSiteColor { get; init; } = "";
+    }
+
+    public sealed class SunSection
+    {
+        public double UtcOffsetHours { get; init; }
+        public float MaxEnergy { get; init; }
+        public float TwilightElevationDeg { get; init; }
+        public float NightAmbientEnergy { get; init; }
+        public float DayAmbientEnergy { get; init; }
     }
 
     public static RenderingConfig Load(IDataSource source) =>

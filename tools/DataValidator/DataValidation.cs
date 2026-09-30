@@ -144,6 +144,8 @@ public static class DataValidation
                     issues.Add(new("timeline.json", loc, "standing building has a demolished_year"));
                 foreach (var s in e["sources"]?.AsArray() ?? [])
                     if (!sourceIds.Contains(s!.GetValue<string>())) issues.Add(new("timeline.json", loc, $"unknown source '{s}'"));
+                if (e["approx_site_osm_id"] is JsonValue av && av.TryGetValue<string>(out var approx) && featureIds.Count > 0 && !featureIds.Contains(approx))
+                    issues.Add(new("timeline.json", loc, $"approx_site_osm_id '{approx}' not in map features"));
                 if (e["osm_id"] is JsonValue ov && ov.TryGetValue<string>(out var osm))
                 {
                     if (featureIds.Count > 0 && !featureIds.Contains(osm)) issues.Add(new("timeline.json", loc, $"osm_id '{osm}' not in map features"));

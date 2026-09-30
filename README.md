@@ -76,8 +76,11 @@ Spike B terrain (real Oxford, 1 m lidar + OSM): click **Spike B** on the boot sc
 & $env:GODOT --path . res://scenes/spikes/terrain_spike.tscn
 ```
 
-Point at the ground to inspect a tile (land state, ownership, path, elevation). G toggles the build grid. Launch
-options: `--camera=...`, `--spike-smoke`, `--no-vsync`. Terrain approach comparison: `docs/TERRAIN_COMPARISON.md`.
+Point at the ground to inspect a tile or building. The bottom bar is the 1809 → 2026 timeline (Play, speed, Space
+play/pause, [ / ] step a year), plus season and time-of-day sliders. G toggles the build grid. Launch options:
+`--year=N`, `--day=N`, `--hour=H`, `--play`, `--camera=x,z,distance,pitch,yaw`, `--spike-smoke`, `--no-vsync`.
+Land use before today is a placeholder model (`data/map/land_history.json`); building dates come from
+`data/timeline.json` (unverified, see `docs/research/BUILDING_DATES.md`). Terrain approach: `docs/TERRAIN_COMPARISON.md`.
 
 Headless smoke test (build C#, boot the main scene, print what it loaded, quit):
 

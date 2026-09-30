@@ -2,116 +2,516 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Presentation settings: crowd rendering, building/ground colours, camera",
   "type": "object",
-  "required": ["crowd", "agent_colors", "buildings", "ground", "terrain", "camera"],
+  "required": [
+    "crowd",
+    "agent_colors",
+    "buildings",
+    "ground",
+    "terrain",
+    "extrusion",
+    "sun",
+    "camera"
+  ],
   "additionalProperties": false,
-  "patternProperties": { "^_": {} },
+  "patternProperties": {
+    "^_": {}
+  },
   "$defs": {
-    "color": { "type": "string", "pattern": "^(#[0-9A-Fa-f]{6}|[a-z_]+(:[0-9]+)?)$" },
-    "positive": { "type": "number", "exclusiveMinimum": 0 },
+    "color": {
+      "type": "string",
+      "pattern": "^(#[0-9A-Fa-f]{6}|[a-z_]+(:[0-9]+)?)$"
+    },
+    "positive": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
     "kindMap": {
       "type": "object",
-      "required": ["academic", "residence", "dining", "library", "recreation", "off_campus_housing", "other"],
-      "propertyNames": { "enum": ["academic", "residence", "dining", "library", "recreation", "off_campus_housing", "other"] }
+      "required": [
+        "academic",
+        "residence",
+        "dining",
+        "library",
+        "recreation",
+        "off_campus_housing",
+        "other"
+      ],
+      "propertyNames": {
+        "enum": [
+          "academic",
+          "residence",
+          "dining",
+          "library",
+          "recreation",
+          "off_campus_housing",
+          "other"
+        ]
+      }
     }
   },
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "crowd": {
       "type": "object",
-      "required": ["max_rendered_agents", "visual_walk_speed_mps", "lateral_spread_m", "spawn_attempts_per_free_slot", "view_margin_m", "detail_radius_factor", "detail_radius_min_m", "agent_height_m", "agent_radius_m", "size_compensation_reference_distance_m", "size_compensation_max_scale"],
+      "required": [
+        "max_rendered_agents",
+        "visual_walk_speed_mps",
+        "lateral_spread_m",
+        "spawn_attempts_per_free_slot",
+        "view_margin_m",
+        "detail_radius_factor",
+        "detail_radius_min_m",
+        "agent_height_m",
+        "agent_radius_m",
+        "size_compensation_reference_distance_m",
+        "size_compensation_max_scale"
+      ],
       "additionalProperties": false,
-      "patternProperties": { "^_": {} },
+      "patternProperties": {
+        "^_": {}
+      },
       "properties": {
-        "max_rendered_agents": { "type": "integer", "minimum": 0, "maximum": 20000 },
-        "visual_walk_speed_mps": { "$ref": "#/$defs/positive" },
-        "lateral_spread_m": { "type": "number", "minimum": 0 },
-        "spawn_attempts_per_free_slot": { "type": "integer", "minimum": 1 },
-        "view_margin_m": { "type": "number", "minimum": 0 },
-        "detail_radius_factor": { "$ref": "#/$defs/positive" },
-        "detail_radius_min_m": { "$ref": "#/$defs/positive" },
-        "agent_height_m": { "$ref": "#/$defs/positive" },
-        "agent_radius_m": { "$ref": "#/$defs/positive" },
-        "size_compensation_reference_distance_m": { "$ref": "#/$defs/positive" },
-        "size_compensation_max_scale": { "type": "number", "minimum": 1 }
+        "max_rendered_agents": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "visual_walk_speed_mps": {
+          "$ref": "#/$defs/positive"
+        },
+        "lateral_spread_m": {
+          "type": "number",
+          "minimum": 0
+        },
+        "spawn_attempts_per_free_slot": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "view_margin_m": {
+          "type": "number",
+          "minimum": 0
+        },
+        "detail_radius_factor": {
+          "$ref": "#/$defs/positive"
+        },
+        "detail_radius_min_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "agent_height_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "agent_radius_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "size_compensation_reference_distance_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "size_compensation_max_scale": {
+          "type": "number",
+          "minimum": 1
+        }
       }
     },
     "agent_colors": {
       "type": "object",
-      "required": ["student_by_year", "faculty"],
+      "required": [
+        "student_by_year",
+        "faculty"
+      ],
       "additionalProperties": false,
       "properties": {
-        "student_by_year": { "type": "array", "items": { "$ref": "#/$defs/color" }, "minItems": 4, "maxItems": 4 },
-        "faculty": { "$ref": "#/$defs/color" }
+        "student_by_year": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/color"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "faculty": {
+          "$ref": "#/$defs/color"
+        }
       }
     },
     "buildings": {
       "type": "object",
-      "required": ["height_m", "color"],
+      "required": [
+        "height_m",
+        "color"
+      ],
       "additionalProperties": false,
       "properties": {
-        "height_m": { "allOf": [{ "$ref": "#/$defs/kindMap" }], "additionalProperties": { "$ref": "#/$defs/positive" } },
-        "color": { "allOf": [{ "$ref": "#/$defs/kindMap" }], "additionalProperties": { "$ref": "#/$defs/color" } }
+        "height_m": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/kindMap"
+            }
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/positive"
+          }
+        },
+        "color": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/kindMap"
+            }
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/color"
+          }
+        }
       }
     },
     "ground": {
       "type": "object",
-      "required": ["grass", "path", "building", "wear", "wear_full_at_walkers", "heatmap_low", "heatmap_high", "refresh_seconds"],
+      "required": [
+        "grass",
+        "path",
+        "building",
+        "wear",
+        "wear_full_at_walkers",
+        "heatmap_low",
+        "heatmap_high",
+        "refresh_seconds"
+      ],
       "additionalProperties": false,
       "properties": {
-        "grass": { "$ref": "#/$defs/color" },
-        "path": { "$ref": "#/$defs/color" },
-        "building": { "$ref": "#/$defs/color" },
-        "wear": { "$ref": "#/$defs/color" },
-        "wear_full_at_walkers": { "$ref": "#/$defs/positive" },
-        "heatmap_low": { "$ref": "#/$defs/color" },
-        "heatmap_high": { "$ref": "#/$defs/color" },
-        "refresh_seconds": { "$ref": "#/$defs/positive" }
+        "grass": {
+          "$ref": "#/$defs/color"
+        },
+        "path": {
+          "$ref": "#/$defs/color"
+        },
+        "building": {
+          "$ref": "#/$defs/color"
+        },
+        "wear": {
+          "$ref": "#/$defs/color"
+        },
+        "wear_full_at_walkers": {
+          "$ref": "#/$defs/positive"
+        },
+        "heatmap_low": {
+          "$ref": "#/$defs/color"
+        },
+        "heatmap_high": {
+          "$ref": "#/$defs/color"
+        },
+        "refresh_seconds": {
+          "$ref": "#/$defs/positive"
+        }
       }
     },
     "terrain": {
       "type": "object",
-      "required": ["chunk_size_tiles", "lod_steps", "lod_switch_m", "skirt_depth_m", "land_state_colors", "path_colors", "building", "grid_color", "grid_opacity", "grid_fade_start_m", "grid_fade_end_m", "hover_color", "hover_opacity"],
+      "required": [
+        "chunk_size_tiles",
+        "lod_steps",
+        "lod_switch_m",
+        "skirt_depth_m",
+        "path_colors",
+        "building",
+        "grid_color",
+        "grid_opacity",
+        "grid_fade_start_m",
+        "grid_fade_end_m",
+        "hover_color",
+        "hover_opacity",
+        "season_colors",
+        "season_anchor_days",
+        "road_surface_colors"
+      ],
       "additionalProperties": false,
-      "patternProperties": { "^_": {} },
+      "patternProperties": {
+        "^_": {}
+      },
       "properties": {
-        "chunk_size_tiles": { "type": "integer", "minimum": 4 },
-        "lod_steps": { "type": "array", "items": { "type": "integer", "minimum": 1 }, "minItems": 1 },
-        "lod_switch_m": { "type": "array", "items": { "$ref": "#/$defs/positive" } },
-        "skirt_depth_m": { "type": "number", "minimum": 0 },
-        "land_state_colors": {
-          "type": "object",
-          "required": ["forest", "pasture", "farmland", "town", "university", "developed", "protected", "water"],
-          "additionalProperties": { "$ref": "#/$defs/color" }
+        "chunk_size_tiles": {
+          "type": "integer",
+          "minimum": 4
+        },
+        "lod_steps": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 1
+        },
+        "lod_switch_m": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/positive"
+          }
+        },
+        "skirt_depth_m": {
+          "type": "number",
+          "minimum": 0
         },
         "path_colors": {
           "type": "object",
-          "required": ["footway", "cycleway", "service", "residential", "tertiary", "secondary", "primary", "railway"],
-          "additionalProperties": { "$ref": "#/$defs/color" }
+          "required": [
+            "footway",
+            "cycleway",
+            "service",
+            "residential",
+            "tertiary",
+            "secondary",
+            "primary",
+            "railway"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/color"
+          }
         },
-        "building": { "$ref": "#/$defs/color" },
-        "grid_color": { "$ref": "#/$defs/color" },
-        "grid_opacity": { "type": "number", "minimum": 0, "maximum": 1 },
-        "grid_fade_start_m": { "$ref": "#/$defs/positive" },
-        "grid_fade_end_m": { "$ref": "#/$defs/positive" },
-        "hover_color": { "$ref": "#/$defs/color" },
-        "hover_opacity": { "type": "number", "minimum": 0, "maximum": 1 }
+        "building": {
+          "$ref": "#/$defs/color"
+        },
+        "grid_color": {
+          "$ref": "#/$defs/color"
+        },
+        "grid_opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "grid_fade_start_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "grid_fade_end_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "hover_color": {
+          "$ref": "#/$defs/color"
+        },
+        "hover_opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "season_colors": {
+          "type": "object",
+          "required": [
+            "winter",
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "forest",
+              "pasture",
+              "farmland",
+              "town",
+              "university",
+              "developed",
+              "protected",
+              "water"
+            ],
+            "additionalProperties": {
+              "$ref": "#/$defs/color"
+            }
+          }
+        },
+        "season_anchor_days": {
+          "type": "object",
+          "required": [
+            "winter",
+            "spring",
+            "summer",
+            "fall"
+          ],
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365
+          }
+        },
+        "road_surface_colors": {
+          "type": "object",
+          "required": [
+            "dirt",
+            "gravel",
+            "brick",
+            "asphalt"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/color"
+          }
+        }
       }
     },
     "camera": {
       "type": "object",
-      "required": ["start_distance_m", "min_distance_m", "max_distance_m", "start_pitch_deg", "min_pitch_deg", "max_pitch_deg", "keyboard_pan_speed", "orbit_speed_deg_per_s", "mouse_orbit_deg_per_px", "zoom_step"],
+      "required": [
+        "start_distance_m",
+        "min_distance_m",
+        "max_distance_m",
+        "start_pitch_deg",
+        "min_pitch_deg",
+        "max_pitch_deg",
+        "keyboard_pan_speed",
+        "orbit_speed_deg_per_s",
+        "mouse_orbit_deg_per_px",
+        "zoom_step"
+      ],
       "additionalProperties": false,
       "properties": {
-        "start_distance_m": { "$ref": "#/$defs/positive" },
-        "min_distance_m": { "$ref": "#/$defs/positive" },
-        "max_distance_m": { "$ref": "#/$defs/positive" },
-        "start_pitch_deg": { "type": "number", "minimum": 1, "maximum": 89 },
-        "min_pitch_deg": { "type": "number", "minimum": 1, "maximum": 89 },
-        "max_pitch_deg": { "type": "number", "minimum": 1, "maximum": 89 },
-        "keyboard_pan_speed": { "$ref": "#/$defs/positive" },
-        "orbit_speed_deg_per_s": { "$ref": "#/$defs/positive" },
-        "mouse_orbit_deg_per_px": { "$ref": "#/$defs/positive" },
-        "zoom_step": { "type": "number", "exclusiveMinimum": 1 }
+        "start_distance_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "min_distance_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "max_distance_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "start_pitch_deg": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 89
+        },
+        "min_pitch_deg": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 89
+        },
+        "max_pitch_deg": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 89
+        },
+        "keyboard_pan_speed": {
+          "$ref": "#/$defs/positive"
+        },
+        "orbit_speed_deg_per_s": {
+          "$ref": "#/$defs/positive"
+        },
+        "mouse_orbit_deg_per_px": {
+          "$ref": "#/$defs/positive"
+        },
+        "zoom_step": {
+          "type": "number",
+          "exclusiveMinimum": 1
+        }
+      }
+    },
+    "extrusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^_": {}
+      },
+      "required": [
+        "level_height_m",
+        "min_height_m",
+        "kind_height_m",
+        "undated_campus_height_m",
+        "town_height_m",
+        "kind_colors",
+        "undated_campus_color",
+        "town_color",
+        "approximate_site_color"
+      ],
+      "properties": {
+        "level_height_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "min_height_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "kind_height_m": {
+          "type": "object",
+          "required": [
+            "academic",
+            "residence",
+            "dining",
+            "library",
+            "student_life",
+            "athletics",
+            "admin",
+            "house",
+            "utility",
+            "landmark",
+            "other"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/positive"
+          }
+        },
+        "undated_campus_height_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "town_height_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "kind_colors": {
+          "type": "object",
+          "required": [
+            "academic",
+            "residence",
+            "dining",
+            "library",
+            "student_life",
+            "athletics",
+            "admin",
+            "house",
+            "utility",
+            "landmark",
+            "other"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/color"
+          }
+        },
+        "undated_campus_color": {
+          "$ref": "#/$defs/color"
+        },
+        "town_color": {
+          "$ref": "#/$defs/color"
+        },
+        "approximate_site_color": {
+          "$ref": "#/$defs/color"
+        }
+      }
+    },
+    "sun": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^_": {}
+      },
+      "required": [
+        "utc_offset_hours",
+        "max_energy",
+        "twilight_elevation_deg",
+        "night_ambient_energy",
+        "day_ambient_energy"
+      ],
+      "properties": {
+        "utc_offset_hours": {
+          "type": "number",
+          "minimum": -12,
+          "maximum": 14
+        },
+        "max_energy": {
+          "$ref": "#/$defs/positive"
+        },
+        "twilight_elevation_deg": {
+          "$ref": "#/$defs/positive"
+        },
+        "night_ambient_energy": {
+          "type": "number",
+          "minimum": 0
+        },
+        "day_ambient_energy": {
+          "type": "number",
+          "minimum": 0
+        }
       }
     }
   }

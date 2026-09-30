@@ -57,6 +57,7 @@
           "sources": { "type": "array", "items": { "type": "string" } },
           "notes": { "type": "string" },
           "osm_id": { "type": ["string", "null"], "pattern": "^(way|relation)/[0-9]+$", "description": "Present-day footprint in data/map/oxford_features.json" },
+          "approx_site_osm_id": { "type": "string", "pattern": "^(way|relation)/[0-9]+$", "description": "For buildings with no outline of their own: borrow the footprint of a later building on the same site (APPROXIMATE)" },
           "site": {
             "description": "Footprint for buildings with no OSM outline (e.g. demolished). Tile coordinates, counter-clockwise.",
             "oneOf": [

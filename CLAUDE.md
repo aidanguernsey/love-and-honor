@@ -16,7 +16,9 @@ rasterized to the 400×400 tile grid). Step 3b done: real-map tile data layer (`
 terrain (`TerrainMesher`, `scenes/spikes/terrain_spike.tscn`), build grid + tile inspector; Terrain3D trialled in a
 scratch project → recommend the custom generator (`docs/TERRAIN_COMPARISON.md`).
 Building-dates research done: `data/timeline.json` has 177 Miami buildings/landmarks (current + past) with cited sources,
-confidence levels and OSM links; report in `docs/research/BUILDING_DATES.md`. Next: **3c** (timeline, look & feel).
+confidence levels and OSM links; report in `docs/research/BUILDING_DATES.md`.
+Step 3c done: timeline 1809 → 2026 in the Spike B scene (land states + roads repaint per year, buildings shown/hidden
+by year in the shader, seasons, sun for Oxford). Screenshots `docs/images/timeline-*.png`. Next: **Step 4** (art pipeline prep).
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The
@@ -38,6 +40,8 @@ confidence levels and OSM links; report in `docs/research/BUILDING_DATES.md`. Ne
   verified(false)/osm_id. Conflicts: Miami's own timeline wins unless a stated reason says otherwise (in notes).
   Demolished-in-2026 buildings (Wells, Williams, Hanna, Joyner) still have OSM outlines and are linked to them.
   Never mark verified:true without University Archives confirmation.
+- Timeline perf: repaint 5–11 ms per year change (main thread); GPU 1.1–1.6 ms; 3,143 footprints = 66k tris.
+  45 timeline entries have no footprint (gates, bridges, unknown sites) and aren't drawn.
 - Terrain: custom GPU 0.5–1.5 ms/frame vs Terrain3D 1.2–1.9 ms; Terrain3D officially supports Godot 4.4–4.6 but ran on 4.7.2.
 - Rendered walkers: cosmetic sample of the latest tick's real walks, limited to a detail radius around the
   look-at point (at low tilt the view reaches km away; far walkers are sub-pixel → impostors later, §30.2).
@@ -186,6 +190,14 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   (vertex colours are LINEAR, grid + hover in world space). Mouse picking = `Heightmap.Raycast`.
 - Performance measurement on this laptop: FPS is capped (~120) by the hybrid-GPU display path; compare GPU/CPU
   render ms (`RenderingServer.ViewportGetMeasuredRenderTime*`) instead. Godot runs on the RTX 4070.
+- Timeline (3c): `TimelineData`/`FeatureBuilding`/`HistoricBuilding` (World/Timeline.cs) join timeline.json with OSM
+  outlines; undated buildings show only in the present year unless the UI toggle is on. `LandHistory` derives land state
+  + road visibility per tile per year from `data/map/land_history.json` (PLACEHOLDER rules; square "Mile Square" town
+  growth from Uptown, clearing outward, campus growth from dated buildings); invariant tested: present year == today's
+  map. `TileColorizer` paints a tiles² RGBA texture (seasons blended by day; road surface by era from eras.json);
+  terrain shader samples it (vertex colours are white). Buildings: `BuildingMeshBuilder` (bridge) extrudes footprints,
+  merged per chunk; `buildings.gdshader` collapses vertices outside UV2=(built, demolished). Sun: `SolarPosition`
+  (NOAA), standard time only.
 - Downloads: never put the user's email or other personal data in request headers/URLs (the pipeline's
   User-Agent is generic; optional `LH_PIPELINE_CONTACT` env var).
 - Tick determinism: work is split into fixed-size chunks (`performance.agent_chunk_size`), each agent touches

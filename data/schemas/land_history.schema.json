@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Placeholder land-history rules: present-day land state → land state in any year",
+  "type": "object",
+  "required": [
+    "start_year",
+    "present_year",
+    "town_origin",
+    "town_spread_m_per_year",
+    "clearing",
+    "university",
+    "protected_from_year",
+    "roads",
+    "town_growth_shape"
+  ],
+  "additionalProperties": false,
+  "patternProperties": {
+    "^_": {}
+  },
+  "$defs": {
+    "year": {
+      "type": "integer",
+      "minimum": 1700,
+      "maximum": 2200
+    },
+    "positive": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "start_year": {
+      "$ref": "#/$defs/year"
+    },
+    "present_year": {
+      "$ref": "#/$defs/year"
+    },
+    "town_origin": {
+      "type": "object",
+      "required": [
+        "tile",
+        "founded_year"
+      ],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^_": {}
+      },
+      "properties": {
+        "tile": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "founded_year": {
+          "$ref": "#/$defs/year"
+        }
+      }
+    },
+    "town_spread_m_per_year": {
+      "$ref": "#/$defs/positive"
+    },
+    "clearing": {
+      "type": "object",
+      "required": [
+        "start_year",
+        "spread_m_per_year",
+        "farmland_delay_years"
+      ],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^_": {}
+      },
+      "properties": {
+        "start_year": {
+          "$ref": "#/$defs/year"
+        },
+        "spread_m_per_year": {
+          "$ref": "#/$defs/positive"
+        },
+        "farmland_delay_years": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "university": {
+      "type": "object",
+      "required": [
+        "spread_m_per_year",
+        "max_year"
+      ],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^_": {}
+      },
+      "properties": {
+        "spread_m_per_year": {
+          "$ref": "#/$defs/positive"
+        },
+        "max_year": {
+          "$ref": "#/$defs/year"
+        }
+      }
+    },
+    "protected_from_year": {
+      "$ref": "#/$defs/year"
+    },
+    "roads": {
+      "type": "object",
+      "required": [
+        "railway_year",
+        "rural_road_delay_years"
+      ],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^_": {}
+      },
+      "properties": {
+        "railway_year": {
+          "$ref": "#/$defs/year"
+        },
+        "rural_road_delay_years": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "town_growth_shape": {
+      "enum": [
+        "square",
+        "circle"
+      ],
+      "description": "square = grows as a square around the origin, like the Mile Square plat"
+    }
+  }
+}

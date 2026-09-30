@@ -30,11 +30,18 @@ public sealed class MapMetadata
 {
     public int Tiles { get; init; }
     public float TileSizeM { get; init; }
+    public CenterInfo Center { get; init; } = new();
     public float SizeM { get; init; }
     public HeightmapInfo Heightmap { get; init; } = new();
     public Dictionary<string, RasterInfo> Rasters { get; init; } = [];
     public CodeTables Codes { get; init; } = new();
     public string FeaturesFile { get; init; } = "";
+
+    public sealed class CenterInfo
+    {
+        public double Lat { get; init; }
+        public double Lon { get; init; }
+    }
 
     public sealed class HeightmapInfo
     {

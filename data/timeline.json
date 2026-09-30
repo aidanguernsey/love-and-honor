@@ -411,8 +411,9 @@
         "mu_tl_national",
         "wp_harrison_hall"
       ],
-      "notes": "Construction began 1816; central part completed 1818. Replaced on the same site by Harrison Hall (1960).",
+      "notes": "Construction began 1816; central part completed 1818. Replaced on the same site by Harrison Hall (1960). Drawn on the footprint of Harrison Hall (same site; approximate outline).",
       "osm_id": null,
+      "approx_site_osm_id": "way/184391396",
       "site": null
     },
     {
@@ -1465,8 +1466,9 @@
         "mu_parking_2016",
         "mu_news_2018"
       ],
-      "notes": "Miami's timeline: constructed 1931; Wikipedia: inaugurated Feb 1932. Closed 2016. Wikipedia says it was repurposed into Withrow Hall; Miami's 2016–17 parking map ('Withrow Court Demolition') and 2018 news ('built on site of original Withrow Court') indicate demolition and a new building.",
+      "notes": "Miami's timeline: constructed 1931; Wikipedia: inaugurated Feb 1932. Closed 2016. Wikipedia says it was repurposed into Withrow Hall; Miami's 2016–17 parking map ('Withrow Court Demolition') and 2018 news ('built on site of original Withrow Court') indicate demolition and a new building. Drawn on the footprint of Withrow Hall (same site; approximate outline).",
       "osm_id": null,
+      "approx_site_osm_id": "way/704247777",
       "site": null
     },
     {
@@ -1657,8 +1659,9 @@
         "mu_tl_national",
         "wp_reid_hall_miami_university"
       ],
-      "notes": "Miami's timeline: 1949; Wikipedia: 1948. Demolished 2006 for the Farmer School of Business; name reused in Heritage Commons.",
+      "notes": "Miami's timeline: 1949; Wikipedia: 1948. Demolished 2006 for the Farmer School of Business; name reused in Heritage Commons. Drawn on the footprint of Farmer School of Business (same site; approximate outline).",
       "osm_id": null,
+      "approx_site_osm_id": "way/184390046",
       "site": null
     },
     {
@@ -3591,8 +3594,9 @@
         "wp_oxford_college_for_women",
         "wp_wilson_hall_miami_university"
       ],
-      "notes": "Oxford Female College (chartered 1854), later the Oxford Retreat sanitarium; purchased by Miami 15 Aug 1925 and renamed; men's residence hall and university theatre; torn down 1979; the Marcum Center (1982) stands on the site. Original build year not found.",
+      "notes": "Oxford Female College (chartered 1854), later the Oxford Retreat sanitarium; purchased by Miami 15 Aug 1925 and renamed; men's residence hall and university theatre; torn down 1979; the Marcum Center (1982) stands on the site. Original build year not found. Drawn on the footprint of The Marcum Hotel & Conference Center (same site; approximate outline).",
       "osm_id": null,
+      "approx_site_osm_id": "way/184390072",
       "site": null
     },
     {
@@ -3681,8 +3685,9 @@
         "mu_hepburn_hall",
         "wp_king_library_miami_university"
       ],
-      "notes": "Miami's first women's residence hall, west and north of Bishop Hall. A fire burned it on 14 Jan 1908 (Wikipedia). Demolished to make way for King Library (name reassigned). Build and demolition years not found.",
+      "notes": "Miami's first women's residence hall, west and north of Bishop Hall. A fire burned it on 14 Jan 1908 (Wikipedia). Demolished to make way for King Library (name reassigned). Build and demolition years not found. Drawn on the footprint of King Library (same site; approximate outline).",
       "osm_id": null,
+      "approx_site_osm_id": "way/183831904",
       "site": null
     },
     {

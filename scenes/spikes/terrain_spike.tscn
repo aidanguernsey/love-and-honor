@@ -27,6 +27,8 @@ directional_shadow_max_distance = 1500.0
 
 [node name="Terrain" type="Node3D" parent="."]
 script = ExtResource("1_host")
+SunPath = NodePath("../Sun")
+EnvironmentPath = NodePath("../WorldEnvironment")
 
 [node name="CameraRig" type="Node3D" parent="."]
 script = ExtResource("2_rig")

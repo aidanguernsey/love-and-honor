@@ -1,8 +1,11 @@
-// Low-poly terrain: flat-shaded mesh with per-tile vertex colours (linear), a build-grid overlay computed in world
-// space (so it drapes exactly over the terrain), and a highlight for the tile under the mouse. §5.1, §30.3.
+// Low-poly terrain: flat-shaded mesh; per-tile colours come from a tiles×tiles texture (one texel per tile,
+// repainted when the year/season changes), a build-grid overlay computed in world space (so it drapes exactly over
+// the terrain), and a highlight for the tile under the mouse. §5.1, §30.3.
 shader_type spatial;
 render_mode cull_back, diffuse_lambert, specular_disabled;
 
+uniform sampler2D tile_colors : source_color, filter_nearest, repeat_disable;
+uniform float map_size = 4000.0;
 uniform bool grid_enabled = true;
 uniform float tile_size = 10.0;
 uniform vec4 grid_color : source_color = vec4(1.0, 1.0, 1.0, 0.35);
@@ -18,7 +21,7 @@ void vertex() {
 }
 
 void fragment() {
-	vec3 base = COLOR.rgb;
+	vec3 base = texture(tile_colors, world_pos.xz / map_size).rgb * COLOR.rgb;
 	vec2 t = world_pos.xz / tile_size;
 	vec2 cell = floor(t);
 	if (grid_enabled) {

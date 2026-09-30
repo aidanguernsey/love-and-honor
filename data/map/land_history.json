@@ -1,0 +1,30 @@
+{
+  "$schema": "../schemas/land_history.schema.json",
+  "_comment": "PLACEHOLDER rules (Spike B 3c) that derive each tile's land state for any year from its present-day (2026) state. They are NOT history: real historic land use needs hand-traced Sanborn/archival maps (§30.5 step 3). Every number here is a guess chosen to look plausible, flagged for replacement.",
+  "start_year": 1809,
+  "present_year": 2026,
+  "town_origin": {
+    "_comment": "Uptown: intersection of High Street and Main Street from OSM (lat 39.51049, lon -84.74242). The Mile Square town was laid out in 1810 (walking tour).",
+    "tile": [125.0, 180.1],
+    "founded_year": 1810
+  },
+  "town_spread_m_per_year": 14,
+  "town_growth_shape": "square",
+  "clearing": {
+    "_comment": "Present-day open land starts as forest and is cleared outward from Uptown: pasture first, farmland farmland_delay_years later.",
+    "start_year": 1810,
+    "spread_m_per_year": 60,
+    "farmland_delay_years": 15
+  },
+  "university": {
+    "_comment": "University land develops outward from each dated campus building (built_year + distance / spread). Tiles far from any dated building become university land at max_year at the latest.",
+    "spread_m_per_year": 8,
+    "max_year": 2026
+  },
+  "protected_from_year": 1970,
+  "roads": {
+    "_comment": "Roads/paths appear once their tile is developed (or, in the countryside, once cleared). Railway tiles appear at railway_year. Road surface colour follows eras.json road_type.",
+    "railway_year": 1859,
+    "rural_road_delay_years": 5
+  }
+}

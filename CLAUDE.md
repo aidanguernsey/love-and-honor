@@ -70,6 +70,15 @@ piece (`kit_georgian_wall_window_3m`) imported and shown in `scenes/spikes/art_i
 - Proposed, not objected to: sim resolves walks within the hourly tick (depart/arrive minutes); rendered
   walkers use a cosmetic walk speed decoupled from game time. Spike campus adds off-campus housing blocks
   and doesn't enforce capacity. (Record as a suggested GAME_DESIGN.md update in the Phase 0 report.)
+- Step 4 scope: **prep only** (no §37 art spike yet). (2026-09-30)
+- Art decisions after Step 4 (2026-09-30), all to be recorded as suggested GAME_DESIGN.md updates (§28.1a, §30):
+  1. Window panes/muntins are drawn by a **shader** on the glass quad (not geometry), so halls fit 1–5k tris.
+  2. Real buildings are built by a **procedural kit assembler** from footprints + per-building recipes (storeys,
+     bay rhythm, portico, cupola, era); hero landmarks stay hand-modelled; player buildings use the same assembler.
+  3. Era variants (new / weathered / construction) are mostly **shader parameters** (+ scaffolding props); separate
+     `_renovated` models only where the shape really changed.
+  4. Rendered characters: **vertex-animation textures on a MultiMesh** (one mesh, shared rig, short loops).
+  5. Mobile renderer compatibility: noted; test on the Mobile renderer before any iPad work.
 
 ## Working rules
 - Work in small steps. At the end of each step: stop, summarize, explain how to verify, and wait for the user's go-ahead.

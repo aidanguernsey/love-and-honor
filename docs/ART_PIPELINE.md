@@ -187,8 +187,8 @@ Most historic buildings are assembled from this kit (§28.1a).
 Also from §28.3, as props rather than kit: `prop_lamp_iron` (black iron lamp post), `prop_bench_white`.
 Herringbone brick paths belong to the terrain/path shader, not to models.
 
-**Proposed change to the example piece:** its window should become a separate `_wall_opening_window_3m` plus a
-window insert, so window styles can vary without multiplying wall pieces. It is a single combined piece for now
+**Planned change to the example piece:** its window becomes a separate `_wall_opening_window_3m` plus a
+window insert (panes drawn by the window shader, §10), so window styles vary without multiplying wall pieces. It is a single combined piece for now
 because its only job is to exercise the pipeline.
 
 ## 9. The example: `kit_georgian_wall_window_3m` (placeholder)
@@ -213,35 +213,41 @@ Check it in Godot: boot menu → **Step 4 — Art import check**, or run
   the current camera distance. Zoom out past 60 m and 180 m to see it switch.
 - Screenshots: `docs/images/art-import-kit-piece.png`, `docs/images/art-import-lod1.png`.
 
-## 10. Findings and open questions (for the Phase 0 report)
+## 10. Decisions and findings
 
-1. **The window budget doesn't fit if muntins are geometry.**
-   - A typical 3-storey, 11-bay hall has about 90 window bays around it. §28.1a allows 1–5k triangles per
-     building, which leaves about 40–55 tris per bay, roof included.
-   - The example bay is 182 tris at LOD0 because its muntins and frame are boxes. Built from that, a hall would
-     be about 16k tris.
-   - Recommendation: draw panes and muntins with a small shader on the glass quad (procedural grid; no texture,
-     Mobile-safe). Keep the frame and sill as a few faces, and delete hidden faces. That gets a bay to about
-     30–40 tris.
-2. **The kit vs. real, irregular footprints.**
-   - OSM outlines don't follow a 3 m grid, so a snap-together kit can't wrap them by hand at the scale of 180+
-     timeline buildings.
-   - Recommendation: a **procedural assembler**. It places wall bays along each footprint edge (stretching or
-     filling the remainder), puts corners at vertices, and generates hip roofs with a straight skeleton. It is
-     driven by a per-building "recipe" in data: storeys, bay rhythm, portico, cupola, era.
+Decided by the user on 2026-09-30. None of this is built yet: it applies from Phase 1. Each one goes into the
+Phase 0 report as a suggested GAME_DESIGN.md update (§28.1a, §30).
+
+1. **Window panes are drawn by a shader, not geometry. (Decided.)**
+   - Why: a typical 3-storey, 11-bay hall has about 90 window bays around it. §28.1a allows 1–5k triangles per
+     building, which leaves about 40–55 tris per bay, roof included. The example bay is 182 tris at LOD0 because
+     its muntins and frame are boxes; a hall built from it would be about 16k tris.
+   - Plan: a small shader on the glass quad draws the panes and muntins as a procedural grid (no texture,
+     Mobile-safe). Pane counts (6-over-6, 9-over-9 …) are shader parameters.
+   - The frame and sill stay as a few faces, and hidden faces are deleted, which gets a bay to about 30–40 tris.
+   - The example piece keeps geometry muntins until the shader exists; it only exercises the pipeline.
+2. **Real buildings are built by a procedural kit assembler. (Decided.)**
+   - Why: OSM outlines don't follow a 3 m grid, so a snap-together kit can't wrap them by hand at the scale of
+     180+ timeline buildings.
+   - Plan: the assembler places wall bays along each footprint edge (stretching them or filling the remainder),
+     puts corners at the vertices, and generates hip roofs with a straight skeleton. It is driven by a
+     per-building "recipe" in data: storeys, bay rhythm, portico, cupola, era.
    - Hand-modelled `hero_` models stay for the §28.1a landmarks.
-   - The same assembler builds player-placed buildings. This is a design decision for Phase 1+.
-3. **Era variants** (§28.1a: construction-stage, new, weathered, renovated) would multiply modelling work by 4
-   if each is a separate model.
-   - Recommendation: weathered and new as shader parameters (tint, grime), and construction-stage as scaffolding
-     props plus the height-clip idea already in `buildings.gdshader`.
-   - Keep separate `_renovated` models only where a renovation really changed the shape.
-4. **Rendered characters:** 1,500–3,000 animated figures (§30.2) can't each have their own skeleton.
-   - Plan for vertex-animation textures (animation baked into a texture and played in the shader) on a
-     MultiMesh.
-   - `char_` models should be authored with that in mind: one mesh, a shared rig, and a few short loops (§28.1a:
-     walk, idle, sit, carry).
-5. **LOD distances are guesses.** Tune them with real art in the terrain scene, where the camera goes to 3.5 km.
-   Past about 1 km, buildings should probably become merged chunk blocks, like today's extruded footprints.
-6. **Renderer:** `project.godot` currently uses Forward+. Everything here is Mobile-compatible, but nothing is
-   tested on the Mobile renderer yet.
+   - The same assembler builds player-placed buildings.
+   - Kit pieces must be authored so they can be stretched a little along X (no detail within 0.25 m of a
+     bay's side edges).
+3. **Era variants are mostly shader parameters. (Decided.)**
+   - Plan: new and weathered are shader settings (tint, grime); construction-stage is scaffolding props plus the
+     height-clip idea already in `buildings.gdshader`.
+   - Separate `_renovated` models only where a renovation really changed the shape. The `construction`,
+     `new` and `weathered` file variants stay allowed in `art_pipeline.json` for exceptions.
+4. **Rendered characters use vertex-animation textures on a MultiMesh. (Decided.)**
+   - Why: 1,500–3,000 animated figures (§30.2) can't each have their own skeleton.
+   - Plan: the animation is baked into a texture and played in the shader.
+   - `char_` models are authored for this: one mesh, a shared rig, and a few short loops (§28.1a: walk, idle,
+     sit, carry).
+5. **Renderer: noted.** `project.godot` uses Forward+. Everything here should be Mobile-compatible, but it has to
+   be tested on the Mobile renderer before any iPad work.
+6. **LOD distances are guesses (open).** Tune them with real art in the terrain scene, where the camera goes to
+   3.5 km. Past about 1 km, buildings should probably become merged chunk blocks, like today's extruded
+   footprints.

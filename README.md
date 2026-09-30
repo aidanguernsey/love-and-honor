@@ -70,6 +70,15 @@ Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F 
 `--speed=N` (0 = pause … 4 = 8×), `--camera=x,z,distance,pitch,yaw`, `--spike-smoke` (print stats after 6 s and quit).
 Tick times shown in the editor come from a Debug build of the sim; use the benchmark for real numbers.
 
+Spike B terrain (real Oxford, 1 m lidar + OSM): click **Spike B** on the boot screen, or run it directly:
+
+```powershell
+& $env:GODOT --path . res://scenes/spikes/terrain_spike.tscn
+```
+
+Point at the ground to inspect a tile (land state, ownership, path, elevation). G toggles the build grid. Launch
+options: `--camera=...`, `--spike-smoke`, `--no-vsync`. Terrain approach comparison: `docs/TERRAIN_COMPARISON.md`.
+
 Headless smoke test (build C#, boot the main scene, print what it loaded, quit):
 
 ```powershell

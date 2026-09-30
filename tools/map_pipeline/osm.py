@@ -73,6 +73,10 @@ def landcover_class(tags: dict) -> str | None:
 
 
 def path_class(tags: dict) -> str | None:
+    # Sidewalks and crossings run alongside/over roads that are already walkable; on 10 m tiles they would
+    # double every street and swamp the campus, so they stay out of the tile raster.
+    if tags.get("footway") in ("sidewalk", "crossing") or tags.get("path") in ("sidewalk", "crossing"):
+        return None
     if tags.get("railway") in ("rail", "light_rail", "disused"):
         return "railway"
     return _HIGHWAY_CLASS.get(tags.get("highway", ""))

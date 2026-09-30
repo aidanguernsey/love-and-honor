@@ -181,6 +181,20 @@ public static class DataValidation
             }
         }
 
+        // Land-state rules may only name land-cover classes the map pipeline produces.
+        if (docs.TryGetValue("map/land_states.json", out var landStates))
+        {
+            var mapDoc = docs.Where(d => d.Key.StartsWith("map/") && d.Key.EndsWith("_map.json")).Select(d => d.Value).FirstOrDefault();
+            var known = (mapDoc?["codes"]?["landcover"] as JsonObject)?.Select(kv => kv.Key).ToHashSet();
+            var rulesArr = landStates["present_day_rules"]?.AsArray() ?? [];
+            for (int i = 0; i < rulesArr.Count; i++)
+                foreach (var lc in rulesArr[i]?["landcover"]?.AsArray() ?? [])
+                    if (known is not null && !known.Contains(lc!.GetValue<string>()))
+                        issues.Add(new("map/land_states.json", $"/present_day_rules/{i}", $"unknown land cover '{lc}'"));
+            if (rulesArr.Count == 0 || rulesArr[^1]?.AsObject().Count != 1)
+                issues.Add(new("map/land_states.json", "/present_day_rules", "the last rule must be a catch-all (only 'state')"));
+        }
+
         // Departments: unique ids, colleges exist.
         if (docs.TryGetValue("departments.json", out var dep))
         {

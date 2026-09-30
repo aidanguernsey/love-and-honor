@@ -12,7 +12,9 @@ Status: Step 1 done. Step 2 (Spike A) done: 2a headless sim + benchmark — PASS
 (`docs/benchmarks/spike-a-2026-09-30.txt`); 2b rendering scene (`scenes/spikes/population_spike.tscn`) — 2,000
 walkers, ~118 FPS (V-Sync cap), 0 dropped ticks at 8×. Screenshots in `docs/images/`.
 Step 3a (map pipeline) done: real Oxford data in `data/map/` (1 m USGS lidar → 5 m heightmap, OSM layers
-rasterized to the 400×400 tile grid). Next: **3b** (terrain mesh in Godot, tile data layer, Terrain3D comparison).
+rasterized to the 400×400 tile grid). Step 3b done: real-map tile data layer (`RealMapLoader`), custom low-poly
+terrain (`TerrainMesher`, `scenes/spikes/terrain_spike.tscn`), build grid + tile inspector; Terrain3D trialled in a
+scratch project → recommend the custom generator (`docs/TERRAIN_COMPARISON.md`). Next: **3c** (timeline, look & feel).
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The
@@ -25,6 +27,11 @@ rasterized to the 400×400 tile grid). Next: **3b** (terrain mesh in Godot, tile
 - Map data: elevation 231.6–296.8 m (65 m relief). OSM: 3,138 buildings, only 1 with a start_date → historic
   timeline can't come from OSM. ~26% of tiles have no land-use tag ("open"). Overpass servers are often busy (504):
   pipeline retries + falls back to a second server. `out geom tags` silently drops relation members (bug found & fixed).
+- OSM sidewalks/crossings are left out of the path raster (they doubled every street on 10 m tiles); campus is still
+  path-dense because Miami really is. 2.5 m paths on 10 m tiles is coarse: paths should become their own meshes.
+- Land-state list gained 'water' (not in §5.1b) so creeks/ponds are unbuildable — flag for the design doc. §5.1b mixes
+  physical state with ownership (town-owned / university-owned); implemented as listed plus a separate Ownership layer.
+- Terrain: custom GPU 0.5–1.5 ms/frame vs Terrain3D 1.2–1.9 ms; Terrain3D officially supports Godot 4.4–4.6 but ran on 4.7.2.
 - Rendered walkers: cosmetic sample of the latest tick's real walks, limited to a detail radius around the
   look-at point (at low tilt the view reaches km away; far walkers are sub-pixel → impostors later, §30.2).
 - Instance colours need `VertexColorIsSrgb = true` on the material, or palette colours render washed out.
@@ -160,6 +167,14 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   `oxford_heightmap.r16` = 801² uint16 LE on tile corners every 5 m; rasters `*.u8` = 400² bytes, codes in
   `oxford_map.json`. Map size/tile size come from `balance.json`; the validator fails if they drift apart or a binary
   file has the wrong size (e.g. missing Git LFS). Pipeline settings: `data/map/map_config.json`.
+- Real map in the sim: `RealMapLoader.Load(IDataSource)` → `RealMap` (TileGrid with LandState/Ownership/Protected/
+  PathType/Types + Heightmap). Present-day land states come from rules in `data/map/land_states.json` (first match
+  wins). Render space: world X east, Z south, Y = elevation − lowest point (231.6 m).
+- Terrain: `View/TerrainMesher` (Godot-free) builds flat-shaded chunks (1 quad/tile, LOD steps, skirts); the bridge
+  (`TerrainSpikeHost`) turns them into ArrayMeshes with visibility-range LODs and `assets/shaders/terrain.gdshader`
+  (vertex colours are LINEAR, grid + hover in world space). Mouse picking = `Heightmap.Raycast`.
+- Performance measurement on this laptop: FPS is capped (~120) by the hybrid-GPU display path; compare GPU/CPU
+  render ms (`RenderingServer.ViewportGetMeasuredRenderTime*`) instead. Godot runs on the RTX 4070.
 - Downloads: never put the user's email or other personal data in request headers/URLs (the pipeline's
   User-Agent is generic; optional `LH_PIPELINE_CONTACT` env var).
 - Tick determinism: work is split into fixed-size chunks (`performance.agent_chunk_size`), each agent touches

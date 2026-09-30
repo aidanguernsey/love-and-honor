@@ -136,6 +136,7 @@ def test_landcover_classes(tags, expected):
     ({"highway": "footway"}, "footway"), ({"highway": "steps"}, "footway"), ({"highway": "trunk"}, "primary"),
     ({"highway": "residential"}, "residential"), ({"railway": "rail"}, "railway"), ({"railway": "abandoned"}, None),
     ({"highway": "proposed"}, None),
+    ({"highway": "footway", "footway": "sidewalk"}, None), ({"highway": "footway", "footway": "crossing"}, None),
 ])
 def test_path_classes(tags, expected):
     assert osm.path_class(tags) == expected

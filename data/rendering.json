@@ -33,6 +33,28 @@
     "heatmap_high": "#D7191C",
     "refresh_seconds": 0.5
   },
+  "terrain": {
+    "_comment": "Spike B low-poly terrain. Chunks of chunk_size_tiles²; LOD k uses lod_steps[k] tiles per quad and is shown from lod_switch_m[k-1] metres. Colours are summer defaults; seasons come in step 3c.",
+    "chunk_size_tiles": 40,
+    "lod_steps": [1, 2, 4],
+    "lod_switch_m": [900, 2000],
+    "skirt_depth_m": 6,
+    "land_state_colors": {
+      "forest": "#3F6B35", "pasture": "#9DBF6A", "farmland": "#C9B56A", "town": "#A9B08A",
+      "university": "lawn", "developed": "#B7B09A", "protected": "#35602F", "water": "#4F87B8"
+    },
+    "path_colors": {
+      "footway": "brick:2", "cycleway": "#9A8F86", "service": "#8E8C88", "residential": "#6F6E6C",
+      "tertiary": "#666563", "secondary": "#5E5D5B", "primary": "#555452", "railway": "#4A4038"
+    },
+    "building": "slate",
+    "grid_color": "#FFFFFF",
+    "grid_opacity": 0.35,
+    "grid_fade_start_m": 250,
+    "grid_fade_end_m": 900,
+    "hover_color": "#FFD23F",
+    "hover_opacity": 0.6
+  },
   "camera": {
     "start_distance_m": 900,
     "min_distance_m": 25,

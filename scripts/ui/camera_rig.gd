@@ -2,7 +2,8 @@ extends Node3D
 ## Orbit / pan / zoom camera for the map (§27.5 controls):
 ##   pan: WASD or middle-drag · zoom: mouse wheel · orbit: Q/E or right-drag (horizontal)
 ##   tilt: R/F or right-drag (vertical)
-## The rig sits on the ground at the point the camera looks at. Settings: data/rendering.json "camera".
+## The rig sits on the ground at the point the camera looks at (following terrain height if the host provides
+## GetGroundHeight). Settings: data/rendering.json "camera".
 ## Keys are read as physical keys for now; remappable input actions come with the real HUD (§33).
 ## Launch option for reproducible screenshots: `-- --camera=x,z,distance,pitch,yaw` (metres / degrees).
 
@@ -15,6 +16,7 @@ var _pitch := 55.0
 var _distance := 900.0
 var _drag_pan := false
 var _drag_orbit := false
+var _host: Node
 
 @onready var _camera: Camera3D = $Camera3D
 
@@ -22,9 +24,9 @@ var _drag_orbit := false
 func _ready() -> void:
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string("res://data/rendering.json"))
 	_cfg = parsed["camera"]
-	var host := get_node_or_null(host_path)
-	if host:
-		_map_size = host.GetMapSizeMeters()
+	_host = get_node_or_null(host_path)
+	if _host:
+		_map_size = _host.GetMapSizeMeters()
 	_distance = _cfg["start_distance_m"]
 	_pitch = _cfg["start_pitch_deg"]
 	position = Vector3(_map_size.x * 0.5, 0.0, _map_size.y * 0.5)
@@ -89,6 +91,8 @@ func _pan_local(offset: Vector2) -> void:
 
 
 func _apply() -> void:
+	if _host and _host.has_method("GetGroundHeight"):
+		position.y = _host.GetGroundHeight(position.x, position.z)
 	_pitch = clampf(_pitch, _cfg["min_pitch_deg"], _cfg["max_pitch_deg"])
 	_distance = clampf(_distance, _cfg["min_distance_m"], _cfg["max_distance_m"])
 	rotation = Vector3(0.0, deg_to_rad(_yaw), 0.0)

@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/land_states.schema.json",
+  "_comment": "Land states (§5.1b) and the rules that derive the PRESENT-DAY (2026) land state of each tile from the map pipeline rasters. First matching rule wins. 'water' is not in the §5.1b list; it is added so creeks and ponds are unbuildable (flagged for the user). Historic years are derived in Spike B step 3c.",
+  "states": ["forest", "pasture", "farmland", "town", "university", "developed", "protected", "water"],
+  "present_day_rules": [
+    { "protected": true, "state": "protected" },
+    { "landcover": ["water", "wetland"], "state": "water" },
+    { "landcover": ["forest"], "state": "forest" },
+    { "landcover": ["farmland"], "state": "farmland" },
+    { "ownership": ["university"], "state": "university" },
+    { "ownership": ["town"], "state": "town" },
+    { "landcover": ["residential", "commercial", "industrial", "education", "cemetery", "railway"], "state": "developed" },
+    { "state": "pasture" }
+  ]
+}

@@ -10,6 +10,7 @@ public sealed class RenderingConfig
     public AgentColorsSection AgentColors { get; init; } = new();
     public BuildingsSection Buildings { get; init; } = new();
     public GroundSection Ground { get; init; } = new();
+    public TerrainSection Terrain { get; init; } = new();
 
     public sealed class CrowdSection
     {
@@ -49,6 +50,23 @@ public sealed class RenderingConfig
         public string HeatmapLow { get; init; } = "";
         public string HeatmapHigh { get; init; } = "";
         public float RefreshSeconds { get; init; }
+    }
+
+    public sealed class TerrainSection
+    {
+        public int ChunkSizeTiles { get; init; }
+        public int[] LodSteps { get; init; } = [];
+        public float[] LodSwitchM { get; init; } = [];
+        public float SkirtDepthM { get; init; }
+        public Dictionary<string, string> LandStateColors { get; init; } = [];
+        public Dictionary<string, string> PathColors { get; init; } = [];
+        public string Building { get; init; } = "";
+        public string GridColor { get; init; } = "";
+        public float GridOpacity { get; init; }
+        public float GridFadeStartM { get; init; }
+        public float GridFadeEndM { get; init; }
+        public string HoverColor { get; init; } = "";
+        public float HoverOpacity { get; init; }
     }
 
     public static RenderingConfig Load(IDataSource source) =>

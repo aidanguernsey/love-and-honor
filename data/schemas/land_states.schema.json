@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Land states and present-day derivation rules",
+  "type": "object",
+  "required": ["states", "present_day_rules"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "state": { "enum": ["forest", "pasture", "farmland", "town", "university", "developed", "protected", "water"] }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "states": { "type": "array", "items": { "$ref": "#/$defs/state" }, "uniqueItems": true, "minItems": 8, "maxItems": 8 },
+    "present_day_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["state"],
+        "additionalProperties": false,
+        "properties": {
+          "protected": { "type": "boolean" },
+          "landcover": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "ownership": { "type": "array", "items": { "enum": ["private", "town", "university"] }, "minItems": 1 },
+          "state": { "$ref": "#/$defs/state" }
+        }
+      }
+    }
+  }
+}

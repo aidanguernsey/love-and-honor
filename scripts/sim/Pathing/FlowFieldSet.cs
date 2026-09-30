@@ -143,10 +143,10 @@ public sealed class FlowFieldSet
                 int nx = tx + Dx[d], ny = ty + Dy[d];
                 if (!grid.InBounds(nx, ny)) continue;
                 int n = ny * w + nx;
-                if (types[n] == TileType.Building) continue;
+                if (types[n] is TileType.Building or TileType.Water) continue;
                 bool diagonal = (d & 1) == 1;
                 // No corner-cutting past buildings.
-                if (diagonal && (types[ty * w + nx] == TileType.Building || types[ny * w + tx] == TileType.Building)) continue;
+                if (diagonal && (!grid.IsWalkable(ty * w + nx) || !grid.IsWalkable(ny * w + tx))) continue;
                 float step = diagonal ? Diagonal : 1f;
                 float nc = c + step * 0.5f * (tCost + TileCost(types[n]));
                 if (nc < s.Cost[n])

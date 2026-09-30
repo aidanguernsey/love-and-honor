@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Presentation settings: crowd rendering, building/ground colours, camera",
   "type": "object",
-  "required": ["crowd", "agent_colors", "buildings", "ground", "camera"],
+  "required": ["crowd", "agent_colors", "buildings", "ground", "terrain", "camera"],
   "additionalProperties": false,
   "patternProperties": { "^_": {} },
   "$defs": {
@@ -66,6 +66,35 @@
         "heatmap_low": { "$ref": "#/$defs/color" },
         "heatmap_high": { "$ref": "#/$defs/color" },
         "refresh_seconds": { "$ref": "#/$defs/positive" }
+      }
+    },
+    "terrain": {
+      "type": "object",
+      "required": ["chunk_size_tiles", "lod_steps", "lod_switch_m", "skirt_depth_m", "land_state_colors", "path_colors", "building", "grid_color", "grid_opacity", "grid_fade_start_m", "grid_fade_end_m", "hover_color", "hover_opacity"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "chunk_size_tiles": { "type": "integer", "minimum": 4 },
+        "lod_steps": { "type": "array", "items": { "type": "integer", "minimum": 1 }, "minItems": 1 },
+        "lod_switch_m": { "type": "array", "items": { "$ref": "#/$defs/positive" } },
+        "skirt_depth_m": { "type": "number", "minimum": 0 },
+        "land_state_colors": {
+          "type": "object",
+          "required": ["forest", "pasture", "farmland", "town", "university", "developed", "protected", "water"],
+          "additionalProperties": { "$ref": "#/$defs/color" }
+        },
+        "path_colors": {
+          "type": "object",
+          "required": ["footway", "cycleway", "service", "residential", "tertiary", "secondary", "primary", "railway"],
+          "additionalProperties": { "$ref": "#/$defs/color" }
+        },
+        "building": { "$ref": "#/$defs/color" },
+        "grid_color": { "$ref": "#/$defs/color" },
+        "grid_opacity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "grid_fade_start_m": { "$ref": "#/$defs/positive" },
+        "grid_fade_end_m": { "$ref": "#/$defs/positive" },
+        "hover_color": { "$ref": "#/$defs/color" },
+        "hover_opacity": { "type": "number", "minimum": 0, "maximum": 1 }
       }
     },
     "camera": {

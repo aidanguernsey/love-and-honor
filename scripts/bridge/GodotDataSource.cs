@@ -19,6 +19,13 @@ public sealed class GodotDataSource(string root = "res://data") : IDataSource
         return Godot.FileAccess.GetFileAsString(path);
     }
 
+    public byte[] ReadBytes(string relativePath)
+    {
+        string path = $"{root}/{relativePath}";
+        if (!Godot.FileAccess.FileExists(path)) throw new FileNotFoundException($"Data file not found: {path}");
+        return Godot.FileAccess.GetFileAsBytes(path);
+    }
+
     public IReadOnlyList<string> ListJson(string relativeDir) =>
         DirAccess.GetFilesAt($"{root}/{relativeDir}")
             .Where(f => f.EndsWith(".json"))

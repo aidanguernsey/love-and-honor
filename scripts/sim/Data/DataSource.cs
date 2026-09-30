@@ -9,6 +9,8 @@ public interface IDataSource
 {
     string ReadText(string relativePath);
 
+    byte[] ReadBytes(string relativePath);
+
     /// <summary>Relative paths of the *.json files directly inside <paramref name="relativeDir"/>, sorted ordinally.</summary>
     IReadOnlyList<string> ListJson(string relativeDir);
 }
@@ -19,6 +21,8 @@ public sealed class FileSystemDataSource(string root) : IDataSource
     public string Root { get; } = Path.GetFullPath(root);
 
     public string ReadText(string relativePath) => File.ReadAllText(Path.Combine(Root, relativePath));
+
+    public byte[] ReadBytes(string relativePath) => File.ReadAllBytes(Path.Combine(Root, relativePath));
 
     public IReadOnlyList<string> ListJson(string relativeDir) =>
         Directory.EnumerateFiles(Path.Combine(Root, relativeDir), "*.json")

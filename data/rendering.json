@@ -1,0 +1,48 @@
+{
+  "$schema": "./schemas/rendering.schema.json",
+  "_comment": "Presentation settings (not simulation). All values are placeholders. Colours are either '#RRGGBB' or a reference into branding.json colors ('lawn' = first entry, 'brick:2' = third entry), so the §28.2 palette stays in one place.",
+  "crowd": {
+    "_comment": "Rendered walkers are a cosmetic sample of real sim walks (§30.2 two-level movement). They move at visual_walk_speed_mps × game speed, decoupled from the game clock (at 1×, one in-game hour lasts 83 ms of real time).",
+    "max_rendered_agents": 2000,
+    "visual_walk_speed_mps": 12,
+    "lateral_spread_m": 3.0,
+    "spawn_attempts_per_free_slot": 4,
+    "view_margin_m": 60,
+    "detail_radius_factor": 2.5,
+    "detail_radius_min_m": 150,
+    "agent_height_m": 1.8,
+    "agent_radius_m": 0.35,
+    "size_compensation_reference_distance_m": 150,
+    "size_compensation_max_scale": 6
+  },
+  "agent_colors": {
+    "student_by_year": ["#C3142D", "#E0A526", "#3E7CB1", "#5B8C5A"],
+    "faculty": "#6B4F3A"
+  },
+  "buildings": {
+    "height_m": { "academic": 14, "residence": 16, "dining": 8, "library": 18, "recreation": 12, "off_campus_housing": 9, "other": 8 },
+    "color": { "academic": "brick:1", "residence": "brick", "dining": "brick:2", "library": "limestone", "recreation": "brick:2", "off_campus_housing": "slate", "other": "slate" }
+  },
+  "ground": {
+    "grass": "lawn",
+    "path": "brick:2",
+    "building": "slate",
+    "wear": "#8B6B4A",
+    "wear_full_at_walkers": 20000,
+    "heatmap_low": "#2B83BA",
+    "heatmap_high": "#D7191C",
+    "refresh_seconds": 0.5
+  },
+  "camera": {
+    "start_distance_m": 900,
+    "min_distance_m": 25,
+    "max_distance_m": 3500,
+    "start_pitch_deg": 55,
+    "min_pitch_deg": 20,
+    "max_pitch_deg": 85,
+    "keyboard_pan_speed": 0.8,
+    "orbit_speed_deg_per_s": 90,
+    "mouse_orbit_deg_per_px": 0.25,
+    "zoom_step": 1.15
+  }
+}

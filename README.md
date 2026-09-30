@@ -59,6 +59,17 @@ Run the game directly:
 & $env:GODOT --path .
 ```
 
+Spike A scene (32,500 simulated agents, ~2,000 drawn): click **Spike A** on the boot screen, or run it directly:
+
+```powershell
+& $env:GODOT --path . res://scenes/spikes/population_spike.tscn
+```
+
+Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F tilt · Space pause ·
+1–4 speed (1×/2×/4×/8×) · O foot-traffic heatmap · Esc back to menu. Launch options (after `--`):
+`--speed=N` (0 = pause … 4 = 8×), `--camera=x,z,distance,pitch,yaw`, `--spike-smoke` (print stats after 6 s and quit).
+Tick times shown in the editor come from a Debug build of the sim; use the benchmark for real numbers.
+
 Headless smoke test (build C#, boot the main scene, print what it loaded, quit):
 
 ```powershell
@@ -86,6 +97,10 @@ docs/              pipeline docs, outreach drafts, phase reports
 
 `scripts/sim`, `tests`, `tools` and `docs` contain a `.gdignore` so the Godot editor doesn't scan them.
 The Godot project (`LoveAndHonor.csproj`) references the sim library as a normal project reference.
+
+## Exporting
+
+Export presets must include `*.json` in "Filters to export non-resource files", or the game won't find `data/`.
 
 ## Data conventions
 

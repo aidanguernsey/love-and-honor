@@ -30,6 +30,8 @@ public sealed class FlowFieldSet
 
     public int BuildingCount { get; private set; }
     public float[] DistanceM { get; private set; } = [];
+    /// <summary>Per building pair: tile-space bounding box of the route as (minX, minY, maxX, maxY). Used to find routes crossing the camera view.</summary>
+    public RouteBox[] RouteBounds { get; private set; } = [];
     public int BuiltForVersion { get; private set; } = -1;
     public double LastBuildMs { get; private set; }
 
@@ -46,6 +48,8 @@ public sealed class FlowFieldSet
     public float Distance(int from, int to) => DistanceM[from * BuildingCount + to];
     /// <summary>Tile indices from the entrance of <paramref name="from"/> to the entrance of <paramref name="to"/>, inclusive.</summary>
     public int[] Route(int from, int to) => _routes[from * BuildingCount + to];
+
+    public readonly record struct RouteBox(short MinX, short MinY, short MaxX, short MaxY);
 
     /// <summary>Rebuilds all fields if the map changed since the last build. Returns true if it rebuilt.</summary>
     public bool EnsureCurrent()
@@ -86,8 +90,22 @@ public sealed class FlowFieldSet
             routes[pair] = Trace(grid, directions[to], _campus.Buildings[from].EntranceTile, _campus.Buildings[to].EntranceTile);
         });
 
+        var bounds = new RouteBox[b * b];
+        for (int pair = 0; pair < routes.Length; pair++)
+        {
+            int minX = int.MaxValue, minY = int.MaxValue, maxX = int.MinValue, maxY = int.MinValue;
+            foreach (int t in routes[pair])
+            {
+                int x = t % grid.Width, y = t / grid.Width;
+                if (x < minX) minX = x; if (x > maxX) maxX = x;
+                if (y < minY) minY = y; if (y > maxY) maxY = y;
+            }
+            bounds[pair] = routes[pair].Length == 0 ? default : new RouteBox((short)minX, (short)minY, (short)maxX, (short)maxY);
+        }
+
         _directions = directions;
         _routes = routes;
+        RouteBounds = bounds;
         DistanceM = distance;
         BuildingCount = b;
         BuiltForVersion = grid.Version;

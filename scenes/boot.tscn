@@ -62,3 +62,10 @@ horizontal_alignment = 1
 
 [node name="SimBridge" type="Node" parent="."]
 script = ExtResource("2_bridge")
+
+[node name="SpikeA" type="Button" parent="Center/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Spike A — Population at scale"

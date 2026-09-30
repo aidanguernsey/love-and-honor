@@ -9,6 +9,7 @@ const BRANDING_PATH := "res://data/branding.json"
 @onready var _disclaimer: Label = %Disclaimer
 @onready var _sim_info: Label = %SimInfo
 @onready var _bridge: Node = $SimBridge
+@onready var _spike_a: Button = %SpikeA
 
 
 func _ready() -> void:
@@ -24,6 +25,7 @@ func _ready() -> void:
 	_disclaimer.visible = branding["show_disclaimer"]
 	_disclaimer.text = branding["disclaimer"]
 	_sim_info.text = _bridge.GetSimDescription()
+	_spike_a.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/spikes/population_spike.tscn"))
 
 	if "--smoke-test" in OS.get_cmdline_user_args():
 		print("SMOKE title=%s | university=%s | branding=%s | sim=%s" % [

@@ -8,8 +8,9 @@ The full design is in `GAME_DESIGN.md` (v0.3). **Read the relevant section befor
 **Phase 0 — Foundations & technical spikes** (§37). Build no gameplay content beyond what the spikes need.
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
 (4) art pipeline prep → (5) outreach drafts → (6) Phase 0 report.
-Status: Step 1 done. Step 2a (headless population sim + benchmark) done — PASS, p95 ≈ 3.5 ms on 4 E-cores
-(results: `docs/benchmarks/spike-a-2026-09-30.txt`). Next: **2b** (rendering scene, camera, debug overlay).
+Status: Step 1 done. Step 2 (Spike A) done: 2a headless sim + benchmark — PASS, p95 ≈ 3.5–4.0 ms on 4 E-cores
+(`docs/benchmarks/spike-a-2026-09-30.txt`); 2b rendering scene (`scenes/spikes/population_spike.tscn`) — 2,000
+walkers, ~118 FPS (V-Sync cap), 0 dropped ticks at 8×. Screenshots in `docs/images/`. Next: **Step 3, Spike B**.
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The
@@ -19,6 +20,11 @@ Status: Step 1 done. Step 2a (headless population sim + benchmark) done — PASS
 - Lateness: agents depart on the hour, so any walk > class-change window (10 min) counts as late (avg walk
   11.9 min on the spike map). Phase 1 needs "leave before the hour" departures.
 - Free-hour activity is re-rolled every hour → ~14.8k walks/tick (stress case); smooth it in Phase 1.
+- Rendered walkers: cosmetic sample of the latest tick's real walks, limited to a detail radius around the
+  look-at point (at low tilt the view reaches km away; far walkers are sub-pixel → impostors later, §30.2).
+- Instance colours need `VertexColorIsSrgb = true` on the material, or palette colours render washed out.
+- Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
+  1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 
 ### Decisions made during Phase 0 (by the user)
 - Spike A pass criterion: **p95 tick time ≤ 8 ms** over 1,000 ticks (avg and max reported too). (2026-09-30)
@@ -131,8 +137,14 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   tick use `StatelessRandom` (hash of seed, agent, day, hour) so results don't depend on thread scheduling.
 - Sim library layout (`scripts/sim/`): `Core/` (RNG, SimTime), `Data/` (typed configs, `IDataSource`, `SimData.Load`),
   `World/` (TileGrid, Campus, SyntheticCampusGenerator), `Pathing/` (FlowFieldSet: per-building Dijkstra fields,
-  distance matrix, route cache), `Population/` (SoA `PopulationStore`, generator), `Engine/` (Simulation tick,
-  ScheduleModel, NeedsModel, StateHash, SpikeWorld factory).
+  distance matrix, route cache + bounds), `Population/` (SoA `PopulationStore`, generator), `Engine/` (Simulation
+  tick, ScheduleModel, NeedsModel, StateHash, SpikeWorld factory, SimRunner = sim thread + triple-buffered
+  SimSnapshot), `View/` (VisualCrowd: engine-agnostic rendered-subset logic, unit-tested).
+- Threading: `SimRunner` owns the sim thread; the main thread only calls `AdvanceRealTime`, `AcquireLatest`,
+  `RequestTraffic`, `SpeedIndex`. Never read `PopulationStore` arrays from the main thread — use the snapshot.
+- Godot bridge (`scripts/bridge/`): `GodotDataSource` (res:// via FileAccess), `PopulationSpikeHost` (world,
+  runner, ground/buildings/walkers MultiMeshes, stats for GDScript). GDScript: `camera_rig.gd`, `debug_overlay.gd`.
+- Presentation tunables live in `data/rendering.json`; colours there reference `branding.json` palette entries.
 - Tick determinism: work is split into fixed-size chunks (`performance.agent_chunk_size`), each agent touches
   only its own data, chunk results reduce in chunk order → 1 thread and N threads give identical `StateHash`
   (tested). Keep it that way: no shared mutable state inside `ProcessChunk`.

@@ -47,6 +47,9 @@ public sealed class Simulation
     // Per-chunk scratch, reused every tick (no per-tick allocation in the agent loop).
     private readonly int[][] _pairCounts;
     private readonly ChunkStats[] _chunkStats;
+    // Agents that started a walk this tick, per chunk (read by the renderer via CopyLastTickWalkers).
+    private readonly int[][] _chunkWalkers;
+    private readonly int[] _chunkWalkerCount;
 
     // Values for the tick in progress, read by ProcessChunk.
     private int _tickStartMinute, _day, _weekday, _hour;
@@ -87,6 +90,9 @@ public sealed class Simulation
         _pairCounts = new int[_chunkCount][];
         for (int c = 0; c < _chunkCount; c++) _pairCounts[c] = new int[pairs];
         _chunkStats = new ChunkStats[_chunkCount];
+        _chunkWalkers = new int[_chunkCount][];
+        for (int c = 0; c < _chunkCount; c++) _chunkWalkers[c] = new int[_chunkSize];
+        _chunkWalkerCount = new int[_chunkCount];
 
         for (int a = 0; a < _pop.Count; a++) _pop.Happiness[a] = _needs.Happiness(_pop.Needs, a);
     }
@@ -138,6 +144,8 @@ public sealed class Simulation
         int start = c * _chunkSize;
         int end = Math.Min(start + _chunkSize, p.Count);
         int[] pairs = _pairCounts[c];
+        int[] walkers = _chunkWalkers[c];
+        int walkerCount = 0;
         int b = _fields.BuildingCount;
         float[] distance = _fields.DistanceM;
         int commute = _needs.CommuteIndex;
@@ -166,6 +174,7 @@ public sealed class Simulation
                     p.WalkArriveMinute[a] = _tickStartMinute + minutes;
                     p.CurrentBuilding[a] = target;
                     pairs[current * b + target]++;
+                    walkers[walkerCount++] = a;
                     p.Needs[a * PopulationStore.NeedCount + commute] -= minutes * _commutePenalty;
                     stats.Walks++;
                     stats.WalkMinutes += minutes;
@@ -180,6 +189,23 @@ public sealed class Simulation
             stats.HappinessSum += h;
         }
         _chunkStats[c] = stats;
+        _chunkWalkerCount[c] = walkerCount;
+    }
+
+    /// <summary>
+    /// Copies the indices of agents that started a walk during the last tick into <paramref name="destination"/>
+    /// (in agent order) and returns how many were written. Call from the thread that runs Tick().
+    /// </summary>
+    public int CopyLastTickWalkers(Span<int> destination)
+    {
+        int n = 0;
+        for (int c = 0; c < _chunkCount && n < destination.Length; c++)
+        {
+            int count = Math.Min(_chunkWalkerCount[c], destination.Length - n);
+            _chunkWalkers[c].AsSpan(0, count).CopyTo(destination[n..]);
+            n += count;
+        }
+        return n;
     }
 
     /// <summary>

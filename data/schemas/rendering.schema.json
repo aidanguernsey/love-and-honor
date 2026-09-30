@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Presentation settings: crowd rendering, building/ground colours, camera",
+  "type": "object",
+  "required": ["crowd", "agent_colors", "buildings", "ground", "camera"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "color": { "type": "string", "pattern": "^(#[0-9A-Fa-f]{6}|[a-z_]+(:[0-9]+)?)$" },
+    "positive": { "type": "number", "exclusiveMinimum": 0 },
+    "kindMap": {
+      "type": "object",
+      "required": ["academic", "residence", "dining", "library", "recreation", "off_campus_housing", "other"],
+      "propertyNames": { "enum": ["academic", "residence", "dining", "library", "recreation", "off_campus_housing", "other"] }
+    }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "crowd": {
+      "type": "object",
+      "required": ["max_rendered_agents", "visual_walk_speed_mps", "lateral_spread_m", "spawn_attempts_per_free_slot", "view_margin_m", "detail_radius_factor", "detail_radius_min_m", "agent_height_m", "agent_radius_m", "size_compensation_reference_distance_m", "size_compensation_max_scale"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "max_rendered_agents": { "type": "integer", "minimum": 0, "maximum": 20000 },
+        "visual_walk_speed_mps": { "$ref": "#/$defs/positive" },
+        "lateral_spread_m": { "type": "number", "minimum": 0 },
+        "spawn_attempts_per_free_slot": { "type": "integer", "minimum": 1 },
+        "view_margin_m": { "type": "number", "minimum": 0 },
+        "detail_radius_factor": { "$ref": "#/$defs/positive" },
+        "detail_radius_min_m": { "$ref": "#/$defs/positive" },
+        "agent_height_m": { "$ref": "#/$defs/positive" },
+        "agent_radius_m": { "$ref": "#/$defs/positive" },
+        "size_compensation_reference_distance_m": { "$ref": "#/$defs/positive" },
+        "size_compensation_max_scale": { "type": "number", "minimum": 1 }
+      }
+    },
+    "agent_colors": {
+      "type": "object",
+      "required": ["student_by_year", "faculty"],
+      "additionalProperties": false,
+      "properties": {
+        "student_by_year": { "type": "array", "items": { "$ref": "#/$defs/color" }, "minItems": 4, "maxItems": 4 },
+        "faculty": { "$ref": "#/$defs/color" }
+      }
+    },
+    "buildings": {
+      "type": "object",
+      "required": ["height_m", "color"],
+      "additionalProperties": false,
+      "properties": {
+        "height_m": { "allOf": [{ "$ref": "#/$defs/kindMap" }], "additionalProperties": { "$ref": "#/$defs/positive" } },
+        "color": { "allOf": [{ "$ref": "#/$defs/kindMap" }], "additionalProperties": { "$ref": "#/$defs/color" } }
+      }
+    },
+    "ground": {
+      "type": "object",
+      "required": ["grass", "path", "building", "wear", "wear_full_at_walkers", "heatmap_low", "heatmap_high", "refresh_seconds"],
+      "additionalProperties": false,
+      "properties": {
+        "grass": { "$ref": "#/$defs/color" },
+        "path": { "$ref": "#/$defs/color" },
+        "building": { "$ref": "#/$defs/color" },
+        "wear": { "$ref": "#/$defs/color" },
+        "wear_full_at_walkers": { "$ref": "#/$defs/positive" },
+        "heatmap_low": { "$ref": "#/$defs/color" },
+        "heatmap_high": { "$ref": "#/$defs/color" },
+        "refresh_seconds": { "$ref": "#/$defs/positive" }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "required": ["start_distance_m", "min_distance_m", "max_distance_m", "start_pitch_deg", "min_pitch_deg", "max_pitch_deg", "keyboard_pan_speed", "orbit_speed_deg_per_s", "mouse_orbit_deg_per_px", "zoom_step"],
+      "additionalProperties": false,
+      "properties": {
+        "start_distance_m": { "$ref": "#/$defs/positive" },
+        "min_distance_m": { "$ref": "#/$defs/positive" },
+        "max_distance_m": { "$ref": "#/$defs/positive" },
+        "start_pitch_deg": { "type": "number", "minimum": 1, "maximum": 89 },
+        "min_pitch_deg": { "type": "number", "minimum": 1, "maximum": 89 },
+        "max_pitch_deg": { "type": "number", "minimum": 1, "maximum": 89 },
+        "keyboard_pan_speed": { "$ref": "#/$defs/positive" },
+        "orbit_speed_deg_per_s": { "$ref": "#/$defs/positive" },
+        "mouse_orbit_deg_per_px": { "$ref": "#/$defs/positive" },
+        "zoom_step": { "type": "number", "exclusiveMinimum": 1 }
+      }
+    }
+  }
+}

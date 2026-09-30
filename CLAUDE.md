@@ -2,10 +2,14 @@
 
 A low-poly 3D university city-builder set at Miami University (Oxford, Ohio), 1809 → present → future.
 Godot 4 (.NET build) + C#. Non-commercial fan / portfolio project.
-The full design is in `GAME_DESIGN.md` (v0.3). **Read the relevant section before working on a system.**
+The full design is in `GAME_DESIGN.md` (v0.4). **Read the relevant section before working on a system.**
 
 ## Current phase
-**Phase 0 — Foundations & technical spikes** (§37). Build no gameplay content beyond what the spikes need.
+**Phase 0 complete (2026-09-30).** All 16 design-doc updates approved and applied (GAME_DESIGN.md v0.4).
+**Next: Phase 1 — "The Hill"**, checkpoints 1a–1k in `docs/PHASE0_REPORT.md` §5 (approved), starting with **1a**
+(sim on the real map + background flow-field rebuilds). Don't start 1a until the user says go; stop after every checkpoint.
+
+### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
 (4) art pipeline prep → (5) outreach drafts → (6) Phase 0 report.
 Status: Step 1 done. Step 2 (Spike A) done: 2a headless sim + benchmark — PASS, p95 ≈ 3.5–4.0 ms on 4 E-cores
@@ -25,7 +29,7 @@ piece (`kit_georgian_wall_window_3m`) imported and shown in `scenes/spikes/art_i
 Step 5 done: outreach drafts in `docs/outreach/` (trademark/licensing, Myaamia Center + summary attachment, Uptown
 courtesy note, README with a send log). **Nothing sent.**
 Step 6 done: `docs/PHASE0_REPORT.md` (benchmarks, terrain, risks, Phase 1 breakdown 1a–1k, 16 suggested design-doc
-updates U1–U16 awaiting approval). **Phase 0 complete** pending the user's approvals; Phase 1 starts only on go-ahead.
+updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.md v0.4.
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The
@@ -91,11 +95,16 @@ updates U1–U16 awaiting approval). **Phase 0 complete** pending the user's app
   regular shortcuts turn to dirt ("over weeks", §12.4). Spike A's 1.3× grass cost + cumulative wear overstate grass
   use (its synthetic map also removes path segments on purpose). Suggested §12.4 update ("Students walk shortest
   routes" → "prefer paved paths; cut across grass when it saves enough") goes in the Phase 0 report.
+- Phase 0 wrap-up (2026-09-30): **all 16 design-doc updates (U1–U16) approved** → applied as GAME_DESIGN.md v0.4.
+  Carried-over defaults (report §7.2) stand. **Campaign Chapter 1 starts in 1824** (map derived for that year; the
+  sandbox "Empty Hill" covers 1809). Phase 1 checkpoints 1a–1k and the proposed cuts approved. Building-dates
+  generator kept in `tools/research/` (reproduces `data/timeline.json`; timeline is hand-edited from now on).
+  Housekeeping: add a private remote and push (gh CLI not installed; needs the user to create the repo / sign in).
 
 ## Working rules
 - Work in small steps. At the end of each step: stop, summarize, explain how to verify, and wait for the user's go-ahead.
 - Commit after each working step with a clear message.
-- **Never edit `GAME_DESIGN.md`.** Propose design-doc changes as a list for the user to approve.
+- **Edit `GAME_DESIGN.md` only to apply changes the user has explicitly approved.** Propose design-doc changes as a list first.
 - **Locked Decisions (below) are final.** Don't change them without asking.
 - If the design is ambiguous or technically unrealistic, flag it. Never silently change the design.
 - Real-world facts (dates, names, figures) are marked `[VERIFY]` in the design doc. In data files, mark every
@@ -122,7 +131,7 @@ updates U1–U16 awaiting approval). **Phase 0 complete** pending the user's app
 | Placement | Free placement; real sites are optional ghost suggestions. Pure building placement, no zoning brushes |
 | Real names | Real competitor school names (no logos); real Uptown business names (always positive, removable, in `/data/uptown.json`) |
 | Regional campuses | Panels only in v1 |
-| Open question | Terrain: custom mesh generator vs. plugin (Terrain3D) — decide after Spike B |
+| Terrain | Custom chunked mesh generator (decided after Spike B; v0.4) |
 
 ## Architecture rules (§30)
 - **Simulation core in C#; UI and scene glue in GDScript.**

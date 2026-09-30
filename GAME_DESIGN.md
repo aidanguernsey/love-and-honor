@@ -1,5 +1,5 @@
 # LOVE & HONOR — A University Builder
-### Game Design Document · v0.3
+### Game Design Document · v0.4
 *A city-builder / management sim where you run Miami University in Oxford, Ohio — from its 1809 charter to the present day and beyond.*
 
 > **How to use this doc:** Every tunable number is marked **[TWEAK]**. Every open design choice is marked **[DECIDE]**. Real-world facts that should be double-checked before shipping are marked **[VERIFY]**. Items settled in review are marked **[LOCKED]**.
@@ -33,6 +33,7 @@
 | 21 | Teaching Identity band | **55–80 sweet spot confirmed** (see §13.7) |
 
 ### Changelog
+- **v0.4** — Applied the Phase 0 results (`docs/PHASE0_REPORT.md`, updates U1–U16). Terrain: custom chunked mesh generator (open question resolved), 400 m chunks. Walking: paved paths preferred, desire paths only from regular shortcuts, students leave before the hour. Water land state and a separate ownership layer. Rotation in 15° steps. Speed hotkeys. Art: shader-drawn window panes, procedural kit assembler, era variants via shaders. Godot 4.7.2 .NET on .NET 10. Map and date sources as used. New data files. Phase 0 status and the Phase 1 plan; Chapter 1 starts in 1824.
 - **v0.3** — Locked free placement, pure building placement, real competitor school names, real Uptown business names, panels-only regional campuses, the Teaching Identity band; deferred Endless mode. Terrain approach still open.
 - **v0.2** — Applied all locked decisions. Rewrote Map (§5), Research (§13.7), Green Beer Day (§23.5), Technical Architecture (§30), Save System (§31), Legal (§36), Scope (§37), Open Questions (§38). Added Teacher-Scholar mechanics, land-clearing/evolving-map system, and full-sim agent architecture.
 - **v0.1** — Initial draft.
@@ -154,7 +155,7 @@ Linked scenarios, each a chapter of Miami history (loosely — historically *ins
 
 | # | Chapter | Era | Starting state | Key objective |
 |---|---|---|---|---|
-| 1 | **The Hill** | 1824 (classes begin) **[VERIFY]** | Empty land, one building (Old Main site), tiny budget | Reach 250 students, build first residence hall (Elliott-style) |
+| 1 | **The Hill** | Play starts in 1824 (classes begin) **[VERIFY]**, on the map as it stood that year | Empty land, one building (Old Main site), tiny budget | Reach 250 students, build first residence hall (Elliott-style) |
 | 2 | **Mother of Fraternities** | 1830s–1850s | Small college | Grow student life; found the "Miami Triad" chapters |
 | 3 | **Closed & Reopened** | 1873–1885 | University closed for financial trouble **[VERIFY]** | Rebuild enrollment from zero after reopening |
 | 4 | **Cradle of Coaches** | 1900s–1950s | Growing campus | Build an athletics program that produces legendary coaches |
@@ -194,19 +195,20 @@ On hold until the base game (campaign through 2040 + sandbox + challenges) is fi
 ### 5.1a Real-world data sources (to build the map)
 | Layer | Source | Use |
 |---|---|---|
-| Elevation | USGS 3DEP DEM (1 m or 1/3 arc-second) | Heightmap → terrain mesh |
-| Modern footprints, roads, paths | OpenStreetMap | Modern-era layout, road network |
+| Elevation | USGS 3DEP **1 m lidar DEM** (Ohio statewide collection, 2020–23), resampled to 5 m | Heightmap → terrain mesh |
+| Modern footprints, roads, paths | OpenStreetMap (via the Overpass API) | Modern-era layout, road network. OSM has almost no build dates (1 of 3,138 buildings), so it can't supply the timeline |
 | Historic layouts | Sanborn fire insurance maps (Library of Congress), Miami's Walter Havighurst Special Collections, historic campus plans & aerial photos **[VERIFY availability]** | Era-accurate building placements |
-| Building dates | University archives / building histories | Construction & demolition timeline |
+| Building dates | Miami's Historical Timeline (miamioh.edu), Wikipedia, the Smith Library's *Walking Tour of Oxford's University Historic District*, Miami news releases; University Archives still to confirm (`docs/research/BUILDING_DATES.md`) | Construction & demolition timeline |
 | Waterways | USGS NHD | Creeks, Western lake |
 | Land cover (historic) | Period accounts, surveys | 1809 forest / farmland mix |
 
-All map data is baked into Godot resources by an offline **import pipeline** (see §30.5), not loaded live.
+All map data is baked into Godot resources by an offline **import pipeline** (see §30.5), not loaded live. Coordinates use a transverse-Mercator grid centred on campus, so grid north is true north at the centre.
 
 ### 5.1b Evolving map: 1809 → present → future **[LOCKED]**
 The map is the *same real place* across the whole game, but it **changes over time**:
 
-- **Land states** (per tile): `Old-growth forest → Cleared / Pasture → Farmland → Town-owned → University-owned → Developed → (Protected natural area)`.
+- **Land states** (per tile): `Old-growth forest → Cleared / Pasture → Farmland → Town-owned → University-owned → Developed → (Protected natural area)`, plus **Water** (creeks, ponds, Western's lake), which can't be built on.
+- **Ownership** (town / university / private) is kept as its **own layer** next to the physical land state, so a tile can be, for example, university-owned forest.
 - **1809 start:** mostly forest and scattered farms; the Mile Square town is platted but tiny; the university owns only its original land grant area **[VERIFY]**.
 - **Clearing land:** the player spends money + time (and some Sustainability/Beauty) to clear forest; clearing is slower in winter. Clearing can be reversed later by replanting (costly, slow — trees take in-game decades to mature).
 - **Acquiring land:** buy adjacent farmland or town parcels at era-appropriate prices; the town grows independently (driven by the university's size), so land near campus gets more expensive over time.
@@ -624,7 +626,7 @@ Each gives a large area Beauty + Heritage aura and a unique effect. Landmarks us
 ## 12. Placement, Zoning & Campus Planning
 
 ### 12.1 Build mode
-- Freeform building placement on grid; rotate 90°.
+- Freeform building placement on grid; rotate in 15° steps (§5.1).
 - Buildings need **path access** (entrance tile adjacent to a path).
 - **Construction time:** Small 3 months, Medium 9 months, Large 18–24 months in-game **[TWEAK]**; summer ×1.5 speed; winter ×0.7.
 - Construction zones cause noise (–happiness nearby), block paths (detours!), cranes visible.
@@ -640,9 +642,10 @@ No zoning brushes. The player places every building directly. Districts (§5.2) 
 - Historic buildings (pre-1920) can be **Renovated** (keeps heritage, modernizes) or **Demolished** (big Heritage penalty, protest event).
 
 ### 12.4 Pathfinding & the Slant Walk mechanic
-- Students walk shortest routes. If no path exists, they walk on grass → **desire paths** form automatically (grass wears to dirt over weeks).
+- Students **prefer paved paths** and cut across grass only when it saves enough time (a long diagonal across a quad is worth it; trimming a corner isn't).
+- Where a shortcut is used **regularly**, the grass is matted down → a **desire path** forms (grass wears to dirt over weeks). Occasional crossings leave no mark, and grass grows back when a shortcut stops being used. Desire paths exist but are the exception: most walking is on paved paths.
 - Player can **pave** a desire path → becomes a brick path; the first major diagonal desire path through the core quad can be designated **the Slant Walk** landmark (Heritage +, unique).
-- Walk time matters: 10-minute class change window **[TWEAK]**; students arriving late → learning –.
+- Walk time matters: 10-minute class change window **[TWEAK]**. Students **leave before the hour** based on their expected walk; a student is late if they arrive after the class-change window → learning –.
 
 ### 12.5 Adjacency bonuses/penalties **[TWEAK]**
 | Pair | Effect |
@@ -1151,7 +1154,7 @@ Priority tiers: Critical (red), Advisory (yellow), Flavor (grey). Advisors pop i
 
 ### 27.5 Controls
 - Mouse/keyboard (3D camera): pan (WASD / middle-drag), zoom (wheel), orbit (Q/E or right-drag), tilt (R/F), place (click), cancel (Esc).
-- Hotkeys: Space pause, 1–5 speed, B build, O overlays, F follow student, T time skip.
+- Hotkeys: Space pause, 1–4 speed (1×/2×/4×/8×), 5 skip to next event (§6.1), B build, O overlays, F follow student, T time skip.
 - Touch: pinch zoom, two-finger pan, long-press inspect.
 
 ---
@@ -1168,9 +1171,12 @@ Priority tiers: Critical (red), Advisory (yellow), Flavor (grey). Advisors pop i
 
 ### 28.1a Asset pipeline
 - Modeling in **Blender**; export glTF 2.0 (`.glb`) into Godot.
-- **Modular Georgian kit**: wall segments (brick), corner pieces, multi-pane windows with white trim, doors with fanlights, porticos & columns, slate roof pieces (hip, gable), dormers, **cupolas** (several sizes), clock faces, chimneys, cornices. Most historic buildings are assembled from this kit.
+- **Modular Georgian kit**: wall segments (brick), corner pieces, multi-pane windows with white trim, doors with fanlights, porticos & columns, slate roof pieces (hip, gable), dormers, **cupolas** (several sizes), clock faces, chimneys, cornices. Kit grid: **3 m bays** (one window each) and **3.5 m storeys** **[TWEAK]**.
+- **Procedural kit assembler:** buildings are assembled from the kit **by code**, not by hand. It places wall bays along each footprint edge (stretching or filling the remainder), corners at the vertices, and a hip roof on top. It is driven by a short per-building **recipe** in data (storeys, bay rhythm, portico, cupola, era). The assembler builds both the real historic buildings (from their footprints) and the player's buildings. Phase 1 handles rectangles and L-shapes; arbitrary real footprints come with the modern campus (Phase 2).
+- **Window panes and muntins are drawn by a shader** on the glass, not modelled, so a hall with ~90 window bays fits the triangle budget. Pane counts (6-over-6, 9-over-9 …) are shader parameters.
 - **Hero landmarks** (Upham arch, the Seal, King Library, Sesquicentennial Chapel, Kumler Chapel, Yager, Goggin, Formal Gardens, Slant Walk) are custom-modeled.
-- **Era variants**: the same building can have construction-stage, new, weathered, and renovated variants.
+- **Era variants**: the same building can look construction-stage, new, weathered, or renovated. New and weathered are **shader settings** (tint, grime); construction-stage uses scaffolding props and a height-clip shader. Separate renovated models are made only where a renovation really changed the shape.
+- Naming, pivots, budgets, LODs, materials and automatic checks: `docs/ART_PIPELINE.md`; numbers in `/data/art_pipeline.json`.
 - Target budgets: typical building 1–5k tris; hero landmark ≤15k; person figure ≤500 tris with 3–4 LODs; aggressive LOD + instancing.
 - Characters: simple low-poly figures with color variations (skin, hair, clothing: hoodies, winter coats, game-day red), a few shared animations (walk, idle, sit, carry backpack), era-appropriate clothing sets (1820s → 2020s).
 
@@ -1207,7 +1213,7 @@ Paper/parchment panels with red accents, serif headings (e.g., a Garamond-like),
 ## 30. Technical Architecture **[LOCKED: Godot 4, desktop first]**
 
 ### 30.1 Stack
-- **Engine:** Godot 4 (latest stable 4.x at project start **[VERIFY version]**), **.NET build**.
+- **Engine:** **Godot 4.7.2 .NET build**, with the C# projects targeting **.NET 10** (Godot's C# API targets .NET 8, whose support ends Nov 2026).
 - **Languages:**
   - **C#** for the simulation core (agents, economy, academics, admissions, pathfinding), for performance at 30k+ agents.
   - **GDScript** for UI, scene glue, tools, and quick iteration.
@@ -1234,17 +1240,17 @@ The whole population is simulated every tick; only a subset is drawn.
   | Admissions, budget, rankings | yearly |
 
 - **Two-level movement:**
-  - *Logical:* every agent is "in building X" or "walking from A to B, t% along the route." Cheap, and runs for everyone.
-  - *Visual:* only rendered agents get smooth 3D movement along paths.
-- **Pathfinding:** **flow fields** computed per destination building (shared by thousands of students) and recomputed only when paths or buildings change. Route lengths feed the walk-time / late-to-class system. Desire paths form from accumulated foot traffic on grass tiles.
+  - *Logical:* every agent is "in building X" or "walking from A to B". Each walk is settled **within the hourly tick**: the sim computes the departure and arrival minutes from the route length. Cheap, and runs for everyone.
+  - *Visual:* the rendered walkers are a **sample** of the current hour's real walks, drawn within a detail radius of the camera and moving at a **visual-only walking speed**. At 1× an in-game hour lasts 83 ms of real time, so true walking speed can't be shown.
+- **Pathfinding:** **flow fields** computed per destination building (shared by thousands of students) and recomputed only when paths or buildings change. Rebuilds run on a background thread and are swapped in when ready, so the game never freezes. Route lengths feed the walk-time / late-to-class system. Desire paths form from **recent, sustained** foot traffic on grass tiles, with regrowth (§12.4).
 - **Rendering subset:** ~1,500–3,000 agents drawn, chosen by camera frustum, zoom, and priority (followed students, event participants). Drawn with **MultiMeshInstance3D** + GPU vertex-animation textures, so thousands of figures cost a few draw calls. At far zoom, crowds become simple impostors.
 - **Determinism:** seeded RNG per system for reproducible saves and bug reports.
-- **Performance budget:** a full sim tick at 30k students + 2.5k faculty ≤ **8 ms** on min-spec CPU at 1×; higher speeds batch several ticks per frame **[TWEAK]**.
-- **Early technical spike (before content):** prove 30k agents + flow fields + MultiMesh rendering hit this budget.
+- **Performance budget:** a full sim tick at 30k students + 2.5k faculty ≤ **8 ms** on min-spec CPU at 1×, measured as the **95th percentile over 1,000 ticks** (average and max reported too). Higher speeds batch several ticks per frame **[TWEAK]**.
+- **Early technical spike (done in Phase 0):** 30k agents + flow fields + MultiMesh rendering. Result: **p95 3.5–4.0 ms**, measured on 4 slow efficiency cores as the min-spec stand-in (`docs/PHASE0_REPORT.md`). Re-check on the real map and on a real 4-core machine.
 
 ### 30.3 World & map
-- **Terrain:** heightmap from USGS elevation data, converted to chunked low-poly meshes (e.g., 64 × 64 m chunks with LODs). Custom mesh generator vs. a terrain plugin (e.g., Terrain3D) **[DECIDE after spike]**.
-- **Tile data layer:** a 2D grid (~400 × 400) storing land state, ownership, zoning, path type, foot traffic, utility coverage, heritage value, snow depth.
+- **Terrain:** heightmap from USGS elevation data, converted to chunked low-poly meshes by a **custom mesh generator** (decided after Spike B; Terrain3D was trialled, see `docs/TERRAIN_COMPARISON.md`). **400 × 400 m chunks (40 × 40 tiles) with 3 distance LODs**; one flat-shaded quad per tile. Changed land rebuilds only the affected chunks.
+- **Tile data layer:** a 2D grid (~400 × 400) storing land state, ownership, path type, foot traffic, utility coverage, heritage value, snow depth.
 - **Era system:** a timeline resource lists every historic building (footprint, real site, build/demolish dates, model variants) plus town-growth rules; the map for any year is derived from it + player actions.
 - **Buildings:** Godot scenes instanced from data. Interiors are simulated but not rendered (click → info panel).
 - **Nature:** trees via MultiMesh with seasonal variants; foliage shader for fall color and snow.
@@ -1255,7 +1261,12 @@ All balance and content lives in data files (JSON or Godot `.tres` resources), s
 /data/buildings/        one file per building (stats, era, style, model refs)
 /data/landmarks/
 /data/eras.json         unlock tables, prices, road types, clothing sets by era
-/data/timeline.json     real historic building dates & sites
+/data/timeline.json     real historic building dates & sites (with sources, confidence, verified flags)
+/data/schedules.json    daily routines, meals, class slots, free-time activities
+/data/rendering.json    presentation settings: colours (palette refs), crowd, terrain, seasons, sun, camera
+/data/art_pipeline.json art rules: kit grid, triangle budgets, LOD distances, special materials
+/data/map/              map pipeline config, land-state rules, land-history rules, generated layers
+/data/spikes/           test setups for technical spikes (not game content)
 /data/departments.json
 /data/research.json     fields, clusters, grant types
 /data/policies.json
@@ -1267,10 +1278,10 @@ All balance and content lives in data files (JSON or Godot `.tres` resources), s
 ```
 
 ### 30.5 Map import pipeline (offline tools)
-1. Download DEM tiles → crop to map extent → resample → export a 16-bit heightmap.
-2. Pull OpenStreetMap footprints, roads, and paths → convert to grid coordinates.
+1. Download USGS 3DEP 1 m lidar DEM tiles → reproject to the campus-centred transverse-Mercator grid → crop to the map extent → resample to 5 m → export a 16-bit heightmap.
+2. Pull OpenStreetMap footprints, land use, water, roads and paths (Overpass API) → rasterize to the tile grid, and keep the vector outlines for building footprints.
 3. Hand-trace historic maps (Sanborn, archival plans) in QGIS → export per-era layers.
-4. A Python script / Godot editor plugin bakes everything into Godot resources.
+4. A Python script / Godot editor plugin bakes everything into Godot resources. (Steps 1–2 and 4 are built: `tools/map_pipeline/`.)
 
 ### 30.6 Project structure
 ```
@@ -1409,15 +1420,16 @@ The game uses **real Miami University names, logos, marks, building names, and c
 
 ## 37. Scope & Roadmap
 
-### Phase 0 — Foundations (2–3 weeks)
-- Godot 4 .NET project, repo, Git LFS, folder structure, data schema.
-- **Spike A — Population:** 30k students + 2.5k faculty on schedules, flow-field pathing, MultiMesh rendering of a subset. Must meet the §30.2 budget.
-- **Spike B — Map:** real Oxford heightmap in low-poly, build-grid overlay, land-state layer, timeline slider 1809 → 2026 showing footprints appear.
-- **Art spike:** Blender modular Georgian kit + 3–5 buildings (a generic hall, Elliott, Upham with its arch, King Library).
-- Send the licensing and Myaamia Center outreach emails.
+### Phase 0 — Foundations (2–3 weeks) — **done** (`docs/PHASE0_REPORT.md`)
+- Godot 4 .NET project, repo, Git LFS, folder structure, data schema. ✔
+- **Spike A — Population:** 30k students + 2.5k faculty on schedules, flow-field pathing, MultiMesh rendering of a subset. Must meet the §30.2 budget. ✔ Passed (p95 3.5–4.0 ms).
+- **Spike B — Map:** real Oxford heightmap in low-poly, build-grid overlay, land-state layer, timeline slider 1809 → 2026 showing footprints appear. ✔
+- **Art:** done as **pipeline prep** (Blender → glTF → Godot workflow, rules, automatic checks, one placeholder kit piece; `docs/ART_PIPELINE.md`). The modular Georgian kit and the first buildings (a generic hall, Elliott) **moved to Phase 1**; Upham and King Library follow as hero landmarks.
+- Licensing and Myaamia Center outreach emails: **drafted** (`docs/outreach/`); sending is up to the author.
 
-### Phase 1 — Vertical slice: Campaign Chapter 1, "The Hill" (4–6 weeks)
-- 1809 map; land clearing and acquisition; first buildings; paths and desire paths.
+### Phase 1 — Vertical slice: Campaign Chapter 1, "The Hill" (4–6 weeks; realistically ~6–9)
+Checkpoints and proposed cuts: `docs/PHASE0_REPORT.md` §5 (1a–1k).
+- Map as of 1824 (derived from the 1809 start state); land clearing and acquisition; first buildings via the kit assembler; paths and desire paths.
 - Calendar, budget, tiny enrollment (dozens → ~250 students), needs and happiness, a handful of faculty (teaching + early scholarship).
 - 10–15 era-appropriate events; codex entries; save/load; time-lapse.
 
@@ -1439,10 +1451,10 @@ The game uses **real Miami University names, logos, marks, building names, and c
 
 ### Resolved
 Everything in the **Locked Decisions** table at the top (items 1–21).
+- **Terrain approach** (v0.4): **custom mesh generator**, decided after Spike B (§30.3, `docs/TERRAIN_COMPARISON.md`).
 
 ### Still open
-1. **Terrain approach:** custom mesh generator vs. a terrain plugin (e.g., Terrain3D); decide after Spike B. (§30.3)
-2. **Anything Miami-specific** to add (favorite spots, traditions, Uptown places, inside jokes)? Open any time.
+1. **Anything Miami-specific** to add (favorite spots, traditions, Uptown places, inside jokes)? Open any time.
 
 ---
-*End of v0.3. Next step: Phase 0: set up the Godot project and run the population and map spikes.*
+*End of v0.4. Next step: Phase 1, checkpoint 1a (the simulation on the real map), per `docs/PHASE0_REPORT.md`.*

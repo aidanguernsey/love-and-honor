@@ -23,7 +23,9 @@ Step 4 done (prep only, no final art): `docs/ART_PIPELINE.md`, rules in `data/ar
 `tools/blender/`, post-import LOD script, runtime palette materials, model checks in the validator, one placeholder kit
 piece (`kit_georgian_wall_window_3m`) imported and shown in `scenes/spikes/art_import_test.tscn`.
 Step 5 done: outreach drafts in `docs/outreach/` (trademark/licensing, Myaamia Center + summary attachment, Uptown
-courtesy note, README with a send log). **Nothing sent.** Next: **Step 6** (Phase 0 report).
+courtesy note, README with a send log). **Nothing sent.**
+Step 6 done: `docs/PHASE0_REPORT.md` (benchmarks, terrain, risks, Phase 1 breakdown 1a–1k, 16 suggested design-doc
+updates U1–U16 awaiting approval). **Phase 0 complete** pending the user's approvals; Phase 1 starts only on go-ahead.
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The

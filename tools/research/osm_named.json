@@ -1,0 +1,2552 @@
+[
+{
+"name": "Millett Assembly Hall",
+"building": "yes",
+"osm_id": "way/83701067",
+"tile": [
+193,
+105
+],
+"in_university": true
+},
+{
+"name": "Walter L. Gross Center",
+"building": "university",
+"osm_id": "way/83701117",
+"tile": [
+206,
+101
+],
+"in_university": true
+},
+{
+"name": "McKie Field Building",
+"building": "grandstand",
+"osm_id": "way/83701375",
+"tile": [
+206,
+154
+],
+"in_university": true
+},
+{
+"name": "Harris Hall",
+"building": "yes",
+"osm_id": "way/96007228",
+"tile": [
+192,
+274
+],
+"in_university": true
+},
+{
+"name": "Stanton Hall",
+"building": "dormitory",
+"osm_id": "way/96010539",
+"tile": [
+200,
+274
+],
+"in_university": true
+},
+{
+"name": "Anderson Hall",
+"building": "dormitory",
+"osm_id": "way/97632399",
+"tile": [
+184,
+274
+],
+"in_university": true
+},
+{
+"name": "Porter Hall",
+"building": "dormitory",
+"osm_id": "way/97866617",
+"tile": [
+184,
+261
+],
+"in_university": true
+},
+{
+"name": "Dodds Hall",
+"building": "dormitory",
+"osm_id": "way/97867434",
+"tile": [
+200,
+262
+],
+"in_university": true
+},
+{
+"name": "Ace Hardware",
+"building": "yes",
+"osm_id": "way/107937436",
+"tile": [
+94,
+220
+],
+"in_university": false
+},
+{
+"name": "Kroger",
+"building": "retail",
+"osm_id": "way/107937465",
+"tile": [
+49,
+219
+],
+"in_university": false
+},
+{
+"name": "Demske Culinary Support Center",
+"building": "university",
+"osm_id": "way/107937467",
+"tile": [
+44,
+231
+],
+"in_university": false
+},
+{
+"name": "LaRosa's Pizzeria",
+"building": "commercial",
+"osm_id": "way/107937481",
+"tile": [
+62,
+188
+],
+"in_university": false
+},
+{
+"name": "First Merchants Bank",
+"building": "yes",
+"osm_id": "way/107937489",
+"tile": [
+101,
+230
+],
+"in_university": false
+},
+{
+"name": "The Elms Hotel",
+"building": "yes",
+"osm_id": "way/107937503",
+"tile": [
+128,
+188
+],
+"in_university": false
+},
+{
+"name": "Walgreens",
+"building": "retail",
+"osm_id": "way/107937508",
+"tile": [
+61,
+207
+],
+"in_university": false
+},
+{
+"name": "Chestnut Field House",
+"building": "yes",
+"osm_id": "way/107937750",
+"tile": [
+107,
+309
+],
+"in_university": false
+},
+{
+"name": "Talawanda School Facilities Maintenance",
+"building": "yes",
+"osm_id": "way/107937753",
+"tile": [
+122,
+307
+],
+"in_university": false
+},
+{
+"name": "Bonham House",
+"building": "university",
+"osm_id": "way/182453423",
+"tile": [
+176,
+219
+],
+"in_university": true
+},
+{
+"name": "Williams Hall",
+"building": "university",
+"osm_id": "way/182453425",
+"tile": [
+174,
+225
+],
+"in_university": true
+},
+{
+"name": "Hanna House",
+"building": "university",
+"osm_id": "way/182453429",
+"tile": [
+162,
+219
+],
+"in_university": true
+},
+{
+"name": "Phillips Hall",
+"building": "university",
+"osm_id": "way/182453432",
+"tile": [
+171,
+238
+],
+"in_university": true
+},
+{
+"name": "Warfield Hall",
+"building": "university",
+"osm_id": "way/182453440",
+"tile": [
+187,
+220
+],
+"in_university": true
+},
+{
+"name": "MacCracken Hall",
+"building": "dormitory",
+"osm_id": "way/182453446",
+"tile": [
+193,
+251
+],
+"in_university": true
+},
+{
+"name": "South Chiller Plant",
+"building": "university",
+"osm_id": "way/182453450",
+"tile": [
+194,
+282
+],
+"in_university": true
+},
+{
+"name": "Wells Hall",
+"building": "university",
+"osm_id": "way/182453451",
+"tile": [
+168,
+221
+],
+"in_university": true
+},
+{
+"name": "Hamilton Hall",
+"building": "dormitory",
+"osm_id": "way/182453461",
+"tile": [
+184,
+233
+],
+"in_university": true
+},
+{
+"name": "Campus Avenue Garage",
+"building": "garage",
+"osm_id": "way/182453463",
+"tile": [
+156,
+255
+],
+"in_university": true
+},
+{
+"name": "McGuffey House and Museum",
+"building": "university",
+"osm_id": "way/182453465",
+"tile": [
+181,
+219
+],
+"in_university": true
+},
+{
+"name": "Oxford Bible Fellowship",
+"building": "church",
+"osm_id": "way/182453472",
+"tile": [
+201,
+283
+],
+"in_university": true
+},
+{
+"name": "Nellie Craig Walker Hall",
+"building": "university",
+"osm_id": "way/182453473",
+"tile": [
+156,
+224
+],
+"in_university": true
+},
+{
+"name": "Recreational Sports Center",
+"building": "university",
+"osm_id": "way/182453474",
+"tile": [
+164,
+267
+],
+"in_university": true
+},
+{
+"name": "Goggin Ice Arena",
+"building": "university",
+"osm_id": "way/182453477",
+"tile": [
+171,
+254
+],
+"in_university": true
+},
+{
+"name": "Minnich Hall",
+"building": "dormitory",
+"osm_id": "way/182453481",
+"tile": [
+200,
+234
+],
+"in_university": true
+},
+{
+"name": "Sesquicentennial Chapel",
+"building": "church",
+"osm_id": "way/182453483",
+"tile": [
+204,
+220
+],
+"in_university": true
+},
+{
+"name": "Joyner House",
+"building": "university",
+"osm_id": "way/182453488",
+"tile": [
+171,
+218
+],
+"in_university": true
+},
+{
+"name": "MacMillan Hall",
+"building": "university",
+"osm_id": "way/182453492",
+"tile": [
+198,
+221
+],
+"in_university": true
+},
+{
+"name": "The Red Ox",
+"building": "yes",
+"osm_id": "way/183537500",
+"tile": [
+133,
+293
+],
+"in_university": false
+},
+{
+"name": "SDS Pizza",
+"building": "yes",
+"osm_id": "way/183537509",
+"tile": [
+128,
+295
+],
+"in_university": false
+},
+{
+"name": "Nelson Morrow Building",
+"building": "yes",
+"osm_id": "way/183537510",
+"tile": [
+129,
+298
+],
+"in_university": false
+},
+{
+"name": "Suds City Laundromat",
+"building": "yes",
+"osm_id": "way/183537518",
+"tile": [
+135,
+295
+],
+"in_university": false
+},
+{
+"name": "McDonald's",
+"building": "yes",
+"osm_id": "way/183539986",
+"tile": [
+70,
+243
+],
+"in_university": false
+},
+{
+"name": "Talawanda Board of Education",
+"building": "yes",
+"osm_id": "way/183540000",
+"tile": [
+97,
+293
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542429",
+"tile": [
+60,
+265
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542430",
+"tile": [
+41,
+262
+],
+"in_university": false
+},
+{
+"name": "Monro Muffler Brake",
+"building": "commercial",
+"osm_id": "way/183542442",
+"tile": [
+48,
+187
+],
+"in_university": false
+},
+{
+"name": "Oxford Donut Shoppe",
+"building": "yes",
+"osm_id": "way/183542444",
+"tile": [
+60,
+201
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542449",
+"tile": [
+61,
+252
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542451",
+"tile": [
+60,
+256
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542452",
+"tile": [
+60,
+259
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542455",
+"tile": [
+48,
+264
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542459",
+"tile": [
+40,
+254
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542463",
+"tile": [
+46,
+256
+],
+"in_university": false
+},
+{
+"name": "Speedway",
+"building": "retail",
+"osm_id": "way/183542466",
+"tile": [
+61,
+218
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542468",
+"tile": [
+54,
+262
+],
+"in_university": false
+},
+{
+"name": "Speedway",
+"building": "roof",
+"osm_id": "way/183542470",
+"tile": [
+62,
+216
+],
+"in_university": false
+},
+{
+"name": "Longcamp Rodbro Insurance Agency",
+"building": "commercial",
+"osm_id": "way/183542472",
+"tile": [
+54,
+205
+],
+"in_university": false
+},
+{
+"name": "El Burrito Loco",
+"building": "yes",
+"osm_id": "way/183542473",
+"tile": [
+63,
+195
+],
+"in_university": false
+},
+{
+"name": "Family Vision Care",
+"building": "commercial",
+"osm_id": "way/183542474",
+"tile": [
+55,
+197
+],
+"in_university": false
+},
+{
+"name": "Arby's",
+"building": "commercial",
+"osm_id": "way/183542475",
+"tile": [
+49,
+183
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542476",
+"tile": [
+54,
+256
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542478",
+"tile": [
+40,
+246
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "yes",
+"osm_id": "way/183542481",
+"tile": [
+53,
+259
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542482",
+"tile": [
+62,
+246
+],
+"in_university": false
+},
+{
+"name": "Hornfeck Family Dentistry",
+"building": "yes",
+"osm_id": "way/183542488",
+"tile": [
+55,
+201
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542492",
+"tile": [
+53,
+246
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542493",
+"tile": [
+60,
+247
+],
+"in_university": false
+},
+{
+"name": "Kroger",
+"building": "roof",
+"osm_id": "way/183542496",
+"tile": [
+61,
+225
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542502",
+"tile": [
+56,
+247
+],
+"in_university": false
+},
+{
+"name": "Asia Market",
+"building": "yes",
+"osm_id": "way/183542507",
+"tile": [
+57,
+204
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "yes",
+"osm_id": "way/183542513",
+"tile": [
+55,
+258
+],
+"in_university": false
+},
+{
+"name": "Taco Bell",
+"building": "yes",
+"osm_id": "way/183542517",
+"tile": [
+49,
+190
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542519",
+"tile": [
+54,
+265
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542521",
+"tile": [
+48,
+245
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542522",
+"tile": [
+55,
+253
+],
+"in_university": false
+},
+{
+"name": "U.S. Bank",
+"building": "commercial",
+"osm_id": "way/183542525",
+"tile": [
+57,
+182
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "yes",
+"osm_id": "way/183542532",
+"tile": [
+44,
+253
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542541",
+"tile": [
+60,
+262
+],
+"in_university": false
+},
+{
+"name": "RDI",
+"building": "yes",
+"osm_id": "way/183542544",
+"tile": [
+62,
+196
+],
+"in_university": false
+},
+{
+"name": "Oxford West Apartments",
+"building": "apartments",
+"osm_id": "way/183542545",
+"tile": [
+47,
+251
+],
+"in_university": false
+},
+{
+"name": "Oxford Copy Shop",
+"building": "yes",
+"osm_id": "way/183544438",
+"tile": [
+94,
+226
+],
+"in_university": false
+},
+{
+"name": "Roberts Apartments",
+"building": "apartments",
+"osm_id": "way/183544445",
+"tile": [
+122,
+149
+],
+"in_university": false
+},
+{
+"name": "Hampton",
+"building": "yes",
+"osm_id": "way/183544451",
+"tile": [
+105,
+235
+],
+"in_university": false
+},
+{
+"name": "Best Western Sycamore Inn",
+"building": "yes",
+"osm_id": "way/183544452",
+"tile": [
+131,
+122
+],
+"in_university": false
+},
+{
+"name": "YumYum Restaurant",
+"building": "commercial",
+"osm_id": "way/183544454",
+"tile": [
+131,
+174
+],
+"in_university": false
+},
+{
+"name": "Oxford Presbyterian Church",
+"building": "church",
+"osm_id": "way/183544456",
+"tile": [
+129,
+165
+],
+"in_university": false
+},
+{
+"name": "Goodwill",
+"building": "yes",
+"osm_id": "way/183544471",
+"tile": [
+71,
+208
+],
+"in_university": false
+},
+{
+"name": "Roberts Apartments",
+"building": "apartments",
+"osm_id": "way/183544489",
+"tile": [
+116,
+152
+],
+"in_university": false
+},
+{
+"name": "Roberts Apartments",
+"building": "apartments",
+"osm_id": "way/183544501",
+"tile": [
+116,
+149
+],
+"in_university": false
+},
+{
+"name": "Oxford Community Arts Center",
+"building": "yes",
+"osm_id": "way/183546059",
+"tile": [
+94,
+186
+],
+"in_university": false
+},
+{
+"name": "First Pentecostal Bible Way Church",
+"building": "church",
+"osm_id": "way/183546083",
+"tile": [
+145,
+111
+],
+"in_university": false
+},
+{
+"name": "Lee and Rosemary Innovation College@Elm",
+"building": "university",
+"osm_id": "way/183546086",
+"tile": [
+79,
+187
+],
+"in_university": false
+},
+{
+"name": "Heritage Commons Center",
+"building": "university",
+"osm_id": "way/183697183",
+"tile": [
+163,
+284
+],
+"in_university": true
+},
+{
+"name": "Talawanda Hall",
+"building": "university",
+"osm_id": "way/183697188",
+"tile": [
+168,
+286
+],
+"in_university": true
+},
+{
+"name": "Logan Lodge",
+"building": "university",
+"osm_id": "way/183697192",
+"tile": [
+166,
+280
+],
+"in_university": true
+},
+{
+"name": "Reid Hall",
+"building": "university",
+"osm_id": "way/183697199",
+"tile": [
+174,
+287
+],
+"in_university": true
+},
+{
+"name": "Blanchard House",
+"building": "university",
+"osm_id": "way/183697200",
+"tile": [
+154,
+286
+],
+"in_university": true
+},
+{
+"name": "Pines Lodge",
+"building": "university",
+"osm_id": "way/183697202",
+"tile": [
+158,
+286
+],
+"in_university": true
+},
+{
+"name": "Fisher Hall",
+"building": "university",
+"osm_id": "way/183697214",
+"tile": [
+161,
+280
+],
+"in_university": true
+},
+{
+"name": "Emerson Hall",
+"building": "dormitory",
+"osm_id": "way/183697661",
+"tile": [
+215,
+277
+],
+"in_university": true
+},
+{
+"name": "Glos Center",
+"building": "university",
+"osm_id": "way/183697665",
+"tile": [
+219,
+286
+],
+"in_university": true
+},
+{
+"name": "Tappan Hall",
+"building": "dormitory",
+"osm_id": "way/183698661",
+"tile": [
+220,
+268
+],
+"in_university": true
+},
+{
+"name": "Morris Hall",
+"building": "dormitory",
+"osm_id": "way/183698672",
+"tile": [
+211,
+268
+],
+"in_university": true
+},
+{
+"name": "Presser Hall",
+"building": "university",
+"osm_id": "way/183700436",
+"tile": [
+235,
+255
+],
+"in_university": true
+},
+{
+"name": "Shriver Center",
+"building": "university",
+"osm_id": "way/183700437",
+"tile": [
+217,
+223
+],
+"in_university": true
+},
+{
+"name": "Stancote House",
+"building": "university",
+"osm_id": "way/183700438",
+"tile": [
+231,
+225
+],
+"in_university": true
+},
+{
+"name": "Hiestand Hall",
+"building": "university",
+"osm_id": "way/183700445",
+"tile": [
+211,
+234
+],
+"in_university": true
+},
+{
+"name": "Edgar Stillman-Kelley Studio",
+"building": "university",
+"osm_id": "way/183700448",
+"tile": [
+235,
+247
+],
+"in_university": true
+},
+{
+"name": "Langstroth Cottage",
+"building": "university",
+"osm_id": "way/183700449",
+"tile": [
+230,
+222
+],
+"in_university": true
+},
+{
+"name": "Patterson Place",
+"building": "university",
+"osm_id": "way/183700450",
+"tile": [
+237,
+237
+],
+"in_university": true
+},
+{
+"name": "Art Building",
+"building": "university",
+"osm_id": "way/183700455",
+"tile": [
+221,
+234
+],
+"in_university": true
+},
+{
+"name": "Center for the Performing Arts",
+"building": "university",
+"osm_id": "way/183700461",
+"tile": [
+216,
+242
+],
+"in_university": true
+},
+{
+"name": "Havighurst Hall",
+"building": "dormitory",
+"osm_id": "way/183701613",
+"tile": [
+255,
+238
+],
+"in_university": true
+},
+{
+"name": "Hoyt Hall",
+"building": "university",
+"osm_id": "way/183701616",
+"tile": [
+251,
+261
+],
+"in_university": true
+},
+{
+"name": "Child Development Center",
+"building": "university",
+"osm_id": "way/183702409",
+"tile": [
+268,
+235
+],
+"in_university": true
+},
+{
+"name": "Clawson Hall",
+"building": "dormitory",
+"osm_id": "way/183702411",
+"tile": [
+263,
+250
+],
+"in_university": true
+},
+{
+"name": "Bishop Hall",
+"building": "university",
+"osm_id": "way/183831888",
+"tile": [
+171,
+208
+],
+"in_university": true
+},
+{
+"name": "Kumler Chapel",
+"building": "church",
+"osm_id": "way/183831889",
+"tile": [
+263,
+272
+],
+"in_university": true
+},
+{
+"name": "Alumni Hall",
+"building": "university",
+"osm_id": "way/183831901",
+"tile": [
+177,
+209
+],
+"in_university": true
+},
+{
+"name": "King Library",
+"building": "university",
+"osm_id": "way/183831904",
+"tile": [
+163,
+199
+],
+"in_university": true
+},
+{
+"name": "McGuffey Hall",
+"building": "university",
+"osm_id": "way/183831905",
+"tile": [
+160,
+210
+],
+"in_university": true
+},
+{
+"name": "McKee Hall",
+"building": "dormitory",
+"osm_id": "way/183831907",
+"tile": [
+264,
+263
+],
+"in_university": true
+},
+{
+"name": "Steam Plant / Western Maintenance Building",
+"building": "university",
+"osm_id": "way/183831910",
+"tile": [
+277,
+287
+],
+"in_university": true
+},
+{
+"name": "Richard and Carole Cocks Art Museum",
+"building": "university",
+"osm_id": "way/183831911",
+"tile": [
+239,
+287
+],
+"in_university": true
+},
+{
+"name": "Irvin Hall",
+"building": "university",
+"osm_id": "way/183831914",
+"tile": [
+184,
+209
+],
+"in_university": true
+},
+{
+"name": "Boyd Hall",
+"building": "university",
+"osm_id": "way/183831918",
+"tile": [
+272,
+260
+],
+"in_university": true
+},
+{
+"name": "Sawyer Hall",
+"building": "university",
+"osm_id": "way/183831920",
+"tile": [
+279,
+284
+],
+"in_university": true
+},
+{
+"name": "Switch House 4",
+"building": "yes",
+"osm_id": "way/183831923",
+"tile": [
+271,
+291
+],
+"in_university": true
+},
+{
+"name": "Western Lodge",
+"building": "university",
+"osm_id": "way/183831925",
+"tile": [
+264,
+294
+],
+"in_university": true
+},
+{
+"name": "Hall Auditorium",
+"building": "university",
+"osm_id": "way/183831928",
+"tile": [
+159,
+197
+],
+"in_university": true
+},
+{
+"name": "Peabody Hall",
+"building": "university",
+"osm_id": "way/183831936",
+"tile": [
+269,
+283
+],
+"in_university": true
+},
+{
+"name": "Kreger Hall",
+"building": "university",
+"osm_id": "way/183832438",
+"tile": [
+193,
+209
+],
+"in_university": true
+},
+{
+"name": "Shideler Hall",
+"building": "university",
+"osm_id": "way/183833250",
+"tile": [
+221,
+211
+],
+"in_university": true
+},
+{
+"name": "John W. Brown Equestrian Center",
+"building": "stable",
+"osm_id": "way/184388039",
+"tile": [
+282,
+200
+],
+"in_university": true
+},
+{
+"name": "Satellite Antenna Farm",
+"building": "university",
+"osm_id": "way/184388048",
+"tile": [
+319,
+221
+],
+"in_university": true
+},
+{
+"name": "Miami University Police Services Center",
+"building": "yes",
+"osm_id": "way/184388051",
+"tile": [
+310,
+215
+],
+"in_university": true
+},
+{
+"name": "City of Oxford Water Treatment Plant",
+"building": "yes",
+"osm_id": "way/184388075",
+"tile": [
+328,
+218
+],
+"in_university": true
+},
+{
+"name": "Collins Hall",
+"building": "dormitory",
+"osm_id": "way/184389080",
+"tile": [
+257,
+167
+],
+"in_university": true
+},
+{
+"name": "McBride Hall",
+"building": "dormitory",
+"osm_id": "way/184389085",
+"tile": [
+257,
+178
+],
+"in_university": true
+},
+{
+"name": "Cole Service Building",
+"building": "university",
+"osm_id": "way/184389094",
+"tile": [
+258,
+204
+],
+"in_university": true
+},
+{
+"name": "Dennison Hall",
+"building": "dormitory",
+"osm_id": "way/184389101",
+"tile": [
+267,
+173
+],
+"in_university": true
+},
+{
+"name": "East End",
+"building": "university",
+"osm_id": "way/184389104",
+"tile": [
+268,
+183
+],
+"in_university": true
+},
+{
+"name": "Symmes Hall",
+"building": "dormitory",
+"osm_id": "way/184390037",
+"tile": [
+238,
+163
+],
+"in_university": true
+},
+{
+"name": "Farmer School of Business",
+"building": "university",
+"osm_id": "way/184390046",
+"tile": [
+235,
+173
+],
+"in_university": true
+},
+{
+"name": "Dorsey Hall",
+"building": "dormitory",
+"osm_id": "way/184390054",
+"tile": [
+245,
+178
+],
+"in_university": true
+},
+{
+"name": "The Marcum Hotel & Conference Center",
+"building": "yes",
+"osm_id": "way/184390072",
+"tile": [
+252,
+151
+],
+"in_university": true
+},
+{
+"name": "Upham Hall",
+"building": "university",
+"osm_id": "way/184390509",
+"tile": [
+202,
+200
+],
+"in_university": true
+},
+{
+"name": "Hughes Laboratories",
+"building": "university",
+"osm_id": "way/184390716",
+"tile": [
+217,
+189
+],
+"in_university": true
+},
+{
+"name": "Laws Hall",
+"building": "university",
+"osm_id": "way/184390806",
+"tile": [
+205,
+189
+],
+"in_university": true
+},
+{
+"name": "Stoddard Hall",
+"building": "dormitory",
+"osm_id": "way/184391388",
+"tile": [
+187,
+202
+],
+"in_university": true
+},
+{
+"name": "Elliott Hall",
+"building": "dormitory",
+"osm_id": "way/184391390",
+"tile": [
+187,
+196
+],
+"in_university": true
+},
+{
+"name": "Roudebush Hall",
+"building": "university",
+"osm_id": "way/184391391",
+"tile": [
+193,
+192
+],
+"in_university": true
+},
+{
+"name": "Ogden Hall",
+"building": "university",
+"osm_id": "way/184391395",
+"tile": [
+182,
+188
+],
+"in_university": true
+},
+{
+"name": "Harrison Hall",
+"building": "university",
+"osm_id": "way/184391396",
+"tile": [
+177,
+196
+],
+"in_university": true
+},
+{
+"name": "Sleep Inn",
+"building": "yes",
+"osm_id": "way/184519003",
+"tile": [
+9,
+90
+],
+"in_university": false
+},
+{
+"name": "Oxford Wash",
+"building": "yes",
+"osm_id": "way/184519010",
+"tile": [
+35,
+143
+],
+"in_university": false
+},
+{
+"name": "Miami University Community Federal Credit Union",
+"building": "yes",
+"osm_id": "way/184519012",
+"tile": [
+23,
+117
+],
+"in_university": false
+},
+{
+"name": "Wendy's",
+"building": "yes",
+"osm_id": "way/184519112",
+"tile": [
+22,
+114
+],
+"in_university": false
+},
+{
+"name": "Psychology Building",
+"building": "university",
+"osm_id": "way/184553436",
+"tile": [
+220,
+165
+],
+"in_university": true
+},
+{
+"name": "Delta Sigma Phi",
+"building": "yes",
+"osm_id": "way/184554934",
+"tile": [
+188,
+150
+],
+"in_university": false
+},
+{
+"name": "Lambda Chi Alpha",
+"building": "yes",
+"osm_id": "way/184554939",
+"tile": [
+188,
+143
+],
+"in_university": false
+},
+{
+"name": "Martin Dining Hall",
+"building": "university",
+"osm_id": "way/184557874",
+"tile": [
+204,
+127
+],
+"in_university": true
+},
+{
+"name": "Brandon Hall",
+"building": "university",
+"osm_id": "way/184557882",
+"tile": [
+198,
+133
+],
+"in_university": true
+},
+{
+"name": "Hepburn Hall",
+"building": "dormitory",
+"osm_id": "way/184557900",
+"tile": [
+205,
+137
+],
+"in_university": true
+},
+{
+"name": "Hahne Hall",
+"building": "dormitory",
+"osm_id": "way/184557935",
+"tile": [
+213,
+127
+],
+"in_university": true
+},
+{
+"name": "Flower Hall",
+"building": "dormitory",
+"osm_id": "way/184557938",
+"tile": [
+209,
+119
+],
+"in_university": true
+},
+{
+"name": "McFarland Hall",
+"building": "dormitory",
+"osm_id": "way/184557943",
+"tile": [
+198,
+141
+],
+"in_university": true
+},
+{
+"name": "North Chiller Plant",
+"building": "university",
+"osm_id": "way/184557950",
+"tile": [
+197,
+148
+],
+"in_university": true
+},
+{
+"name": "Recycling Center",
+"building": "yes",
+"osm_id": "way/209725786",
+"tile": [
+391,
+194
+],
+"in_university": false
+},
+{
+"name": "Marathon",
+"building": "roof",
+"osm_id": "way/230556932",
+"tile": [
+69,
+216
+],
+"in_university": false
+},
+{
+"name": "Climer Guest Lodge",
+"building": "university",
+"osm_id": "way/323662173",
+"tile": [
+226,
+298
+],
+"in_university": true
+},
+{
+"name": "Murstein Alumni Center",
+"building": "university",
+"osm_id": "way/323662309",
+"tile": [
+223,
+299
+],
+"in_university": true
+},
+{
+"name": "Advancement Services",
+"building": "university",
+"osm_id": "way/323663101",
+"tile": [
+215,
+305
+],
+"in_university": true
+},
+{
+"name": "Etheridge Hall",
+"building": "dormitory",
+"osm_id": "way/324580220",
+"tile": [
+215,
+259
+],
+"in_university": true
+},
+{
+"name": "Maplestreet Station",
+"building": "university",
+"osm_id": "way/325445277",
+"tile": [
+210,
+249
+],
+"in_university": true
+},
+{
+"name": "Young Hall",
+"building": "dormitory",
+"osm_id": "way/329308596",
+"tile": [
+247,
+223
+],
+"in_university": true
+},
+{
+"name": "Hillcrest Hall",
+"building": "dormitory",
+"osm_id": "way/329363461",
+"tile": [
+258,
+226
+],
+"in_university": true
+},
+{
+"name": "Hodge Hall",
+"building": "dormitory",
+"osm_id": "way/329363462",
+"tile": [
+246,
+233
+],
+"in_university": true
+},
+{
+"name": "Western Dining Commons",
+"building": "university",
+"osm_id": "way/329363463",
+"tile": [
+248,
+245
+],
+"in_university": true
+},
+{
+"name": "Geothermal Plant",
+"building": "yes",
+"osm_id": "way/330126862",
+"tile": [
+263,
+228
+],
+"in_university": true
+},
+{
+"name": "Dewitt Cabin",
+"building": "cabin",
+"osm_id": "way/331535382",
+"tile": [
+328,
+178
+],
+"in_university": false
+},
+{
+"name": "Paesano's Pasta House",
+"building": "yes",
+"osm_id": "way/332278304",
+"tile": [
+146,
+227
+],
+"in_university": false
+},
+{
+"name": "Spring Street Treats",
+"building": "yes",
+"osm_id": "way/334880846",
+"tile": [
+76,
+217
+],
+"in_university": false
+},
+{
+"name": "Black Covered Bridge",
+"building": "roof",
+"osm_id": "way/341012990",
+"tile": [
+190,
+30
+],
+"in_university": false
+},
+{
+"name": "Oxford Hookah Lounge",
+"building": "commercial",
+"osm_id": "way/341588493",
+"tile": [
+116,
+173
+],
+"in_university": false
+},
+{
+"name": "Left Field Tavern",
+"building": "yes",
+"osm_id": "way/341588497",
+"tile": [
+117,
+173
+],
+"in_university": false
+},
+{
+"name": "Butler County Court",
+"building": "yes",
+"osm_id": "way/341588498",
+"tile": [
+103,
+177
+],
+"in_university": false
+},
+{
+"name": "Brown Road Building",
+"building": "university",
+"osm_id": "way/396953890",
+"tile": [
+90,
+111
+],
+"in_university": false
+},
+{
+"name": "Lewis Place",
+"building": "university",
+"osm_id": "way/397312388",
+"tile": [
+173,
+177
+],
+"in_university": true
+},
+{
+"name": "Old Manse",
+"building": "university",
+"osm_id": "way/397312389",
+"tile": [
+185,
+177
+],
+"in_university": false
+},
+{
+"name": "Benton Hall",
+"building": "university",
+"osm_id": "way/397382395",
+"tile": [
+201,
+177
+],
+"in_university": true
+},
+{
+"name": "Garland Hall",
+"building": "university",
+"osm_id": "way/397382396",
+"tile": [
+207,
+177
+],
+"in_university": true
+},
+{
+"name": "Garden Commons",
+"building": "university",
+"osm_id": "way/397382670",
+"tile": [
+231,
+164
+],
+"in_university": true
+},
+{
+"name": "Yager Gatehouse A",
+"building": "university",
+"osm_id": "way/397382841",
+"tile": [
+217,
+97
+],
+"in_university": true
+},
+{
+"name": "Yager Gatehouse B",
+"building": "university",
+"osm_id": "way/397382842",
+"tile": [
+218,
+95
+],
+"in_university": true
+},
+{
+"name": "414 E. Chestnut",
+"building": "university",
+"osm_id": "way/397473655",
+"tile": [
+190,
+288
+],
+"in_university": true
+},
+{
+"name": "Cook Field Storage",
+"building": "university",
+"osm_id": "way/397477511",
+"tile": [
+239,
+206
+],
+"in_university": true
+},
+{
+"name": "Simpson-Shade Guest Hosue Annex",
+"building": "university",
+"osm_id": "way/397480825",
+"tile": [
+170,
+176
+],
+"in_university": true
+},
+{
+"name": "Oxford Music Academy",
+"building": "commercial",
+"osm_id": "way/455110741",
+"tile": [
+75,
+232
+],
+"in_university": false
+},
+{
+"name": "Oxford Lane Library",
+"building": "yes",
+"osm_id": "way/455110751",
+"tile": [
+75,
+237
+],
+"in_university": false
+},
+{
+"name": "Animal Care Clinic",
+"building": "commercial",
+"osm_id": "way/455130298",
+"tile": [
+56,
+193
+],
+"in_university": false
+},
+{
+"name": "Gloyeske Family Chiropractic",
+"building": "commercial",
+"osm_id": "way/455131499",
+"tile": [
+50,
+206
+],
+"in_university": false
+},
+{
+"name": "Oxford Pump House",
+"building": "yes",
+"osm_id": "way/529103783",
+"tile": [
+241,
+87
+],
+"in_university": false
+},
+{
+"name": "Morris House",
+"building": "house",
+"osm_id": "way/544898104",
+"tile": [
+182,
+173
+],
+"in_university": false
+},
+{
+"name": "Simpson Shade Guest House",
+"building": "house",
+"osm_id": "way/544898105",
+"tile": [
+169,
+178
+],
+"in_university": true
+},
+{
+"name": "Pearson Hall",
+"building": "university",
+"osm_id": "way/545759799",
+"tile": [
+220,
+174
+],
+"in_university": true
+},
+{
+"name": "Oxford Municipal Building",
+"building": "yes",
+"osm_id": "way/548194164",
+"tile": [
+141,
+184
+],
+"in_university": false
+},
+{
+"name": "Ramen Hachi",
+"building": "yes",
+"osm_id": "way/548227941",
+"tile": [
+117,
+171
+],
+"in_university": false
+},
+{
+"name": "Catholic Newman Center",
+"building": "yes",
+"osm_id": "way/548227961",
+"tile": [
+142,
+187
+],
+"in_university": false
+},
+{
+"name": "Robin Smith Electric",
+"building": "commercial",
+"osm_id": "way/552424898",
+"tile": [
+105,
+258
+],
+"in_university": false
+},
+{
+"name": "Holy Trinity Episcopal Church",
+"building": "yes",
+"osm_id": "way/555084592",
+"tile": [
+135,
+196
+],
+"in_university": false
+},
+{
+"name": "Saint Mary Catholic Church",
+"building": "church",
+"osm_id": "way/555084967",
+"tile": [
+144,
+184
+],
+"in_university": false
+},
+{
+"name": "Oxford United Methodist Church",
+"building": "church",
+"osm_id": "way/556606858",
+"tile": [
+136,
+171
+],
+"in_university": false
+},
+{
+"name": "Randy Gunlock Family Athletic Performance Center",
+"building": "university",
+"osm_id": "way/613437913",
+"tile": [
+204,
+67
+],
+"in_university": true
+},
+{
+"name": "Vineyard Christian Fellowship Church",
+"building": "church",
+"osm_id": "way/700468190",
+"tile": [
+115,
+188
+],
+"in_university": false
+},
+{
+"name": "Marcum Hall",
+"building": "dormitory",
+"osm_id": "way/704247753",
+"tile": [
+215,
+136
+],
+"in_university": true
+},
+{
+"name": "Withrow Hall",
+"building": "dormitory",
+"osm_id": "way/704247777",
+"tile": [
+197,
+158
+],
+"in_university": true
+},
+{
+"name": "Scott Hall",
+"building": "dormitory",
+"osm_id": "way/705886668",
+"tile": [
+200,
+248
+],
+"in_university": true
+},
+{
+"name": "Greater Oxford Community Foundation",
+"building": "yes",
+"osm_id": "way/709284564",
+"tile": [
+133,
+178
+],
+"in_university": false
+},
+{
+"name": "Brick Street",
+"building": "yes",
+"osm_id": "way/709284566",
+"tile": [
+136,
+177
+],
+"in_university": false
+},
+{
+"name": "UDF Fuel",
+"building": "yes",
+"osm_id": "way/710358701",
+"tile": [
+110,
+182
+],
+"in_university": false
+},
+{
+"name": "United Dairy Farmers",
+"building": "yes",
+"osm_id": "way/710358702",
+"tile": [
+108,
+183
+],
+"in_university": false
+},
+{
+"name": "Bethel African Methodist Episcopal Church",
+"building": "church",
+"osm_id": "way/710358703",
+"tile": [
+109,
+185
+],
+"in_university": false
+},
+{
+"name": "Phi Gamma Delta",
+"building": "yes",
+"osm_id": "way/710361885",
+"tile": [
+150,
+178
+],
+"in_university": false
+},
+{
+"name": "DuBois Book Store",
+"building": "yes",
+"osm_id": "way/710361886",
+"tile": [
+146,
+177
+],
+"in_university": false
+},
+{
+"name": "Park Place Real Estate",
+"building": "yes",
+"osm_id": "way/710361887",
+"tile": [
+145,
+177
+],
+"in_university": false
+},
+{
+"name": "Church Street Social",
+"building": "yes",
+"osm_id": "way/710361892",
+"tile": [
+143,
+171
+],
+"in_university": false
+},
+{
+"name": "Skippers",
+"building": "yes",
+"osm_id": "way/710361897",
+"tile": [
+148,
+183
+],
+"in_university": false
+},
+{
+"name": "Black Plastic Oxford",
+"building": "yes",
+"osm_id": "way/710361899",
+"tile": [
+137,
+185
+],
+"in_university": false
+},
+{
+"name": "Miami University And Community Federal Credit Union",
+"building": "yes",
+"osm_id": "way/722822726",
+"tile": [
+55,
+189
+],
+"in_university": false
+},
+{
+"name": "Armstrong Student Center",
+"building": "university",
+"osm_id": "way/724458869",
+"tile": [
+206,
+210
+],
+"in_university": true
+},
+{
+"name": "Mimian",
+"building": "yes",
+"osm_id": "way/772626824",
+"tile": [
+106,
+189
+],
+"in_university": false
+},
+{
+"name": "SnaZZy Boutique",
+"building": "retail",
+"osm_id": "way/866511018",
+"tile": [
+86,
+208
+],
+"in_university": false
+},
+{
+"name": "Clubhouse",
+"building": "yes",
+"osm_id": "way/866511038",
+"tile": [
+82,
+196
+],
+"in_university": false
+},
+{
+"name": "Kappa Sigma",
+"building": "yes",
+"osm_id": "way/866511241",
+"tile": [
+185,
+155
+],
+"in_university": false
+},
+{
+"name": "First Baptist Church",
+"building": "yes",
+"osm_id": "way/940056544",
+"tile": [
+132,
+143
+],
+"in_university": false
+},
+{
+"name": "Raw Water Production Well No. 2",
+"building": "service",
+"osm_id": "way/979671792",
+"tile": [
+339,
+219
+],
+"in_university": true
+},
+{
+"name": "Engineering Building",
+"building": "university",
+"osm_id": "way/985373576",
+"tile": [
+213,
+177
+],
+"in_university": true
+},
+{
+"name": "Comfort Inn",
+"building": "yes",
+"osm_id": "way/997975378",
+"tile": [
+43,
+131
+],
+"in_university": false
+},
+{
+"name": "You're Fired",
+"building": "yes",
+"osm_id": "way/1013037912",
+"tile": [
+110,
+177
+],
+"in_university": false
+},
+{
+"name": "The Rose Room Salon",
+"building": "yes",
+"osm_id": "way/1024685266",
+"tile": [
+96,
+229
+],
+"in_university": false
+},
+{
+"name": "The Birdhouse Antiques",
+"building": "yes",
+"osm_id": "way/1081003883",
+"tile": [
+106,
+177
+],
+"in_university": false
+},
+{
+"name": "Phan Shin",
+"building": "yes",
+"osm_id": "way/1081003884",
+"tile": [
+107,
+177
+],
+"in_university": false
+},
+{
+"name": "Faded Traditions",
+"building": "yes",
+"osm_id": "way/1081003886",
+"tile": [
+110,
+176
+],
+"in_university": false
+},
+{
+"name": "Brick House Cafe",
+"building": "yes",
+"osm_id": "way/1081007912",
+"tile": [
+119,
+170
+],
+"in_university": false
+},
+{
+"name": "O'Pub",
+"building": "yes",
+"osm_id": "way/1081007915",
+"tile": [
+117,
+176
+],
+"in_university": false
+},
+{
+"name": "Fridge & Pantry",
+"building": "yes",
+"osm_id": "way/1081035809",
+"tile": [
+131,
+172
+],
+"in_university": false
+},
+{
+"name": "Richard M. McVey Data Science Building",
+"building": "university",
+"osm_id": "way/1088928897",
+"tile": [
+196,
+169
+],
+"in_university": true
+},
+{
+"name": "Clinical Health Sciences and Wellness Building",
+"building": "university",
+"osm_id": "way/1088928898",
+"tile": [
+157,
+242
+],
+"in_university": true
+},
+{
+"name": "Mac & Joe's",
+"building": "yes",
+"osm_id": "way/1100799783",
+"tile": [
+131,
+185
+],
+"in_university": false
+},
+{
+"name": "OxVegas Chicken and apartments",
+"building": "commercial",
+"osm_id": "way/1304514942",
+"tile": [
+133,
+176
+],
+"in_university": false
+},
+{
+"name": "Bachelor Hall",
+"building": "university",
+"osm_id": "relation/2445913",
+"tile": [
+235,
+217
+],
+"in_university": true
+},
+{
+"name": "Richard Hall",
+"building": "dormitory",
+"osm_id": "relation/9817006",
+"tile": [
+184,
+248
+],
+"in_university": true
+},
+{
+"name": "Kramer Elementary School",
+"building": "school",
+"osm_id": "relation/11654283",
+"tile": [
+69,
+118
+],
+"in_university": false
+},
+{
+"name": "Stewart Square",
+"building": "commercial",
+"osm_id": "relation/14384070",
+"tile": [
+103,
+221
+],
+"in_university": false
+},
+{
+"name": "McGuffey Montessori School",
+"building": "school",
+"osm_id": "relation/17060850",
+"tile": [
+30,
+114
+],
+"in_university": false
+}
+]

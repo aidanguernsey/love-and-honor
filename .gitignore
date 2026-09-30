@@ -24,6 +24,7 @@ venv/
 # Map pipeline: raw downloads and intermediate files (large; regenerate with /tools)
 tools/_downloads/
 tools/_work/
+tools/research/_out/
 # Python virtual environment for the map pipeline
 tools/.venv/
 

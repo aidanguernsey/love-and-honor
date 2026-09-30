@@ -18,7 +18,10 @@ scratch project → recommend the custom generator (`docs/TERRAIN_COMPARISON.md`
 Building-dates research done: `data/timeline.json` has 177 Miami buildings/landmarks (current + past) with cited sources,
 confidence levels and OSM links; report in `docs/research/BUILDING_DATES.md`.
 Step 3c done: timeline 1809 → 2026 in the Spike B scene (land states + roads repaint per year, buildings shown/hidden
-by year in the shader, seasons, sun for Oxford). Screenshots `docs/images/timeline-*.png`. Next: **Step 4** (art pipeline prep).
+by year in the shader, seasons, sun for Oxford). Screenshots `docs/images/timeline-*.png`.
+Step 4 done (prep only, no final art): `docs/ART_PIPELINE.md`, rules in `data/art_pipeline.json`, Blender scripts in
+`tools/blender/`, post-import LOD script, runtime palette materials, model checks in the validator, one placeholder kit
+piece (`kit_georgian_wall_window_3m`) imported and shown in `scenes/spikes/art_import_test.tscn`. Next: **Step 5** (outreach drafts).
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The
@@ -46,6 +49,11 @@ by year in the shader, seasons, sun for Oxford). Screenshots `docs/images/timeli
 - Rendered walkers: cosmetic sample of the latest tick's real walks, limited to a detail radius around the
   look-at point (at low tilt the view reaches km away; far walkers are sub-pixel → impostors later, §30.2).
 - Instance colours need `VertexColorIsSrgb = true` on the material, or palette colours render washed out.
+- Art (Step 4, details in `docs/ART_PIPELINE.md` §10): a Georgian hall has ~90 window bays, so §28.1a's 1–5k tris
+  leaves ~40–55 tris/bay; geometry muntins make the example bay 182 tris (a hall ≈ 16k) → draw panes/muntins in a
+  shader. Real OSM footprints aren't on a 3 m grid → recommend a procedural kit assembler + per-building recipes
+  (hero landmarks hand-made). Era variants ×4 → mostly shader parameters. Rendered characters need vertex-animation
+  textures on a MultiMesh. Project still uses Forward+; nothing tested on the Mobile renderer yet.
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 
@@ -140,7 +148,7 @@ opened before it was set may not see it; use the full path then. Python: `C:\Use
 ```
 dotnet build LoveAndHonor.sln                               # everything
 dotnet test LoveAndHonor.sln                                # unit tests incl. data validation
-dotnet run --project tools/DataValidator                    # validate /data (schemas + cross-refs)
+dotnet run --project tools/DataValidator                    # validate /data (schemas + cross-refs) + assets/models
 "$GODOT" --headless --path . --build-solutions --quit       # Godot import + C# build (bash; PowerShell: & $env:GODOT ...)
 "$GODOT" --headless --path . -- --smoke-test                # boot scene prints "SMOKE ..." and quits
 "$GODOT" --path . -e                                        # open editor
@@ -198,6 +206,14 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   terrain shader samples it (vertex colours are white). Buildings: `BuildingMeshBuilder` (bridge) extrudes footprints,
   merged per chunk; `buildings.gdshader` collapses vertices outside UV2=(built, demolished). Sun: `SolarPosition`
   (NOAA), standard time only.
+- Art pipeline (`docs/ART_PIPELINE.md`; numbers in `data/art_pipeline.json`, typed as `ArtPipelineConfig`): Blender
+  sources in `art/blend/` (.gdignore), exported `.glb` only in `assets/models/<category folder>/` via
+  `tools/blender/lh_export.py export_glb` (never hand-export). Names `<kit|bldg|hero|char|prop|tree>_<name>[_<variant>]`,
+  LOD objects `_LOD0.._LOD3`, materials `pal_<branding colour>[_n]` or `mat_*`. `project.godot [importer_defaults]`
+  makes `scripts/import/lh_post_import.gd` the post-import script (sets visibility-range LODs + `lh_category`/`lh_lod`
+  meta). `PaletteMaterials` (bridge) swaps materials at runtime by name so colours follow branding.json.
+  `tools/DataValidator` also runs `ModelValidation` (GLB JSON chunk: names, folder, budgets, LOD ratios, materials,
+  scale, pivot) — DataValidator now references the sim library. Blender exe: `C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`.
 - Downloads: never put the user's email or other personal data in request headers/URLs (the pipeline's
   User-Agent is generic; optional `LH_PIPELINE_CONTACT` env var).
 - Tick determinism: work is split into fixed-size chunks (`performance.agent_chunk_size`), each agent touches

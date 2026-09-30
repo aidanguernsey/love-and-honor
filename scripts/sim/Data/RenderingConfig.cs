@@ -135,6 +135,8 @@ public sealed class Palette
         return ParseHex(values[index]);
     }
 
+    public bool Has(string key, int index) => _named.TryGetValue(key, out var values) && index >= 0 && index < values.Length;
+
     public static Rgb ParseHex(string hex)
     {
         int v = int.Parse(hex.AsSpan(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture);

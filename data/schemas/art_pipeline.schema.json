@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Art pipeline rules: kit grid, per-category triangle budgets and LODs, special materials (docs/ART_PIPELINE.md)",
+  "type": "object",
+  "required": ["kit_grid", "categories", "lod", "special_materials"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "positive": { "type": "number", "exclusiveMinimum": 0 },
+    "hex": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+    "category": {
+      "type": "object",
+      "required": ["folder", "max_tris", "lod_levels", "lod_distances_m", "variants", "allow_double_sided"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "folder": { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "Folder under assets/models/ (and art/blend/)" },
+        "max_tris": { "type": "integer", "minimum": 1, "description": "Triangle budget for LOD0" },
+        "lod_levels": {
+          "type": "array", "prefixItems": [{ "type": "integer", "minimum": 1 }, { "type": "integer", "minimum": 1, "maximum": 4 }],
+          "minItems": 2, "maxItems": 2, "description": "[min, max] number of LOD levels, LOD0 included"
+        },
+        "lod_distances_m": { "type": "array", "items": { "$ref": "#/$defs/positive" }, "description": "Camera distance where LOD n switches to LOD n+1" },
+        "variants": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9]+$" }, "description": "Allowed variant suffixes (last name token)" },
+        "allow_double_sided": { "type": "boolean", "description": "Double-sided materials (e.g. leaves). Off by default: they double the fill cost" }
+      }
+    },
+    "material": {
+      "type": "object",
+      "required": ["color", "roughness", "metallic", "emission_energy"],
+      "additionalProperties": false,
+      "properties": {
+        "color": { "$ref": "#/$defs/hex" },
+        "roughness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "metallic": { "type": "number", "minimum": 0, "maximum": 1 },
+        "emission_energy": { "type": "number", "minimum": 0 }
+      }
+    }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "kit_grid": {
+      "type": "object",
+      "required": ["module_width_m", "storey_height_m", "wall_thickness_m", "snap_m"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "module_width_m": { "$ref": "#/$defs/positive" },
+        "storey_height_m": { "$ref": "#/$defs/positive" },
+        "wall_thickness_m": { "$ref": "#/$defs/positive" },
+        "snap_m": { "$ref": "#/$defs/positive" }
+      }
+    },
+    "categories": {
+      "type": "object",
+      "propertyNames": { "pattern": "^(_.*|[a-z]+)$" },
+      "additionalProperties": { "$ref": "#/$defs/category" },
+      "patternProperties": { "^_": {} },
+      "minProperties": 1
+    },
+    "lod": {
+      "type": "object",
+      "required": ["max_ratio_to_lod0", "range_margin_m"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "max_ratio_to_lod0": { "type": "array", "items": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }, "minItems": 4, "maxItems": 4 },
+        "range_margin_m": { "type": "number", "minimum": 0 }
+      }
+    },
+    "special_materials": {
+      "type": "object",
+      "propertyNames": { "pattern": "^(_.*|mat_[a-z0-9_]+)$" },
+      "additionalProperties": { "$ref": "#/$defs/material" },
+      "patternProperties": { "^_": {} }
+    }
+  }
+}

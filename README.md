@@ -31,7 +31,8 @@ dotnet build LoveAndHonor.sln
 dotnet test LoveAndHonor.sln
 ```
 
-Validate every file in `data/` against its schema, plus cross-file references:
+Validate every file in `data/` against its schema, plus cross-file references, then check every model in
+`assets/models/` (names, triangle budgets, LODs, materials — see `docs/ART_PIPELINE.md`):
 
 ```bash
 dotnet run --project tools/DataValidator
@@ -82,6 +83,21 @@ play/pause, [ / ] step a year), plus season and time-of-day sliders. G toggles t
 Land use before today is a placeholder model (`data/map/land_history.json`); building dates come from
 `data/timeline.json` (unverified, see `docs/research/BUILDING_DATES.md`). Terrain approach: `docs/TERRAIN_COMPARISON.md`.
 
+Step 4 art import check (a placeholder kit piece tiled into a facade, its LODs side by side): click
+**Step 4 — Art import check** on the boot screen, or run it directly:
+
+```powershell
+& $env:GODOT --path . res://scenes/spikes/art_import_test.tscn
+```
+
+Regenerate the placeholder kit piece with Blender (writes the `.glb` and its `.blend` source):
+
+```powershell
+& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --factory-startup --python tools\blender\make_example_kit.py
+```
+
+The whole art workflow (naming, budgets, LODs, materials, checks) is in [`docs/ART_PIPELINE.md`](docs/ART_PIPELINE.md).
+
 Headless smoke test (build C#, boot the main scene, print what it loaded, quit):
 
 ```powershell
@@ -105,13 +121,15 @@ tools\.venv\Scripts\python tools\map_pipeline\build_map.py
 
 ```
 addons/            Godot editor plugins (map importer, data validators)
+art/blend/         Blender sources (.blend, Git LFS) — Godot ignores this folder
 assets/            models (.glb), audio, textures — binary files go through Git LFS
 data/              all content & balance data as JSON, each with a "$schema" in data/schemas/
 scenes/            Godot scenes
 scripts/sim/       C# simulation core — plain .NET class library, no Godot dependency
 scripts/bridge/    thin C# Godot nodes that expose the sim to scenes/GDScript
 scripts/ui/        GDScript UI and scene glue
-tools/             offline tools: DataValidator (C#), map pipeline (Python)
+scripts/import/    Godot post-import script for models (LOD setup)
+tools/             offline tools: DataValidator (C#), map pipeline (Python), Blender scripts
 tests/             C# unit tests (+ headless performance benchmarks from Spike A)
 docs/              pipeline docs, outreach drafts, phase reports
 ```

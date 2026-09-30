@@ -11,4 +11,8 @@
     <PackageReference Include="JsonSchema.Net" Version="9.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\scripts\sim\LoveAndHonor.Sim.csproj" />
+  </ItemGroup>
+
 </Project>

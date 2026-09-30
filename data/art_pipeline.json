@@ -1,0 +1,78 @@
+{
+  "$schema": "./schemas/art_pipeline.schema.json",
+  "_comment": "Art pipeline rules (docs/ART_PIPELINE.md, §28.1a). Read by the Blender scripts (tools/blender/), the Godot post-import script (scripts/import/lh_post_import.gd), the runtime material hookup (PaletteMaterials) and the model checks in tools/DataValidator. Budgets from §28.1a where the design doc gives them; every other number is a [TWEAK] starting guess.",
+  "kit_grid": {
+    "_comment": "Modular Georgian kit (§28.1a/§28.3). One wall module = one window bay. storey_height_m matches rendering.json extrusion.level_height_m.",
+    "module_width_m": 3.0,
+    "storey_height_m": 3.5,
+    "wall_thickness_m": 0.4,
+    "snap_m": 0.5
+  },
+  "categories": {
+    "kit": {
+      "_comment": "Ceiling for one kit piece (a large cupola is the biggest). Per-piece targets are in docs/ART_PIPELINE.md; what §28.1a budgets is the assembled building (bldg).",
+      "folder": "kit",
+      "max_tris": 800,
+      "lod_levels": [1, 3],
+      "lod_distances_m": [60, 180],
+      "variants": [],
+      "allow_double_sided": false
+    },
+    "bldg": {
+      "_comment": "Typical building 1-5k tris (§28.1a). Era variants per §28.1a.",
+      "folder": "buildings",
+      "max_tris": 5000,
+      "lod_levels": [1, 4],
+      "lod_distances_m": [150, 400, 900],
+      "variants": ["construction", "new", "weathered", "renovated"],
+      "allow_double_sided": false
+    },
+    "hero": {
+      "_comment": "Hero landmark <= 15k tris (§28.1a): Upham arch, the Seal, King Library, Sesquicentennial Chapel, Kumler Chapel, Yager, Goggin, Formal Gardens, Slant Walk.",
+      "folder": "landmarks",
+      "max_tris": 15000,
+      "lod_levels": [1, 4],
+      "lod_distances_m": [200, 500, 1100],
+      "variants": ["construction", "new", "weathered", "renovated"],
+      "allow_double_sided": false
+    },
+    "char": {
+      "_comment": "Person figure <= 500 tris with 3-4 LODs (§28.1a). Era clothing sets are separate files (char_student_1960s ...).",
+      "folder": "characters",
+      "max_tris": 500,
+      "lod_levels": [3, 4],
+      "lod_distances_m": [30, 80, 200],
+      "variants": [],
+      "allow_double_sided": false
+    },
+    "prop": {
+      "_comment": "Lamp posts, benches, bike racks, signs. Instanced in large numbers.",
+      "folder": "props",
+      "max_tris": 300,
+      "lod_levels": [1, 3],
+      "lod_distances_m": [50, 150],
+      "variants": [],
+      "allow_double_sided": false
+    },
+    "tree": {
+      "_comment": "Trees swap foliage by season (§28.1); instanced in large numbers.",
+      "folder": "trees",
+      "max_tris": 600,
+      "lod_levels": [1, 4],
+      "lod_distances_m": [80, 250, 600],
+      "variants": ["spring", "summer", "fall", "winter"],
+      "allow_double_sided": true
+    }
+  },
+  "lod": {
+    "_comment": "LOD n may have at most max_ratio_to_lod0[n] x the LOD0 triangle count. range_margin_m = hysteresis so LODs don't flicker at the switch distance.",
+    "max_ratio_to_lod0": [1.0, 0.5, 0.25, 0.12],
+    "range_margin_m": 2.0
+  },
+  "_special_materials_comment": "Materials that aren't brand colours. Everything else must use a pal_<branding colour>[_<index>] material so colours swap with branding.json.",
+  "special_materials": {
+    "mat_glass": { "color": "#2E3A46", "roughness": 0.15, "metallic": 0.0, "emission_energy": 0.0 },
+    "mat_iron": { "color": "#1F2023", "roughness": 0.55, "metallic": 0.6, "emission_energy": 0.0 },
+    "mat_window_glow": { "color": "#FFD28A", "roughness": 1.0, "metallic": 0.0, "emission_energy": 1.5 }
+  }
+}

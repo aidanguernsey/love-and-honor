@@ -76,3 +76,10 @@ custom_minimum_size = Vector2(320, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Spike B — Oxford terrain"
+
+[node name="ArtTest" type="Button" parent="Center/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Step 4 — Art import check"

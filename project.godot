@@ -23,3 +23,10 @@ window/size/viewport_height=900
 [dotnet]
 
 project/assembly_name="LoveAndHonor"
+
+[importer_defaults]
+
+scene={
+"import_script/path": "res://scripts/import/lh_post_import.gd",
+"meshes/ensure_tangents": false
+}

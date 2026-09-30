@@ -237,6 +237,26 @@ public static class DataValidation
                 if (weights is null || !weights.ContainsKey(n!.GetValue<string>()))
                     issues.Add(new("balance.json", "/needs/happiness_weights", $"missing weight for need '{n}'"));
         }
+
+        // Art pipeline: LOD settings fit together; kit storey height matches the extrusion level height.
+        if (docs.TryGetValue("art_pipeline.json", out var art) && art["categories"] is JsonObject cats)
+        {
+            foreach (var (name, cat) in cats)
+            {
+                if (name.StartsWith('_') || cat is not JsonObject) continue;
+                var loc = $"/categories/{name}";
+                var levels = cat["lod_levels"]!.AsArray().Select(v => v!.GetValue<int>()).ToArray();
+                var dist = cat["lod_distances_m"]!.AsArray().Select(v => v!.GetValue<double>()).ToArray();
+                if (levels[0] > levels[1]) issues.Add(new("art_pipeline.json", loc, "lod_levels min is above max"));
+                if (dist.Length < levels[1] - 1)
+                    issues.Add(new("art_pipeline.json", loc, $"lod_distances_m needs {levels[1] - 1} switch distance(s) for up to {levels[1]} LOD levels"));
+                if (dist.Zip(dist.Skip(1)).Any(p => p.Second <= p.First))
+                    issues.Add(new("art_pipeline.json", loc, "lod_distances_m must increase"));
+            }
+            if (docs.TryGetValue("rendering.json", out var rend) && rend["extrusion"]?["level_height_m"] is JsonValue lh
+                && art["kit_grid"]?["storey_height_m"] is JsonValue sh && Math.Abs(lh.GetValue<double>() - sh.GetValue<double>()) > 1e-6)
+                issues.Add(new("art_pipeline.json", "/kit_grid/storey_height_m", "must equal rendering.json extrusion.level_height_m"));
+        }
     }
 
     private static string Rel(string root, string file) => Path.GetRelativePath(root, file).Replace('\\', '/');

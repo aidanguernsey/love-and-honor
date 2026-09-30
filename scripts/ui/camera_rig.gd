@@ -8,6 +8,9 @@ extends Node3D
 ## Launch option for reproducible screenshots: `-- --camera=x,z,distance,pitch,yaw` (metres / degrees).
 
 @export var host_path: NodePath
+## Scene overrides for the start view (0 = use the rendering.json camera start values).
+@export var start_distance_m := 0.0
+@export var start_pitch_deg := 0.0
 
 var _cfg: Dictionary = {}
 var _map_size := Vector2(4000, 4000)
@@ -27,8 +30,8 @@ func _ready() -> void:
 	_host = get_node_or_null(host_path)
 	if _host:
 		_map_size = _host.GetMapSizeMeters()
-	_distance = _cfg["start_distance_m"]
-	_pitch = _cfg["start_pitch_deg"]
+	_distance = start_distance_m if start_distance_m > 0.0 else float(_cfg["start_distance_m"])
+	_pitch = start_pitch_deg if start_pitch_deg > 0.0 else float(_cfg["start_pitch_deg"])
 	position = Vector3(_map_size.x * 0.5, 0.0, _map_size.y * 0.5)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--camera="):

@@ -37,6 +37,12 @@ Validate every file in `data/` against its schema, plus cross-file references:
 dotnet run --project tools/DataValidator
 ```
 
+Spike A population benchmark (headless, no renderer; exits with code 1 if the tick budget is missed):
+
+```bash
+dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks
+```
+
 Godot commands below are for **PowerShell** (the Windows default). They use the `GODOT` environment
 variable; open a new terminal after setting it. In bash (Git Bash, macOS, Linux), replace `& $env:GODOT`
 with `"$GODOT"`.

@@ -1,0 +1,52 @@
+=== Love & Honor — Spike A population benchmark ===
+LoveAndHonor.Sim 0.1.0-phase0 on .NET 10.0.12 | Microsoft Windows NT 10.0.26200.0 | GC server=False
+CPU: Intel(R) Core(TM) i9-14900HX | logical processors: 32
+Population: 30,000 students + 2,500 faculty = 32,500 agents
+Budget: p95 tick time <= 8 ms | 168 warm-up + 1000 measured ticks
+
+--- 4 E-cores (gated) ---
+Pinned to: logical CPUs 16,17,18,19 (efficiency class 0)
+Setup: campus 12 ms, flow fields 1131 ms (41 buildings), population 74 ms, population arrays ~3.8 MB
+Tick time (ms): avg 2.186 | p50 2.066 | p95 3.467 | p99 3.976 | max 6.394
+  agent phase avg 2.049 ms (max 6.087) | foot-traffic phase avg 0.137 ms (max 0.386)
+  worst tick: #229 (Wed 2026-09-02 13:00)
+Work: 14836 walks/tick avg (peak 30,851), 277 distinct routes traced/tick, avg walk 11.9 min, 1,701,664 late-to-class walks (walk > class-change window), avg happiness 51.2
+GC during measurement: 2022 KB allocated, collections gen0=0 gen1=0 gen2=0
+Budget (p95 <= 8 ms): PASS — p95 = 3.467 ms
+
+--- 4 P-cores ---
+Pinned to: logical CPUs 0,2,4,6 (efficiency class 1)
+Setup: campus 2 ms, flow fields 366 ms (41 buildings), population 15 ms, population arrays ~3.8 MB
+Tick time (ms): avg 0.668 | p50 0.618 | p95 1.050 | p99 1.383 | max 1.595
+  agent phase avg 0.581 ms (max 1.417) | foot-traffic phase avg 0.086 ms (max 0.256)
+  worst tick: #759 (Thu 2026-09-24 15:00)
+Work: 14836 walks/tick avg (peak 30,851), 277 distinct routes traced/tick, avg walk 11.9 min, 1,701,664 late-to-class walks (walk > class-change window), avg happiness 51.2
+GC during measurement: 2287 KB allocated, collections gen0=0 gen1=0 gen2=0
+Budget (p95 <= 8 ms): PASS — p95 = 1.050 ms
+
+--- 1 P-core, 1 thread (reference) ---
+Pinned to: logical CPUs 0 (efficiency class 1)
+Setup: campus 20 ms, flow fields 988 ms (41 buildings), population 10 ms, population arrays ~3.8 MB
+Tick time (ms): avg 1.913 | p50 1.869 | p95 2.630 | p99 2.948 | max 5.075
+  agent phase avg 1.832 ms (max 5.010) | foot-traffic phase avg 0.081 ms (max 1.282)
+  worst tick: #1005 (Sun 2026-10-04 21:00)
+Work: 14836 walks/tick avg (peak 30,851), 277 distinct routes traced/tick, avg walk 11.9 min, 1,701,664 late-to-class walks (walk > class-change window), avg happiness 51.2
+GC during measurement: 0 KB allocated, collections gen0=0 gen1=0 gen2=0
+Budget (p95 <= 8 ms): PASS — p95 = 2.630 ms
+
+--- all cores, 32 threads (reference) ---
+Pinned to: all logical CPUs
+Setup: campus 0 ms, flow fields 146 ms (41 buildings), population 15 ms, population arrays ~3.8 MB
+Tick time (ms): avg 2.160 | p50 2.046 | p95 3.627 | p99 3.943 | max 6.464
+  agent phase avg 1.998 ms (max 6.312) | foot-traffic phase avg 0.162 ms (max 0.720)
+  worst tick: #168 (Mon 2026-08-31 00:00)
+Work: 14836 walks/tick avg (peak 30,851), 277 distinct routes traced/tick, avg walk 11.9 min, 1,701,664 late-to-class walks (walk > class-change window), avg happiness 51.2
+GC during measurement: 3635 KB allocated, collections gen0=0 gen1=0 gen2=0
+Budget (p95 <= 8 ms): PASS — p95 = 3.627 ms
+
+=== Summary ===
+4 E-cores (gated)                        avg   2.186  p95   3.467  p99   3.976  max   6.394 ms  within budget
+4 P-cores                                avg   0.668  p95   1.050  p99   1.383  max   1.595 ms  within budget
+1 P-core, 1 thread (reference)           avg   1.913  p95   2.630  p99   2.948  max   5.075 ms  within budget
+all cores, 32 threads (reference)        avg   2.160  p95   3.627  p99   3.943  max   6.464 ms  within budget
+RESULT: PASS

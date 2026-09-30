@@ -2,84 +2,352 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Balance values (every [TWEAK] from the design doc)",
   "type": "object",
-  "required": ["time", "population", "performance", "map", "needs", "retention", "construction", "economy", "trustees", "teaching_identity"],
-  "patternProperties": { "^_": {} },
+  "required": [
+    "time",
+    "population",
+    "performance",
+    "map",
+    "needs",
+    "retention",
+    "construction",
+    "economy",
+    "trustees",
+    "teaching_identity",
+    "walking"
+  ],
+  "patternProperties": {
+    "^_": {}
+  },
   "properties": {
-    "$schema": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
     "time": {
       "type": "object",
-      "required": ["real_seconds_per_game_day", "speeds", "ticks_per_game_day", "class_change_window_minutes"],
+      "required": [
+        "real_seconds_per_game_day",
+        "speeds",
+        "ticks_per_game_day",
+        "class_change_window_minutes"
+      ],
       "properties": {
-        "real_seconds_per_game_day": { "type": "number", "exclusiveMinimum": 0 },
-        "speeds": { "type": "array", "items": { "type": "number", "minimum": 0 }, "minItems": 1 },
-        "ticks_per_game_day": { "const": 24 },
-        "class_change_window_minutes": { "type": "number", "exclusiveMinimum": 0 }
+        "real_seconds_per_game_day": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "speeds": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minItems": 1
+        },
+        "ticks_per_game_day": {
+          "const": 24
+        },
+        "class_change_window_minutes": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
       }
     },
     "population": {
       "type": "object",
-      "required": ["target_students", "target_faculty", "rendered_agents_min", "rendered_agents_max"],
+      "required": [
+        "target_students",
+        "target_faculty",
+        "rendered_agents_min",
+        "rendered_agents_max"
+      ],
       "properties": {
-        "target_students": { "type": "integer", "minimum": 0 },
-        "target_faculty": { "type": "integer", "minimum": 0 },
-        "rendered_agents_min": { "type": "integer", "minimum": 0 },
-        "rendered_agents_max": { "type": "integer", "minimum": 0 }
+        "target_students": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target_faculty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rendered_agents_min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rendered_agents_max": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "performance": {
       "type": "object",
-      "required": ["tick_budget_ms", "min_spec_cpu_cores", "target_fps"],
+      "required": [
+        "tick_budget_ms",
+        "min_spec_cpu_cores",
+        "target_fps",
+        "tick_budget_statistic",
+        "sim_worker_threads",
+        "agent_chunk_size",
+        "benchmark_ticks",
+        "benchmark_warmup_ticks"
+      ],
       "properties": {
-        "tick_budget_ms": { "type": "number", "exclusiveMinimum": 0 },
-        "min_spec_cpu_cores": { "type": "integer", "minimum": 1 },
-        "target_fps": { "type": "integer", "minimum": 1 }
+        "tick_budget_ms": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "min_spec_cpu_cores": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target_fps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tick_budget_statistic": {
+          "enum": [
+            "avg",
+            "p95",
+            "p99",
+            "max"
+          ]
+        },
+        "sim_worker_threads": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "agent_chunk_size": {
+          "type": "integer",
+          "minimum": 64
+        },
+        "benchmark_ticks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "benchmark_warmup_ticks": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "map": {
       "type": "object",
-      "required": ["extent_m", "tile_size_m", "grid_width", "grid_height", "rotation_step_deg"],
+      "required": [
+        "extent_m",
+        "tile_size_m",
+        "grid_width",
+        "grid_height",
+        "rotation_step_deg"
+      ],
       "properties": {
-        "extent_m": { "type": "number", "exclusiveMinimum": 0 },
-        "tile_size_m": { "type": "number", "exclusiveMinimum": 0 },
-        "grid_width": { "type": "integer", "minimum": 1 },
-        "grid_height": { "type": "integer", "minimum": 1 },
-        "rotation_step_deg": { "type": "number", "exclusiveMinimum": 0, "maximum": 90 }
+        "extent_m": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "tile_size_m": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "grid_width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "grid_height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rotation_step_deg": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90
+        }
       }
     },
     "needs": {
       "type": "object",
-      "required": ["ids", "happiness_weights", "trait_modifier_max"],
+      "required": [
+        "ids",
+        "happiness_weights",
+        "trait_modifier_max",
+        "initial_min",
+        "initial_max",
+        "baseline_per_hour",
+        "activity_effects"
+      ],
       "properties": {
-        "ids": { "type": "array", "items": { "$ref": "#/$defs/needId" }, "minItems": 10, "maxItems": 10, "uniqueItems": true },
+        "ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/needId"
+          },
+          "minItems": 10,
+          "maxItems": 10,
+          "uniqueItems": true
+        },
         "happiness_weights": {
           "type": "object",
-          "propertyNames": { "$ref": "#/$defs/needId" },
-          "additionalProperties": { "type": "number", "minimum": 0 },
+          "propertyNames": {
+            "$ref": "#/$defs/needId"
+          },
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          },
           "minProperties": 10
         },
-        "trait_modifier_max": { "type": "number", "minimum": 0, "maximum": 1 }
+        "trait_modifier_max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "initial_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "initial_max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "baseline_per_hour": {
+          "$ref": "#/$defs/needDeltas"
+        },
+        "activity_effects": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/activityId"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/needDeltas"
+          }
+        }
       }
     },
     "retention": {
       "type": "object",
-      "required": ["base", "happiness", "gpa", "belonging", "financial_stress", "min", "max"],
-      "additionalProperties": { "type": ["number", "string"] }
+      "required": [
+        "base",
+        "happiness",
+        "gpa",
+        "belonging",
+        "financial_stress",
+        "min",
+        "max"
+      ],
+      "additionalProperties": {
+        "type": [
+          "number",
+          "string"
+        ]
+      }
     },
-    "construction": { "type": "object", "additionalProperties": { "type": ["number", "string"] } },
-    "economy": { "type": "object", "additionalProperties": { "type": ["number", "string"] } },
+    "construction": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "number",
+          "string"
+        ]
+      }
+    },
+    "economy": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "number",
+          "string"
+        ]
+      }
+    },
     "trustees": {
       "type": "object",
-      "required": ["starting_confidence"],
-      "properties": { "starting_confidence": { "type": "number", "minimum": 0, "maximum": 100 } }
+      "required": [
+        "starting_confidence"
+      ],
+      "properties": {
+        "starting_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
     },
     "teaching_identity": {
       "type": "object",
-      "required": ["sweet_spot_min", "sweet_spot_max", "too_research_heavy_below", "too_teaching_only_above"],
-      "additionalProperties": { "type": ["number", "string"] }
+      "required": [
+        "sweet_spot_min",
+        "sweet_spot_max",
+        "too_research_heavy_below",
+        "too_teaching_only_above"
+      ],
+      "additionalProperties": {
+        "type": [
+          "number",
+          "string"
+        ]
+      }
+    },
+    "walking": {
+      "type": "object",
+      "required": [
+        "speed_m_per_min",
+        "grass_cost_multiplier",
+        "commute_penalty_per_minute"
+      ],
+      "properties": {
+        "speed_m_per_min": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "grass_cost_multiplier": {
+          "type": "number",
+          "minimum": 1
+        },
+        "commute_penalty_per_minute": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
     }
   },
   "additionalProperties": false,
   "$defs": {
-    "needId": { "enum": ["sleep", "food", "study", "social", "fun", "health", "money", "belonging", "safety", "commute"] }
+    "needId": {
+      "enum": [
+        "sleep",
+        "food",
+        "study",
+        "social",
+        "fun",
+        "health",
+        "money",
+        "belonging",
+        "safety",
+        "commute"
+      ]
+    },
+    "needDeltas": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/needId"
+      },
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "activityId": {
+      "enum": [
+        "sleep",
+        "eat",
+        "class",
+        "study",
+        "social",
+        "exercise",
+        "leisure",
+        "teach",
+        "work"
+      ]
+    }
   }
 }

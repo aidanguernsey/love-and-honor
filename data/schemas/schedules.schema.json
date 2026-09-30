@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Daily schedule rules for students and faculty",
+  "type": "object",
+  "required": ["class_slots", "student", "faculty"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "hour": { "type": "integer", "minimum": 0, "maximum": 24 },
+    "range": {
+      "type": "object", "required": ["min", "max"], "additionalProperties": false,
+      "properties": { "min": { "$ref": "#/$defs/hour" }, "max": { "$ref": "#/$defs/hour" } }
+    },
+    "weights": {
+      "type": "object", "minProperties": 1,
+      "propertyNames": { "enum": ["study", "leisure", "social", "exercise"] },
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "day": { "enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "class_slots": {
+      "type": "object",
+      "required": ["patterns", "first_hour", "last_hour"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "patterns": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/day" }, "minItems": 1, "uniqueItems": true } },
+        "first_hour": { "$ref": "#/$defs/hour" },
+        "last_hour": { "$ref": "#/$defs/hour" }
+      }
+    },
+    "student": {
+      "type": "object",
+      "required": ["wake_hour", "bed_hour", "weekend_wake_hour", "lunch_hour", "dinner_hour", "sections", "sections_in_major_building", "study_at_library_probability", "weekday_free", "weekday_evening", "weekend", "evening_start_hour"],
+      "additionalProperties": false,
+      "properties": {
+        "wake_hour": { "$ref": "#/$defs/range" },
+        "bed_hour": { "$ref": "#/$defs/range" },
+        "weekend_wake_hour": { "$ref": "#/$defs/range" },
+        "lunch_hour": { "$ref": "#/$defs/hour" },
+        "dinner_hour": { "$ref": "#/$defs/hour" },
+        "sections": { "type": "integer", "minimum": 0, "maximum": 8 },
+        "sections_in_major_building": { "type": "integer", "minimum": 0 },
+        "study_at_library_probability": { "type": "number", "minimum": 0, "maximum": 1 },
+        "weekday_free": { "$ref": "#/$defs/weights" },
+        "weekday_evening": { "$ref": "#/$defs/weights" },
+        "weekend": { "$ref": "#/$defs/weights" },
+        "evening_start_hour": { "$ref": "#/$defs/hour" }
+      }
+    },
+    "faculty": {
+      "type": "object",
+      "required": ["wake_hour", "bed_hour", "arrive_hour", "leave_hour", "lunch_hour", "sections"],
+      "additionalProperties": false,
+      "properties": {
+        "wake_hour": { "$ref": "#/$defs/range" },
+        "bed_hour": { "$ref": "#/$defs/range" },
+        "arrive_hour": { "$ref": "#/$defs/range" },
+        "leave_hour": { "$ref": "#/$defs/range" },
+        "lunch_hour": { "$ref": "#/$defs/hour" },
+        "sections": {
+          "type": "object", "required": ["min", "max"], "additionalProperties": false,
+          "properties": { "min": { "type": "integer", "minimum": 0 }, "max": { "type": "integer", "minimum": 0, "maximum": 8 } }
+        }
+      }
+    }
+  }
+}

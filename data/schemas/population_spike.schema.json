@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Spike A synthetic campus + population setup",
+  "type": "object",
+  "required": ["seed", "start_date", "campus", "students", "faculty"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": { "type": "string" },
+    "seed": { "type": "integer", "minimum": 0 },
+    "start_date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "campus": {
+      "type": "object",
+      "required": ["core_blocks", "block_size_tiles", "core_path_width", "outer_path_spacing_tiles", "path_segment_removal_fraction", "town_block_candidates", "buildings"],
+      "additionalProperties": false,
+      "properties": {
+        "core_blocks": { "type": "integer", "minimum": 1 },
+        "block_size_tiles": { "type": "integer", "minimum": 8 },
+        "core_path_width": { "type": "integer", "minimum": 1 },
+        "outer_path_spacing_tiles": { "type": "integer", "minimum": 8 },
+        "path_segment_removal_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+        "town_block_candidates": { "type": "integer", "minimum": 1 },
+        "buildings": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["def", "count"], "additionalProperties": false,
+            "properties": { "def": { "type": "string" }, "count": { "type": "integer", "minimum": 0 } }
+          }
+        }
+      }
+    },
+    "students": {
+      "type": "object",
+      "required": ["year_shares", "on_campus_years"],
+      "additionalProperties": false,
+      "properties": {
+        "year_shares": { "type": "array", "items": { "type": "number", "minimum": 0 }, "minItems": 4, "maxItems": 4 },
+        "on_campus_years": { "type": "array", "items": { "type": "integer", "minimum": 1, "maximum": 4 }, "uniqueItems": true }
+      }
+    },
+    "faculty": {
+      "type": "object",
+      "required": ["rank_shares", "score_min", "score_max"],
+      "additionalProperties": false,
+      "properties": {
+        "rank_shares": {
+          "type": "object",
+          "required": ["lecturer", "assistant", "associate", "full", "distinguished"],
+          "additionalProperties": false,
+          "properties": {
+            "lecturer": { "type": "number", "minimum": 0 },
+            "assistant": { "type": "number", "minimum": 0 },
+            "associate": { "type": "number", "minimum": 0 },
+            "full": { "type": "number", "minimum": 0 },
+            "distinguished": { "type": "number", "minimum": 0 }
+          }
+        },
+        "score_min": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "score_max": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    }
+  }
+}

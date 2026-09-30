@@ -2,39 +2,144 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Building definition (one file per building in /data/buildings, §11)",
   "type": "object",
-  "required": ["id", "name", "category", "footprint", "cost_usd", "upkeep_usd_per_year", "capacity", "style", "unlock_era", "design_ref"],
+  "required": [
+    "id",
+    "name",
+    "category",
+    "footprint",
+    "cost_usd",
+    "upkeep_usd_per_year",
+    "capacity",
+    "style",
+    "unlock_era",
+    "design_ref"
+  ],
   "additionalProperties": false,
-  "patternProperties": { "^_": {} },
+  "patternProperties": {
+    "^_": {}
+  },
   "properties": {
-    "$schema": { "type": "string" },
-    "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
-    "name": { "type": "string" },
-    "category": { "enum": ["academic", "library", "residence", "dining", "student_life", "athletics", "admin", "utility", "landscape", "landmark"] },
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "academic",
+        "library",
+        "residence",
+        "dining",
+        "student_life",
+        "athletics",
+        "admin",
+        "utility",
+        "landscape",
+        "landmark",
+        "town"
+      ]
+    },
     "footprint": {
       "type": "object",
-      "required": ["w", "h"],
-      "additionalProperties": false,
-      "properties": { "w": { "type": "integer", "minimum": 1 }, "h": { "type": "integer", "minimum": 1 } }
-    },
-    "cost_usd": { "type": ["number", "null"], "minimum": 0, "description": "null = cannot be built new (landmark only)" },
-    "upkeep_usd_per_year": { "type": "number", "minimum": 0 },
-    "capacity": {
-      "type": "object",
-      "required": ["kind", "value"],
+      "required": [
+        "w",
+        "h"
+      ],
       "additionalProperties": false,
       "properties": {
-        "kind": { "enum": ["seats", "lab_seats", "beds", "diners_per_hour", "study_seats", "visitors_per_hour", "faculty_labs", "none"] },
-        "value": { "type": "integer", "minimum": 0 }
+        "w": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "h": {
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
-    "style": { "enum": ["georgian_revival", "western_collegiate", "mid_century_modern", "brutalist", "contemporary_glass", "none"] },
-    "unlock_era": { "type": "string" },
+    "cost_usd": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "null = cannot be built new (landmark only)"
+    },
+    "upkeep_usd_per_year": {
+      "type": "number",
+      "minimum": 0
+    },
+    "capacity": {
+      "type": "object",
+      "required": [
+        "kind",
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "seats",
+            "lab_seats",
+            "beds",
+            "diners_per_hour",
+            "study_seats",
+            "visitors_per_hour",
+            "faculty_labs",
+            "none"
+          ]
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "style": {
+      "enum": [
+        "georgian_revival",
+        "western_collegiate",
+        "mid_century_modern",
+        "brutalist",
+        "contemporary_glass",
+        "none"
+      ]
+    },
+    "unlock_era": {
+      "type": "string"
+    },
     "needs_served": {
       "type": "array",
-      "items": { "enum": ["sleep", "food", "study", "social", "fun", "health", "money", "belonging", "safety", "commute"] },
+      "items": {
+        "enum": [
+          "sleep",
+          "food",
+          "study",
+          "social",
+          "fun",
+          "health",
+          "money",
+          "belonging",
+          "safety",
+          "commute"
+        ]
+      },
       "uniqueItems": true
     },
-    "model": { "type": ["string", "null"], "description": "res:// path to a .glb/.tscn; null until art exists" },
-    "design_ref": { "type": "string" }
+    "model": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "res:// path to a .glb/.tscn; null until art exists"
+    },
+    "design_ref": {
+      "type": "string"
+    }
   }
 }

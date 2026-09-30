@@ -8,8 +8,17 @@ The full design is in `GAME_DESIGN.md` (v0.3). **Read the relevant section befor
 **Phase 0 — Foundations & technical spikes** (§37). Build no gameplay content beyond what the spikes need.
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
 (4) art pipeline prep → (5) outreach drafts → (6) Phase 0 report.
-Status: Step 1 (scaffold) done. Next: Step 2, Spike A — split into **2a** (headless sim + benchmark) and
-**2b** (rendering scene, camera, debug overlay), with a stop after each.
+Status: Step 1 done. Step 2a (headless population sim + benchmark) done — PASS, p95 ≈ 3.5 ms on 4 E-cores
+(results: `docs/benchmarks/spike-a-2026-09-30.txt`). Next: **2b** (rendering scene, camera, debug overlay).
+
+### Findings to carry into the Phase 0 report
+- Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The
+  real game has more buildings → must rebuild asynchronously (double-buffer fields) and/or use a faster algorithm.
+- Tick scaling: 4 P-cores ≈ 3.1× one P-core; 4 E-cores only ≈ 1.25× one E-core (shared-cluster limits).
+- Occasional single-tick max spikes (6-11 ms) from OS preemption; p99 stays ≈ 4 ms.
+- Lateness: agents depart on the hour, so any walk > class-change window (10 min) counts as late (avg walk
+  11.9 min on the spike map). Phase 1 needs "leave before the hour" departures.
+- Free-hour activity is re-rolled every hour → ~14.8k walks/tick (stress case); smooth it in Phase 1.
 
 ### Decisions made during Phase 0 (by the user)
 - Spike A pass criterion: **p95 tick time ≤ 8 ms** over 1,000 ticks (avg and max reported too). (2026-09-30)
@@ -99,7 +108,11 @@ dotnet run --project tools/DataValidator                    # validate /data (sc
 "$GODOT" --headless --path . --build-solutions --quit       # Godot import + C# build (bash; PowerShell: & $env:GODOT ...)
 "$GODOT" --headless --path . -- --smoke-test                # boot scene prints "SMOKE ..." and quits
 "$GODOT" --path . -e                                        # open editor
+dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks            # Spike A benchmark (exit 1 = over budget)
+dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks -- --quick # gated run only
 ```
+Always benchmark with `-c Release`. The gated run pins to 4 E-cores on hybrid Intel CPUs (conservative
+stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference only.
 
 ## Project structure & conventions
 - `LoveAndHonor.sln`: `LoveAndHonor.csproj` (Godot.NET.Sdk 4.7.2, net10.0) → ProjectReference →
@@ -114,7 +127,16 @@ dotnet run --project tools/DataValidator                    # validate /data (sc
 - `LoveAndHonor.Sim.csproj` sets `Optimize=true` for Godot's `ExportRelease` config (plain SDK projects wouldn't).
   Editor runs use Debug, so in-editor sim timings are pessimistic; benchmark with `-c Release`.
 - RNG: `DeterministicRng` (xoshiro256**, pinned by golden-value test) via `RngStreams.For("system", index)`.
-  Never use `System.Random` or `string.GetHashCode()` for anything that affects sim state.
+  Never use `System.Random` or `string.GetHashCode()` for anything that affects sim state. Inside the parallel
+  tick use `StatelessRandom` (hash of seed, agent, day, hour) so results don't depend on thread scheduling.
+- Sim library layout (`scripts/sim/`): `Core/` (RNG, SimTime), `Data/` (typed configs, `IDataSource`, `SimData.Load`),
+  `World/` (TileGrid, Campus, SyntheticCampusGenerator), `Pathing/` (FlowFieldSet: per-building Dijkstra fields,
+  distance matrix, route cache), `Population/` (SoA `PopulationStore`, generator), `Engine/` (Simulation tick,
+  ScheduleModel, NeedsModel, StateHash, SpikeWorld factory).
+- Tick determinism: work is split into fixed-size chunks (`performance.agent_chunk_size`), each agent touches
+  only its own data, chunk results reduce in chunk order → 1 thread and N threads give identical `StateHash`
+  (tested). Keep it that way: no shared mutable state inside `ProcessChunk`.
+- The tick must not allocate per agent (benchmark reports GC; currently 0 collections during measurement).
 - Data: every `data/**/*.json` declares `"$schema"`; `_`-prefixed keys are comments; unverified real-world facts
   carry `"verified": false`. New data file → add a schema + (if needed) cross-checks in `tools/DataValidator/DataValidation.cs`.
 - Branding: active profile `data/branding.json`, fictional stand-in `data/branding/standin.json`. Same schema.

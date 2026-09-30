@@ -1,0 +1,33 @@
+{
+  "$schema": "../schemas/population_spike.schema.json",
+  "_comment": "Spike A synthetic campus and population setup (§30.2 technical spike). Not game content. Population size comes from balance.json. Capacity is not enforced: 30,000 students do not fit in these halls, so the years in on_campus_years live on campus regardless of beds, and everyone else lives off campus.",
+  "seed": 20260930,
+  "start_date": "2026-08-24",
+  "campus": {
+    "core_blocks": 8,
+    "block_size_tiles": 24,
+    "core_path_width": 2,
+    "outer_path_spacing_tiles": 48,
+    "path_segment_removal_fraction": 0.25,
+    "town_block_candidates": 14,
+    "buildings": [
+      { "def": "small_classroom_hall", "count": 8 },
+      { "def": "large_classroom_hall", "count": 4 },
+      { "def": "traditional_corridor_hall", "count": 12 },
+      { "def": "historic_hall", "count": 2 },
+      { "def": "dining_commons", "count": 5 },
+      { "def": "main_library", "count": 2 },
+      { "def": "recreation_center", "count": 2 },
+      { "def": "off_campus_housing", "count": 6 }
+    ]
+  },
+  "students": {
+    "year_shares": [0.26, 0.25, 0.25, 0.24],
+    "on_campus_years": [1, 2]
+  },
+  "faculty": {
+    "rank_shares": { "lecturer": 0.20, "assistant": 0.25, "associate": 0.25, "full": 0.27, "distinguished": 0.03 },
+    "score_min": 30,
+    "score_max": 95
+  }
+}

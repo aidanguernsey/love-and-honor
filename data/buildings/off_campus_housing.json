@@ -1,0 +1,16 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "Town-owned Mile Square rental block (§18.3). Not buildable by the player; used by Spike A to house upperclass students and faculty. All numbers are placeholders.",
+  "id": "off_campus_housing",
+  "name": "Off-Campus Housing Block",
+  "category": "town",
+  "footprint": { "w": 10, "h": 10 },
+  "cost_usd": null,
+  "upkeep_usd_per_year": 0,
+  "capacity": { "kind": "beds", "value": 3000 },
+  "style": "none",
+  "unlock_era": "founding",
+  "needs_served": ["sleep"],
+  "model": null,
+  "design_ref": "§18.3"
+}

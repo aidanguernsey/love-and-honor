@@ -139,6 +139,17 @@ public static class DataValidation
             }
         }
 
+        // Spike configs: building defs exist.
+        foreach (var (rel, node) in docs.Where(d => d.Key.StartsWith("spikes/")))
+        {
+            var list = node["campus"]?["buildings"]?.AsArray() ?? [];
+            for (int i = 0; i < list.Count; i++)
+            {
+                var def = Str(list[i]!, "def");
+                if (!buildingIds.Contains(def)) issues.Add(new(rel, $"/campus/buildings/{i}", $"unknown building def '{def}'"));
+            }
+        }
+
         // Departments: unique ids, colleges exist.
         if (docs.TryGetValue("departments.json", out var dep))
         {

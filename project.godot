@@ -23,7 +23,3 @@ window/size/viewport_height=900
 [dotnet]
 
 project/assembly_name="LoveAndHonor"
-
-[rendering]
-
-renderer/rendering_method="forward_plus"

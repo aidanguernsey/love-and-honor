@@ -1,0 +1,32 @@
+{
+  "$schema": "./schemas/schedules.schema.json",
+  "_comment": "Daily schedule rules (§10.1 student day, §10.2 faculty day). Hours are 0-23; bed_hour 24 means midnight. Weights pick an activity for free hours. All values are placeholders.",
+  "class_slots": {
+    "_comment": "MWF and TR patterns, one class per slot hour. Real TR classes are 75-80 min; the spike treats every class as one hour.",
+    "patterns": { "mwf": ["mon", "wed", "fri"], "tr": ["tue", "thu"] },
+    "first_hour": 8,
+    "last_hour": 16
+  },
+  "student": {
+    "wake_hour": { "min": 7, "max": 9 },
+    "bed_hour": { "min": 23, "max": 24 },
+    "weekend_wake_hour": { "min": 9, "max": 11 },
+    "lunch_hour": 12,
+    "dinner_hour": 18,
+    "sections": 5,
+    "sections_in_major_building": 2,
+    "study_at_library_probability": 0.6,
+    "weekday_free": { "study": 0.5, "leisure": 0.3, "social": 0.2 },
+    "weekday_evening": { "study": 0.4, "social": 0.4, "exercise": 0.2 },
+    "weekend": { "social": 0.4, "exercise": 0.2, "study": 0.2, "leisure": 0.2 },
+    "evening_start_hour": 19
+  },
+  "faculty": {
+    "wake_hour": { "min": 6, "max": 7 },
+    "bed_hour": { "min": 22, "max": 23 },
+    "arrive_hour": { "min": 8, "max": 9 },
+    "leave_hour": { "min": 16, "max": 18 },
+    "lunch_hour": 12,
+    "sections": { "min": 2, "max": 3 }
+  }
+}

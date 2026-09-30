@@ -21,7 +21,9 @@ Step 3c done: timeline 1809 → 2026 in the Spike B scene (land states + roads r
 by year in the shader, seasons, sun for Oxford). Screenshots `docs/images/timeline-*.png`.
 Step 4 done (prep only, no final art): `docs/ART_PIPELINE.md`, rules in `data/art_pipeline.json`, Blender scripts in
 `tools/blender/`, post-import LOD script, runtime palette materials, model checks in the validator, one placeholder kit
-piece (`kit_georgian_wall_window_3m`) imported and shown in `scenes/spikes/art_import_test.tscn`. Next: **Step 5** (outreach drafts).
+piece (`kit_georgian_wall_window_3m`) imported and shown in `scenes/spikes/art_import_test.tscn`. 
+Step 5 done: outreach drafts in `docs/outreach/` (trademark/licensing, Myaamia Center + summary attachment, Uptown
+courtesy note, README with a send log). **Nothing sent.** Next: **Step 6** (Phase 0 report).
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The

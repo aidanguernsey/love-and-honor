@@ -37,29 +37,31 @@ Validate every file in `data/` against its schema, plus cross-file references:
 dotnet run --project tools/DataValidator
 ```
 
+Godot commands below are for **PowerShell** (the Windows default). They use the `GODOT` environment
+variable; open a new terminal after setting it. In bash (Git Bash, macOS, Linux), replace `& $env:GODOT`
+with `"$GODOT"`.
+
 Open the project in the Godot editor (it builds the C# on first open):
 
-```bash
-"$GODOT" --path . -e
+```powershell
+& $env:GODOT --path . -e
 ```
 
 Run the game directly:
 
-```bash
-"$GODOT" --path .
+```powershell
+& $env:GODOT --path .
 ```
 
 Headless smoke test (build C#, boot the main scene, print what it loaded, quit):
 
-```bash
-"$GODOT" --headless --path . --build-solutions --quit
+```powershell
+& $env:GODOT --headless --path . --build-solutions --quit
 ```
 
-```bash
-"$GODOT" --headless --path . -- --smoke-test
+```powershell
+& $env:GODOT --headless --path . -- --smoke-test
 ```
-
-In PowerShell, use `& $env:GODOT` instead of `"$GODOT"`.
 
 ## Project layout
 

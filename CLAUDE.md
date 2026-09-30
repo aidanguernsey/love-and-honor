@@ -88,7 +88,7 @@ opened before it was set may not see it; use the full path then. Python: `C:\Use
 dotnet build LoveAndHonor.sln                               # everything
 dotnet test LoveAndHonor.sln                                # unit tests incl. data validation
 dotnet run --project tools/DataValidator                    # validate /data (schemas + cross-refs)
-"$GODOT" --headless --path . --build-solutions --quit       # Godot import + C# build
+"$GODOT" --headless --path . --build-solutions --quit       # Godot import + C# build (bash; PowerShell: & $env:GODOT ...)
 "$GODOT" --headless --path . -- --smoke-test                # boot scene prints "SMOKE ..." and quits
 "$GODOT" --path . -e                                        # open editor
 ```

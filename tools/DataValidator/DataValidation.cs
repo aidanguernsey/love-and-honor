@@ -126,6 +126,10 @@ public static class DataValidation
         if (docs.TryGetValue("timeline.json", out var tl) && tl["entries"] is JsonArray entries)
         {
             var ids = new HashSet<string>();
+            var osmIds = new HashSet<string>();
+            var sourceIds = (tl["sources"] as JsonObject)?.Select(kv => kv.Key).ToHashSet() ?? [];
+            var featureIds = docs.Where(d => d.Key.StartsWith("map/") && d.Key.EndsWith("_features.json"))
+                .SelectMany(d => d.Value["buildings"]?.AsArray() ?? []).Select(b => Str(b!, "osm_id")).ToHashSet();
             for (int i = 0; i < entries.Count; i++)
             {
                 var e = entries[i]!;
@@ -136,6 +140,15 @@ public static class DataValidation
                     issues.Add(new("timeline.json", loc, $"unknown building_def '{def}'"));
                 if (Int(e, "demolished_year") is { } d && d < (Int(e, "built_year") ?? 0))
                     issues.Add(new("timeline.json", loc, "demolished_year before built_year"));
+                if (Str(e, "status") == "standing" && Int(e, "demolished_year") is not null)
+                    issues.Add(new("timeline.json", loc, "standing building has a demolished_year"));
+                foreach (var s in e["sources"]?.AsArray() ?? [])
+                    if (!sourceIds.Contains(s!.GetValue<string>())) issues.Add(new("timeline.json", loc, $"unknown source '{s}'"));
+                if (e["osm_id"] is JsonValue ov && ov.TryGetValue<string>(out var osm))
+                {
+                    if (featureIds.Count > 0 && !featureIds.Contains(osm)) issues.Add(new("timeline.json", loc, $"osm_id '{osm}' not in map features"));
+                    if (!osmIds.Add(osm)) issues.Add(new("timeline.json", loc, $"osm_id '{osm}' linked by more than one entry"));
+                }
             }
         }
 

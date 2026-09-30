@@ -1,28 +1,3831 @@
 {
   "$schema": "./schemas/timeline.schema.json",
-  "_comment": "Real historic building dates & sites (§30.3). Every entry stays verified:false until checked against university archives. Sites are filled in during Spike B (grid coords, 1 tile = 10 m).",
+  "_comment": "Real Miami University (Oxford) buildings, current and past, compiled from the cited public sources on 2026-09-30. NOTHING here has been checked against University Archives records: every entry is verified:false. confidence: corroborated = 2+ sources agree; sourced = one source; conflicting = sources disagree (see notes); estimate = decade/circa only; unknown = no date found. Scope: university-owned or -used buildings and landmarks (incl. Western College and Oxford College buildings), not fraternity houses or private homes. osm_id links a standing building to its present-day footprint; site is for buildings with no OSM outline (filled in Spike B 3c).",
+  "researched": "2026-09-30",
+  "sources": {
+    "mu_tl_old": {
+      "title": "Miami University Historical Timeline: Old Miami, 1787–1885",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html",
+      "publisher": "Miami University"
+    },
+    "mu_tl_new": {
+      "title": "Miami University Historical Timeline: New Miami, 1885–1941",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/new-miami/index.html",
+      "publisher": "Miami University"
+    },
+    "mu_tl_national": {
+      "title": "Miami University Historical Timeline: National University, 1941–1970",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/national-u/index.html",
+      "publisher": "Miami University"
+    },
+    "mu_tl_publicivy": {
+      "title": "Miami University Historical Timeline: Public Ivy, 1970–1996 (incl. Western College buildings acquired 1974)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/public-ivy/index.html",
+      "publisher": "Miami University"
+    },
+    "mu_tl_corporate": {
+      "title": "Miami University Historical Timeline: Corporate University, 1996–2009",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/corporate-u/index.html",
+      "publisher": "Miami University"
+    },
+    "nrhp_elliott_stoddard": {
+      "title": "National Register of Historic Places: Elliott and Stoddard Halls",
+      "url": "https://npgallery.nps.gov/AssetDetail/a7b13246-7671-41d8-b627-54f745e35788",
+      "publisher": "National Park Service"
+    },
+    "oxford_walking_tour": {
+      "title": "Walking Tour of Oxford's University Historic District (2008, rev. 2014)",
+      "url": "https://enjoyoxford.org/wp-content/uploads/2023/11/walking_tour_of_oxfords_university_historic_district.pdf",
+      "publisher": "Smith Library of Regional History / Enjoy Oxford"
+    },
+    "mu_news_2013": {
+      "title": "Newly designed, efficient and flexible buildings welcome students to the new school year",
+      "url": "https://miamioh.edu/news/campus-news/2013/08/construction.html",
+      "publisher": "Miami University News, 2013-08-19"
+    },
+    "mu_news_2014": {
+      "title": "Ten new things Miami University students will see this semester",
+      "url": "https://www.miamioh.edu/news/campus-news/2014/08/what-is-new.html",
+      "publisher": "Miami University News, 2014-08-21"
+    },
+    "mu_news_2015": {
+      "title": "Ten new things Miami University students will see this school year",
+      "url": "https://miamioh.edu/news/campus-news/2015/08/what-is-new.html",
+      "publisher": "Miami University News, 2015-08-20"
+    },
+    "mu_news_2018": {
+      "title": "New and renovated residence halls offer places to gather and study",
+      "url": "https://miamioh.edu/news/campus-news/2018/08/residence-halls-2018.html",
+      "publisher": "Miami University News, 2018-08-21"
+    },
+    "mu_news_2024": {
+      "title": "New buildings, milestones and more highlight Miami academic year",
+      "url": "https://miamioh.edu/news/2024/05/new-buildings-milestones-and-more-highlight-miami-academic-year.html",
+      "publisher": "Miami University News, 2024-05"
+    },
+    "mu_news_2023_hodge": {
+      "title": "Newly named residence hall honors David and Valerie Hodge",
+      "url": "https://miamioh.edu/news/2023/09/newly-named-residence-hall-honors-david-and-valerie-hodge.html",
+      "publisher": "Miami University News, 2023-09"
+    },
+    "ms_2023_hodge": {
+      "title": "Dormitory's new name honors former Miami president",
+      "url": "https://miamistudent.net/article/2023/09/dormitorys-new-name-honors-former-miami-president",
+      "publisher": "The Miami Student, 2023-09"
+    },
+    "mu_young_hall": {
+      "title": "Young Hall (residence hall profile)",
+      "url": "https://miamioh.edu/profiles/finance-business-services/campus-services-center/residence-halls/young-hall.html",
+      "publisher": "Miami University"
+    },
+    "mu_hepburn_hall": {
+      "title": "Hepburn Hall (residence hall profile)",
+      "url": "https://miamioh.edu/profiles/campus-services-center/residence-halls/hepburn-hall.html",
+      "publisher": "Miami University"
+    },
+    "mu_marcum_hall": {
+      "title": "Marcum Hall (residence hall profile)",
+      "url": "https://miamioh.edu/profiles/campus-services-center/residence-halls/marcum-hall.html",
+      "publisher": "Miami University"
+    },
+    "ms_2021_presidents": {
+      "title": "Presidents Hall renaming",
+      "url": "https://www.miamistudent.net/article/2021/04/presidents-hall-renaming",
+      "publisher": "The Miami Student, 2021-04"
+    },
+    "mu_news_2021_ncw": {
+      "title": "Nellie Craig Walker Hall dedication",
+      "url": "https://miamioh.edu/news/2021/02/nellie-craig-walker-hall-dedication.html",
+      "publisher": "Miami University News, 2021-02"
+    },
+    "ms_2025_women": {
+      "title": "The women behind the buildings: Miami's architectural history",
+      "url": "https://miamistudent.net/article/2025/03/the-women-behind-the-buildings-miamis-architectural-history",
+      "publisher": "The Miami Student, 2025-03"
+    },
+    "ms_2016_chestnut": {
+      "title": "New rec center satellite to open",
+      "url": "https://www.miamistudent.net/article/2016/01/new-rec-center-satellite-to-open",
+      "publisher": "The Miami Student, 2016-01"
+    },
+    "jn_apc": {
+      "title": "Miami University opens $25M Athletic Performance Center",
+      "url": "https://www.journal-news.com/news/miami-university-opens-25m-athletic-performance-center/dk2xIdLw88XKwj8R6VtfVK/",
+      "publisher": "Journal-News"
+    },
+    "aia_geothermal": {
+      "title": "Miami University – Geothermal Energy Plant (SHP)",
+      "url": "https://aiaohio.secure-platform.com/a/gallery/rounds/14/details/3307",
+      "publisher": "AIA Ohio"
+    },
+    "mu_dining_dcsc": {
+      "title": "Dining Services (Demske Culinary Support Center)",
+      "url": "https://events.miamioh.edu/group/dining_services",
+      "publisher": "Miami University"
+    },
+    "wcpo_2026": {
+      "title": "Demolished buildings, new student rec fields part of Miami campus changes",
+      "url": "https://www.wcpo.com/news/local-news/butler-county/oxford/demolished-buildings-new-student-rec-fields-part-of-miami-campus-changes",
+      "publisher": "WCPO, 2026"
+    },
+    "oxfreepress_2025": {
+      "title": "Old buildings, new developments and alternative visions",
+      "url": "https://www.oxfreepress.com/miami-oxford-town-gown-developments-arena/",
+      "publisher": "Oxford Free Press, 2025-03-17"
+    },
+    "mu_parking_2016": {
+      "title": "2016–17 Miami parking map ('Withrow Court Demolition')",
+      "url": "https://miamioh.edu/_files/documents/parking/2016-17-parking-map.pdf",
+      "publisher": "Miami University"
+    },
+    "mu_campus_map": {
+      "title": "Miami University Oxford campus map",
+      "url": "https://miamioh.edu/emss/_files/documents/career-services/pdfs/CampusMap.pdf",
+      "publisher": "Miami University"
+    },
+    "ghmchs_mcguffey": {
+      "title": "McGuffey Hall",
+      "url": "https://ghmchs.org/mcguffey-hall",
+      "publisher": "ghmchs.org"
+    },
+    "wp_dewitt_log_homestead": {
+      "title": "Wikipedia: Dewitt Log Homestead",
+      "url": "https://en.wikipedia.org/wiki/Dewitt_Log_Homestead",
+      "publisher": "Wikipedia"
+    },
+    "wp_harrison_hall": {
+      "title": "Wikipedia: Harrison Hall",
+      "url": "https://en.wikipedia.org/wiki/Harrison_Hall",
+      "publisher": "Wikipedia"
+    },
+    "wp_elliott_and_stoddard_halls": {
+      "title": "Wikipedia: Elliott and Stoddard Halls",
+      "url": "https://en.wikipedia.org/wiki/Elliott_and_Stoddard_Halls",
+      "publisher": "Wikipedia"
+    },
+    "wp_william_h_mcguffey_house": {
+      "title": "Wikipedia: William H. McGuffey House",
+      "url": "https://en.wikipedia.org/wiki/William_H._McGuffey_House",
+      "publisher": "Wikipedia"
+    },
+    "wp_oxford_college_for_women": {
+      "title": "Wikipedia: Oxford College for Women",
+      "url": "https://en.wikipedia.org/wiki/Oxford_College_for_Women",
+      "publisher": "Wikipedia"
+    },
+    "wp_old_manse_miami_university": {
+      "title": "Wikipedia: Old Manse (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Old_Manse_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_peabody_hall_miami_university": {
+      "title": "Wikipedia: Peabody Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Peabody_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_langstroth_cottage": {
+      "title": "Wikipedia: Langstroth Cottage",
+      "url": "https://en.wikipedia.org/wiki/Langstroth_Cottage",
+      "publisher": "Wikipedia"
+    },
+    "wp_alumnae_hall_western_college_for_women": {
+      "title": "Wikipedia: Alumnae Hall (Western College for Women)",
+      "url": "https://en.wikipedia.org/wiki/Alumnae_Hall_(Western_College_for_Women)",
+      "publisher": "Wikipedia"
+    },
+    "wp_miami_field": {
+      "title": "Wikipedia: Miami Field",
+      "url": "https://en.wikipedia.org/wiki/Miami_Field",
+      "publisher": "Wikipedia"
+    },
+    "wp_herron_gymnasium": {
+      "title": "Wikipedia: Herron Gymnasium",
+      "url": "https://en.wikipedia.org/wiki/Herron_Gymnasium",
+      "publisher": "Wikipedia"
+    },
+    "wp_king_library_miami_university": {
+      "title": "Wikipedia: King Library (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/King_Library_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_hall_auditorium": {
+      "title": "Wikipedia: Hall Auditorium",
+      "url": "https://en.wikipedia.org/wiki/Hall_Auditorium",
+      "publisher": "Wikipedia"
+    },
+    "wp_mcguffey_hall": {
+      "title": "Wikipedia: McGuffey Hall",
+      "url": "https://en.wikipedia.org/wiki/McGuffey_Hall",
+      "publisher": "Wikipedia"
+    },
+    "wp_alumni_hall_miami_university": {
+      "title": "Wikipedia: Alumni Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Alumni_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_bishop_hall_miami_university": {
+      "title": "Wikipedia: Bishop Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Bishop_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_kumler_chapel": {
+      "title": "Wikipedia: Kumler Chapel",
+      "url": "https://en.wikipedia.org/wiki/Kumler_Chapel",
+      "publisher": "Wikipedia"
+    },
+    "wp_ogden_hall_miami_university": {
+      "title": "Wikipedia: Ogden Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Ogden_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_wilson_hall_miami_university": {
+      "title": "Wikipedia: Wilson Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Wilson_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_mary_lyon_residence_hall": {
+      "title": "Wikipedia: Mary Lyon Residence Hall",
+      "url": "https://en.wikipedia.org/wiki/Mary_Lyon_Residence_Hall",
+      "publisher": "Wikipedia"
+    },
+    "wp_withrow_hall": {
+      "title": "Wikipedia: Withrow Hall",
+      "url": "https://en.wikipedia.org/wiki/Withrow_Hall",
+      "publisher": "Wikipedia"
+    },
+    "wp_richard_hall_miami_university": {
+      "title": "Wikipedia: Richard Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Richard_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_harris_dining_hall_miami_university": {
+      "title": "Wikipedia: Harris Dining Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Harris_Dining_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_reid_hall_miami_university": {
+      "title": "Wikipedia: Reid Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Reid_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_rowan_hall": {
+      "title": "Wikipedia: Rowan Hall",
+      "url": "https://en.wikipedia.org/wiki/Rowan_Hall",
+      "publisher": "Wikipedia"
+    },
+    "wp_upham_hall_miami_university": {
+      "title": "Wikipedia: Upham Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Upham_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_shriver_center": {
+      "title": "Wikipedia: Shriver Center",
+      "url": "https://en.wikipedia.org/wiki/Shriver_Center",
+      "publisher": "Wikipedia"
+    },
+    "wp_sesquicentennial_chapel": {
+      "title": "Wikipedia: Sesquicentennial Chapel",
+      "url": "https://en.wikipedia.org/wiki/Sesquicentennial_Chapel",
+      "publisher": "Wikipedia"
+    },
+    "wp_laws_hall_miami_university": {
+      "title": "Wikipedia: Laws Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Laws_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_williams_hall_miami_university": {
+      "title": "Wikipedia: Williams Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Williams_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_maccracken_hall": {
+      "title": "Wikipedia: MacCracken Hall",
+      "url": "https://en.wikipedia.org/wiki/MacCracken_Hall",
+      "publisher": "Wikipedia"
+    },
+    "wp_culler_hall_miami_university": {
+      "title": "Wikipedia: Culler Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Culler_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_benton_hall_miami_university": {
+      "title": "Wikipedia: Benton Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Benton_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_millett_hall": {
+      "title": "Wikipedia: Millett Hall",
+      "url": "https://en.wikipedia.org/wiki/Millett_Hall",
+      "publisher": "Wikipedia"
+    },
+    "wp_hoyt_hall_miami_university": {
+      "title": "Wikipedia: Hoyt Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Hoyt_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_goggin_ice_arena": {
+      "title": "Wikipedia: Goggin Ice Arena",
+      "url": "https://en.wikipedia.org/wiki/Goggin_Ice_Arena",
+      "publisher": "Wikipedia"
+    },
+    "wp_bachelor_hall_miami_university": {
+      "title": "Wikipedia: Bachelor Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Bachelor_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_yager_stadium_miami_university": {
+      "title": "Wikipedia: Yager Stadium (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Yager_Stadium_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_pearson_hall_miami_university": {
+      "title": "Wikipedia: Pearson Hall (Miami University)",
+      "url": "https://en.wikipedia.org/wiki/Pearson_Hall_(Miami_University)",
+      "publisher": "Wikipedia"
+    },
+    "wp_hayden_park": {
+      "title": "Wikipedia: Hayden Park",
+      "url": "https://en.wikipedia.org/wiki/Hayden_Park",
+      "publisher": "Wikipedia"
+    },
+    "wp_goggin_ice_center": {
+      "title": "Wikipedia: Goggin Ice Center",
+      "url": "https://en.wikipedia.org/wiki/Goggin_Ice_Center",
+      "publisher": "Wikipedia"
+    }
+  },
   "entries": [
+    {
+      "id": "dewitt_log_homestead",
+      "name": "DeWitt Log Homestead",
+      "kind": "house",
+      "campus": "outlying",
+      "built_year": 1805,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "wp_dewitt_log_homestead"
+      ],
+      "notes": "Oldest extant structure in Oxford Township (NRHP 1973). Miami ownership / campus status unverified.",
+      "osm_id": "way/331535382",
+      "site": null
+    },
+    {
+      "id": "old_main",
+      "name": "Old Main",
+      "other_names": [
+        "Franklin Hall",
+        "Harrison Hall (original)"
+      ],
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1818,
+      "built_precision": "year",
+      "demolished_year": 1958,
+      "status": "demolished",
+      "events": [
+        {
+          "year": 1816,
+          "event": "construction begun"
+        },
+        {
+          "year": 1868,
+          "event": "west wing added"
+        },
+        {
+          "year": 1898,
+          "event": "east wing added"
+        },
+        {
+          "year": 1958,
+          "event": "demolished"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_old",
+        "mu_tl_national",
+        "wp_harrison_hall"
+      ],
+      "notes": "Construction began 1816; central part completed 1818. Replaced on the same site by Harrison Hall (1960).",
+      "osm_id": null,
+      "site": null
+    },
     {
       "id": "elliott_hall",
       "name": "Elliott Hall",
+      "other_names": [
+        "North Hall"
+      ],
+      "kind": "residence",
+      "campus": "main",
       "building_def": "historic_hall",
-      "built_year": 1825,
+      "built_year": 1828,
+      "built_precision": "year",
       "demolished_year": null,
-      "site": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1937,
+          "event": "renovated in neo-Georgian style"
+        }
+      ],
+      "confidence": "conflicting",
       "verified": false,
-      "sources": [],
-      "notes": "Commonly cited as Miami's oldest standing building. Year needs archival confirmation."
+      "sources": [
+        "mu_tl_old",
+        "wp_elliott_and_stoddard_halls",
+        "nrhp_elliott_stoddard"
+      ],
+      "notes": "Miami's timeline: 'constructed' 1828. Wikipedia: built 1825. NRHP lists 1829 as a significant year. First residence hall (North Hall).",
+      "osm_id": "way/184391390",
+      "site": null
+    },
+    {
+      "id": "scott_house",
+      "name": "Scott House (2 South Campus Avenue)",
+      "kind": "house",
+      "campus": "uptown_edge",
+      "built_year": 1831,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Birthplace of Caroline Scott Harrison. Part of Miami's cottage system in the mid-1920s; current Miami ownership unverified.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "mcguffey_house",
+      "name": "William H. McGuffey House",
+      "kind": "house",
+      "campus": "main",
+      "built_year": 1833,
+      "built_precision": "approximate",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "wp_william_h_mcguffey_house",
+        "oxford_walking_tour"
+      ],
+      "notes": "Walking tour: ca. 1832–33. Museum; National Historic Landmark.",
+      "osm_id": "way/182453465",
+      "site": null
+    },
+    {
+      "id": "bishop_house",
+      "name": "Bishop House (400 East High Street)",
+      "kind": "house",
+      "campus": "uptown_edge",
+      "built_year": 1834,
+      "built_precision": "year",
+      "demolished_year": 1960,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Home of Miami's first president Robert Hamilton Bishop 1836–45. Acquired by Miami 1929; razed 1960.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "simpson_shade_guest_house",
+      "name": "Simpson-Shade Guest House",
+      "other_names": [
+        "Rogers House",
+        "Simpson Guest House"
+      ],
+      "kind": "house",
+      "campus": "uptown_edge",
+      "built_year": 1836,
+      "built_precision": "approximate",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1930,
+          "event": "given to Miami"
+        },
+        {
+          "year": 2004,
+          "event": "renamed Simpson-Shade Guest House"
+        }
+      ],
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Built about 1836 (Rogers House). Given to Miami 1930; renamed Simpson-Shade 2004.",
+      "osm_id": "way/544898105",
+      "site": null
     },
     {
       "id": "stoddard_hall",
       "name": "Stoddard Hall",
+      "other_names": [
+        "South Hall"
+      ],
+      "kind": "residence",
+      "campus": "main",
       "building_def": "historic_hall",
       "built_year": 1836,
+      "built_precision": "year",
       "demolished_year": null,
-      "site": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1937,
+          "event": "renovated in neo-Georgian style"
+        }
+      ],
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_old",
+        "wp_elliott_and_stoddard_halls",
+        "nrhp_elliott_stoddard"
+      ],
+      "notes": "Miami's timeline and Wikipedia: 1836. NRHP lists 1835 as a significant year. Second residence hall (South Hall).",
+      "osm_id": "way/184391388",
+      "site": null
+    },
+    {
+      "id": "kennedy_house",
+      "name": "Kennedy House (322 East High Street)",
+      "kind": "house",
+      "campus": "uptown_edge",
+      "built_year": 1839,
+      "built_precision": "approximate",
+      "demolished_year": 1978,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "'Probably constructed by 1839'. Purchased by Miami about a decade before it was destroyed by arson in 1978.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "lewis_place",
+      "name": "Lewis Place",
+      "kind": "house",
+      "campus": "uptown_edge",
+      "built_year": 1839,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1903,
+          "event": "leased to Miami"
+        },
+        {
+          "year": 1929,
+          "event": "sold to Miami"
+        },
+        {
+          "year": 2007,
+          "event": "largest addition"
+        }
+      ],
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Leased to Miami 1903, sold to Miami 1929; official residence of Miami presidents. Largest addition 2007.",
+      "osm_id": "way/397312388",
+      "site": null
+    },
+    {
+      "id": "richey_house",
+      "name": "Richey House (220 East High Street)",
+      "kind": "house",
+      "campus": "uptown_edge",
+      "built_year": 1845,
+      "built_precision": "approximate",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "estimate",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Walking tour: 'beginning in the mid-1840s'. Given to Miami 1988; used as housing for administrators.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "oxford_college",
+      "name": "Oxford College for Women (Oxford Female Institute building)",
+      "kind": "academic",
+      "campus": "oxford_college",
+      "built_year": 1850,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1928,
+          "event": "acquired by Miami; main building renovated"
+        }
+      ],
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "wp_oxford_college_for_women",
+        "mu_tl_new"
+      ],
+      "notes": "Acquired by Miami 1928 and renovated; now the Oxford Community Arts Center (leased/transferred; current ownership unverified).",
+      "osm_id": "way/183546059",
+      "site": null
+    },
+    {
+      "id": "old_manse",
+      "name": "Old Manse",
+      "kind": "house",
+      "campus": "uptown_edge",
+      "built_year": 1852,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1973,
+          "event": "sold to Miami"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour",
+        "wp_old_manse_miami_university",
+        "mu_tl_publicivy"
+      ],
+      "notes": "'Coffee Mill House'. Presbyterian parsonage 1883–1956; Miami property from 1973 (Wikipedia).",
+      "osm_id": "way/397312389",
+      "site": null
+    },
+    {
+      "id": "langstroth_cottage",
+      "name": "Langstroth Cottage",
+      "kind": "house",
+      "campus": "western",
+      "built_year": 1856,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_langstroth_cottage"
+      ],
+      "notes": "Miami's timeline and Wikipedia text: 1856; Wikipedia infobox: 1858. National Historic Landmark (1976).",
+      "osm_id": "way/183700449",
+      "site": null
+    },
+    {
+      "id": "bonham_house",
+      "name": "Bonham House",
+      "kind": "house",
+      "campus": "main",
+      "built_year": 1868,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour",
+        "oxfreepress_2025"
+      ],
+      "notes": "Built for Miami president Robert Stanton. Home of the Myaamia Center.",
+      "osm_id": "way/182453423",
+      "site": null
+    },
+    {
+      "id": "peabody_hall",
+      "name": "Peabody Hall",
+      "other_names": [
+        "Seminary Hall"
+      ],
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 1871,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1855,
+          "event": "Seminary Hall built"
+        },
+        {
+          "year": 1860,
+          "event": "burned"
+        },
+        {
+          "year": 1861,
+          "event": "rebuilt"
+        },
+        {
+          "year": 1905,
+          "event": "renamed Peabody Hall"
+        },
+        {
+          "year": 1974,
+          "event": "acquired by Miami"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "wp_peabody_hall_miami_university",
+        "mu_tl_publicivy"
+      ],
+      "notes": "Original Seminary Hall built 1855, burned 1860, rebuilt 1861, burned 1871 and rebuilt the same year; named Peabody Hall 1905. Miami's timeline gives '1860/1871'.",
+      "osm_id": "way/183831936",
+      "site": null
+    },
+    {
+      "id": "tenney_gateway",
+      "name": "Tenney Gateway",
+      "kind": "landmark",
+      "campus": "western",
+      "built_year": 1890,
+      "built_precision": "decade",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "estimate",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "notes": "Miami's timeline: '1890s'.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "alumnae_hall",
+      "name": "Alumnae Hall (Western College)",
+      "kind": "library",
+      "campus": "western",
+      "built_year": 1892,
+      "built_precision": "year",
+      "demolished_year": 1977,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_alumnae_hall_western_college_for_women"
+      ],
+      "notes": "Western's library until 1970; scheduled to be razed 1975, torn down 1977.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "brice_hall",
+      "name": "Brice Scientific Hall",
+      "other_names": [
+        "Brice Hall"
+      ],
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1892,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_new"
+      ],
+      "notes": "Constructed for science instruction. Later history / demolition not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "lutheran_parsonage",
+      "name": "Lutheran Parsonage (221 East Spring Street)",
+      "kind": "house",
+      "campus": "main",
+      "built_year": 1896,
+      "built_precision": "approximate",
+      "demolished_year": null,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Built about 1896; removed after Miami acquired it (year not stated).",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "miami_field",
+      "name": "Miami Field",
+      "kind": "athletics",
+      "campus": "main",
+      "built_year": 1896,
+      "built_precision": "year",
+      "demolished_year": 1982,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "wp_miami_field"
+      ],
+      "notes": "Opened 1896 as Athletic Park (Yager Stadium article says in use since 1895). Closed 1982; site of the Biological Sciences Building (Pearson Hall).",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "herron_gymnasium",
+      "name": "Herron Gymnasium",
+      "other_names": [
+        "Van Voorhis Hall"
+      ],
+      "kind": "athletics",
+      "campus": "main",
+      "built_year": 1897,
+      "built_precision": "year",
+      "demolished_year": 1986,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "wp_herron_gymnasium"
+      ],
+      "notes": "Later Van Voorhis Hall; NRHP 1979. (A 2025 Miami Student article's claim that it was cleared for Ogden Hall conflicts with this.)",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "patterson_place",
+      "name": "Patterson Place",
+      "kind": "house",
+      "campus": "western",
+      "built_year": 1898,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": "way/183700450",
+      "site": null
+    },
+    {
+      "id": "mckee_hall",
+      "name": "McKee Hall",
+      "other_names": [
+        "New Hall"
+      ],
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 1904,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "ms_2025_women"
+      ],
+      "notes": "Named McKee Hall in 1917 (formerly 'New Hall').",
+      "osm_id": "way/183831907",
+      "site": null
+    },
+    {
+      "id": "huston_house",
+      "name": "Huston House (215 East Spring Street)",
+      "kind": "house",
+      "campus": "main",
+      "built_year": 1905,
+      "built_precision": "year",
+      "demolished_year": 1963,
+      "status": "moved",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Sold to Miami 1947; sold in 1963 and moved several miles west of Oxford. Site now the western part of Hanna House.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "hall_auditorium",
+      "name": "Hall Auditorium",
+      "other_names": [
+        "Auditorium Building",
+        "Benton Hall (1926–1969)"
+      ],
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1908,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "wp_hall_auditorium"
+      ],
+      "notes": "Built as the Administration/Auditorium Building; renamed Benton Hall 1926, Hall Auditorium 1969.",
+      "osm_id": "way/183831928",
+      "site": null
+    },
+    {
+      "id": "tallawanda_apartments",
+      "name": "Tallawanda Apartments (Tallawanda Hall)",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1908,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour",
+        "mu_tl_national"
+      ],
+      "notes": "Built privately by Miami faculty; Miami purchased it in 1952 as a women's residence hall ('Tallawanda Hall acquired'). Now a parking lot; demolition year not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "mcguffey_hall",
+      "name": "McGuffey Hall",
+      "other_names": [
+        "South Pavilion, Normal College"
+      ],
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1909,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "wp_mcguffey_hall",
+        "ghmchs_mcguffey"
+      ],
+      "notes": "Built as the Normal College's South Pavilion; wings 1915, 1916 and 1925.",
+      "osm_id": "way/183831905",
+      "site": null
+    },
+    {
+      "id": "alumni_hall",
+      "name": "Alumni Hall",
+      "other_names": [
+        "Alumni Library"
+      ],
+      "kind": "library",
+      "campus": "main",
+      "built_year": 1910,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "wp_alumni_hall_miami_university",
+        "mu_tl_new"
+      ],
+      "notes": "Wikipedia: completed 1910; Miami's timeline lists it under 1909 (Carnegie award). Renamed from Alumni Library to Alumni Hall when King Library was completed (1972). Chose 1910: 1909 appears to be the year of the Carnegie award, not completion.",
+      "osm_id": "way/183831901",
+      "site": null
+    },
+    {
+      "id": "joyner_house",
+      "name": "Joyner House",
+      "other_names": [
+        "Herald House"
+      ],
+      "kind": "house",
+      "campus": "main",
+      "built_year": 1910,
+      "built_precision": "year",
+      "demolished_year": 2026,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour",
+        "wcpo_2026",
+        "oxfreepress_2025"
+      ],
+      "notes": "Herald House in the 1920s; sold to Miami 1967; demolition began June 2026 (WCPO).",
+      "osm_id": "way/182453488",
+      "site": null
+    },
+    {
+      "id": "new_and_south_cottage",
+      "name": "New Cottage and South Cottage",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1911,
+      "built_precision": "approximate",
+      "demolished_year": 1923,
+      "status": "demolished",
+      "confidence": "estimate",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Temporary women's housing 'for about a dozen years' before Wells Hall was built on the site in 1923.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "stafford_house",
+      "name": "Stafford House (216 East High Street)",
+      "kind": "house",
+      "campus": "uptown_edge",
+      "built_year": 1911,
+      "built_precision": "year",
+      "demolished_year": 2008,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Acquired by Miami 2007, razed 2008.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "bishop_hall",
+      "name": "Bishop Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1912,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "wp_bishop_hall_miami_university"
+      ],
+      "notes": "Built as a residence for women (construction began 1911).",
+      "osm_id": "way/183831888",
+      "site": null
+    },
+    {
+      "id": "sawyer_hall",
+      "name": "Sawyer Hall",
+      "other_names": [
+        "Sawyer Gymnasium"
+      ],
+      "kind": "athletics",
+      "campus": "western",
+      "built_year": 1914,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "ms_2025_women"
+      ],
+      "osm_id": "way/183831920",
+      "site": null
+    },
+    {
+      "id": "clark_gate",
+      "name": "Clark Gate",
+      "kind": "landmark",
+      "campus": "western",
+      "built_year": 1916,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "kelley_studio",
+      "name": "Edgar Stillman Kelley Studio",
+      "kind": "academic",
+      "campus": "western",
+      "built_year": 1916,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": "way/183700448",
+      "site": null
+    },
+    {
+      "id": "kumler_chapel",
+      "name": "Kumler Chapel",
+      "kind": "landmark",
+      "campus": "western",
+      "built_year": 1918,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_kumler_chapel"
+      ],
+      "notes": "Built 1917–18; architect Thomas Hastings.",
+      "osm_id": "way/183831889",
+      "site": null
+    },
+    {
+      "id": "western_bridges",
+      "name": "Western Campus bridges",
+      "kind": "landmark",
+      "campus": "western",
+      "built_year": 1920,
+      "built_precision": "decade",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "estimate",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "notes": "Miami's timeline: '1920s'.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "ernst_nature_theatre",
+      "name": "Ernst Nature Theatre",
+      "kind": "landmark",
+      "campus": "western",
+      "built_year": 1922,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "wells_hall",
+      "name": "Wells Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1923,
+      "built_precision": "year",
+      "demolished_year": 2026,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "oxford_walking_tour",
+        "wcpo_2026"
+      ],
+      "notes": "Built 1922–23 as a residence for women; last used 2019; demolition began June 2026 (WCPO).",
+      "osm_id": "way/182453451",
+      "site": null
+    },
+    {
+      "id": "new_freshman_dormitory_1924",
+      "name": "New Freshman Dormitory (1924)",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1924,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_new"
+      ],
+      "notes": "Listed as 'constructed as residence for men'; later name not established.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "ogden_hall",
+      "name": "Ogden Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1924,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1999,
+          "event": "renovated and extended"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "wp_ogden_hall_miami_university"
+      ],
+      "notes": "Residence for men and student center; construction began 1923; renovated and extended 1999.",
+      "osm_id": "way/184391395",
+      "site": null
+    },
+    {
+      "id": "university_hospital_1924",
+      "name": "University Hospital (1924)",
+      "kind": "student_life",
+      "campus": "main",
+      "built_year": 1924,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_new"
+      ],
+      "notes": "Relationship to the later MacMillan Hospital / MacMillan Hall not established.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "western_steam_plant",
+      "name": "Western Steam Plant",
+      "kind": "utility",
+      "campus": "western",
+      "built_year": 1924,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": "way/183831910",
+      "site": null
+    },
+    {
+      "id": "irvin_hall",
+      "name": "Irvin Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1925,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_new"
+      ],
+      "notes": "Constructed as a recitation building.",
+      "osm_id": "way/183831914",
+      "site": null
+    },
+    {
+      "id": "mary_lyon_hall",
+      "name": "Mary Lyon Hall",
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 1925,
+      "built_precision": "year",
+      "demolished_year": 2016,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_mary_lyon_residence_hall"
+      ],
+      "notes": "Built 1923–25.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "western_lodge",
+      "name": "Western Lodge",
+      "kind": "other",
+      "campus": "western",
+      "built_year": 1926,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": "way/183831925",
+      "site": null
+    },
+    {
+      "id": "wilson_hall",
+      "name": "Wilson Hall",
+      "other_names": [
+        "The Pines"
+      ],
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1926,
+      "built_precision": "year",
+      "demolished_year": 2019,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "wp_wilson_hall_miami_university"
+      ],
+      "notes": "Built as 'The Pines', an annex of the Oxford Retreat; sold to Miami 1936; renamed Wilson Hall 1986; demolition approved Feb 2019 for that summer (completion not separately confirmed).",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "corson_house",
+      "name": "Corson House",
+      "kind": "house",
+      "campus": "western",
+      "built_year": 1930,
+      "built_precision": "decade",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "estimate",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "notes": "Miami's timeline: '1930s'.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "kreger_hall",
+      "name": "Kreger Hall",
+      "other_names": [
+        "Hughes Hall (center section)"
+      ],
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1931,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 2014,
+          "event": "reopened with a new wing"
+        }
+      ],
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "mu_news_2014"
+      ],
+      "notes": "Built as the center section of Hughes Hall for chemistry; now Kreger Hall. Reopened 2014 with a new wing for physics.",
+      "osm_id": "way/183832438",
+      "site": null
+    },
+    {
+      "id": "presser_hall",
+      "name": "Presser Hall",
+      "kind": "academic",
+      "campus": "western",
+      "built_year": 1931,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "notes": "Listed among the Western College buildings acquired in 1974.",
+      "osm_id": "way/183700436",
+      "site": null
+    },
+    {
+      "id": "withrow_court",
+      "name": "Withrow Court",
+      "kind": "athletics",
+      "campus": "main",
+      "built_year": 1931,
+      "built_precision": "year",
+      "demolished_year": 2016,
+      "status": "demolished",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "wp_withrow_hall",
+        "mu_parking_2016",
+        "mu_news_2018"
+      ],
+      "notes": "Miami's timeline: constructed 1931; Wikipedia: inaugurated Feb 1932. Closed 2016. Wikipedia says it was repurposed into Withrow Hall; Miami's 2016–17 parking map ('Withrow Court Demolition') and 2018 news ('built on site of original Withrow Court') indicate demolition and a new building.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "stancote_house",
+      "name": "Stancote House",
+      "kind": "house",
+      "campus": "western",
+      "built_year": 1932,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "ms_2025_women"
+      ],
+      "notes": "Official residence from 1948.",
+      "osm_id": "way/183700438",
+      "site": null
+    },
+    {
+      "id": "symmes_hall",
+      "name": "Symmes Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1939,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "mu_news_2015"
+      ],
+      "notes": "Renovated 2015.",
+      "osm_id": "way/184390037",
+      "site": null
+    },
+    {
+      "id": "hamilton_hall",
+      "name": "Hamilton Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1940,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_new"
+      ],
+      "notes": "Built as a residence for women.",
+      "osm_id": "way/182453461",
+      "site": null
+    },
+    {
+      "id": "richard_hall",
+      "name": "Richard Hall",
+      "other_names": [
+        "South Hall (1940–1952)"
+      ],
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1940,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1952,
+          "event": "new wing; renamed Richard Hall"
+        }
+      ],
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "wp_richard_hall_miami_university",
+        "mu_tl_new"
+      ],
+      "notes": "Wikipedia: built 1940 as 'South Hall'; Miami's timeline: 1941. New wing and renamed Richard Hall 6 Dec 1952. Chose 1940: Wikipedia gives construction details (north unit built 1940, $220,000).",
+      "osm_id": "relation/9817006",
+      "site": null
+    },
+    {
+      "id": "beta_campanile",
+      "name": "Beta Theta Pi Campanile (Beta Bells)",
+      "kind": "landmark",
+      "campus": "main",
+      "built_year": 1941,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_new"
+      ],
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "vetville",
+      "name": "Vetville",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1941,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "notes": "Temporary housing; Miami's timeline lists it as 'erected' in 1941. Removal year not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "clawson_hall",
+      "name": "Clawson Hall",
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 1946,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "ms_2025_women"
+      ],
+      "notes": "Miami's timeline: 1946; The Miami Student: dedicated 1948.",
+      "osm_id": "way/183702411",
+      "site": null
+    },
+    {
+      "id": "harris_dining_wooden",
+      "name": "Harris Hall (war-surplus wooden dining hall)",
+      "kind": "dining",
+      "campus": "main",
+      "built_year": 1946,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "wp_harris_dining_hall_miami_university"
+      ],
+      "notes": "Wooden structure purchased as war surplus in 1946 for dining; replaced by Harris Hall (1961). Removal year not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "boyd_hall",
+      "name": "Boyd Hall",
+      "kind": "academic",
+      "campus": "western",
+      "built_year": 1947,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": "way/183831918",
+      "site": null
+    },
+    {
+      "id": "reid_hall_old",
+      "name": "Reid Hall (original)",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1949,
+      "built_precision": "year",
+      "demolished_year": 2006,
+      "status": "demolished",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_reid_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: 1949; Wikipedia: 1948. Demolished 2006 for the Farmer School of Business; name reused in Heritage Commons.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "rowan_hall",
+      "name": "Rowan Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1949,
+      "built_precision": "year",
+      "demolished_year": 2014,
+      "status": "incorporated",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_rowan_hall",
+        "oxfreepress_2025"
+      ],
+      "notes": "Naval Science building; repurposed (from 2011) with Culler and Gaskill Halls into the Armstrong Student Center (opened 2014).",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "upham_hall",
+      "name": "Upham Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1949,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1950,
+          "event": "north wing"
+        },
+        {
+          "year": 1965,
+          "event": "south wing"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_upham_hall_miami_university"
+      ],
+      "notes": "Centre 1949, north wing 1950, south wing 1965.",
+      "osm_id": "way/184390509",
+      "site": null
+    },
+    {
+      "id": "billings_natatorium",
+      "name": "Billings Natatorium",
+      "kind": "athletics",
+      "campus": "main",
+      "built_year": 1952,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "notes": "Later history not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "collins_hall",
+      "name": "Collins Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1952,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2015"
+      ],
+      "notes": "Renovated 2015.",
+      "osm_id": "way/184389080",
+      "site": null
+    },
+    {
+      "id": "mcbride_hall",
+      "name": "McBride Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1952,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2015"
+      ],
+      "notes": "Renovated 2015.",
+      "osm_id": "way/184389085",
+      "site": null
+    },
+    {
+      "id": "east_dining_hall",
+      "name": "East Dining Hall",
+      "kind": "dining",
+      "campus": "main",
+      "built_year": 1954,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "notes": "Later history not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "porter_hall",
+      "name": "Porter Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1956,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "ms_2025_women"
+      ],
+      "notes": "Dedicated 1957.",
+      "osm_id": "way/97866617",
+      "site": null
+    },
+    {
+      "id": "roudebush_hall",
+      "name": "Roudebush Hall",
+      "other_names": [
+        "Administration Building"
+      ],
+      "kind": "admin",
+      "campus": "main",
+      "built_year": 1956,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "notes": "Miami's timeline lists the 'Administration Building' in 1956; identification with Roudebush Hall is unverified.",
+      "osm_id": "way/184391391",
+      "site": null
+    },
+    {
+      "id": "scott_hall",
+      "name": "Scott Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1957,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2018"
+      ],
+      "notes": "Renovated 2018.",
+      "osm_id": "way/705886668",
+      "site": null
+    },
+    {
+      "id": "shriver_center",
+      "name": "Shriver Center",
+      "other_names": [
+        "University Center"
+      ],
+      "kind": "student_life",
+      "campus": "main",
+      "built_year": 1957,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "wp_shriver_center"
+      ],
+      "notes": "Construction began Oct 1954; completed 1957; opened as the University Center in 1958; renovated 1981.",
+      "osm_id": "way/183700437",
+      "site": null
+    },
+    {
+      "id": "dennison_hall",
+      "name": "Dennison Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1958,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2014"
+      ],
+      "notes": "Work began 1957, completed 1958; absorbed Erickson Dining Hall as living space (2014–15).",
+      "osm_id": "way/184389101",
+      "site": null
+    },
+    {
+      "id": "hiestand_hall",
+      "name": "Hiestand Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1958,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/183700445",
+      "site": null
+    },
+    {
+      "id": "miami_manor",
+      "name": "Miami Manor",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1958,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "notes": "Later history not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "brandon_hall",
+      "name": "Brandon Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1959,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/184557882",
+      "site": null
+    },
+    {
+      "id": "laws_hall",
+      "name": "Laws Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1959,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_laws_hall_miami_university"
+      ],
+      "osm_id": "way/184390806",
+      "site": null
+    },
+    {
+      "id": "mcfarland_hall",
+      "name": "McFarland Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1959,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2014"
+      ],
+      "notes": "Renovated 2013–14.",
+      "osm_id": "way/184557943",
+      "site": null
+    },
+    {
+      "id": "sesquicentennial_chapel",
+      "name": "Sesquicentennial Chapel",
+      "kind": "landmark",
+      "campus": "main",
+      "built_year": 1959,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_sesquicentennial_chapel"
+      ],
+      "osm_id": "way/182453483",
+      "site": null
+    },
+    {
+      "id": "williams_hall",
+      "name": "Williams Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1959,
+      "built_precision": "year",
+      "demolished_year": 2026,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_williams_hall_miami_university",
+        "wcpo_2026"
+      ],
+      "notes": "Built for communications and WMUB radio; demolished June 2026.",
+      "osm_id": "way/182453425",
+      "site": null
+    },
+    {
+      "id": "harrison_hall",
+      "name": "Harrison Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1960,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_harrison_hall"
+      ],
+      "notes": "Built on the site of Old Main.",
+      "osm_id": "way/184391396",
+      "site": null
+    },
+    {
+      "id": "equestrian_center",
+      "name": "John W. Browne Equestrian Center",
+      "kind": "athletics",
+      "campus": "outlying",
+      "built_year": 1960,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 2021,
+          "event": "indoor equestrian center opened"
+        }
+      ],
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2024"
+      ],
+      "notes": "Stables constructed 1960 (spelled 'Browne' in Miami's timeline); indoor equestrian center opened 2021.",
+      "osm_id": "way/184388039",
+      "site": null
+    },
+    {
+      "id": "anderson_hall",
+      "name": "Anderson Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1961,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2014"
+      ],
+      "notes": "Renovated 2013–14.",
+      "osm_id": "way/97632399",
+      "site": null
+    },
+    {
+      "id": "culler_hall",
+      "name": "Culler Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1961,
+      "built_precision": "year",
+      "demolished_year": 2014,
+      "status": "incorporated",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_culler_hall_miami_university",
+        "wp_rowan_hall"
+      ],
+      "notes": "Dedicated 29 Jan 1961; repurposed into the Armstrong Student Center.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "dodds_hall",
+      "name": "Dodds Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1961,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/97867434",
+      "site": null
+    },
+    {
+      "id": "erickson_dining_hall",
+      "name": "Erickson Dining Hall",
+      "kind": "dining",
+      "campus": "main",
+      "built_year": 1961,
+      "built_precision": "year",
+      "demolished_year": 2014,
+      "status": "incorporated",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2014"
+      ],
+      "notes": "Converted into living space for Dennison Hall (2014–15).",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "harris_hall",
+      "name": "Harris Hall",
+      "kind": "dining",
+      "campus": "main",
+      "built_year": 1961,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_harris_dining_hall_miami_university"
+      ],
+      "notes": "Dedicated 16 Sep 1961; closed as a dining hall after 2016–17.",
+      "osm_id": "way/96007228",
+      "site": null
+    },
+    {
+      "id": "maccracken_hall",
+      "name": "MacCracken Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1961,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_maccracken_hall"
+      ],
+      "notes": "Work began 1959, completed 1961.",
+      "osm_id": "way/182453446",
+      "site": null
+    },
+    {
+      "id": "stanton_hall",
+      "name": "Stanton Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1961,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/96010539",
+      "site": null
+    },
+    {
+      "id": "alexander_dining_hall",
+      "name": "Alexander Dining Hall",
+      "kind": "dining",
+      "campus": "western",
+      "built_year": 1962,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "notes": "Later history not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "dorsey_hall",
+      "name": "Dorsey Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1962,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2015"
+      ],
+      "notes": "Renovated 2015.",
+      "osm_id": "way/184390054",
+      "site": null
+    },
+    {
+      "id": "macmillan_hall",
+      "name": "MacMillan Hall",
+      "other_names": [
+        "MacMillan Hospital"
+      ],
+      "kind": "admin",
+      "campus": "main",
+      "built_year": 1962,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_tl_corporate"
+      ],
+      "notes": "MacMillan Hospital center wing constructed 1962; renovated as the Center for American and World Cultures, opened 2003.",
+      "osm_id": "way/182453492",
+      "site": null
+    },
+    {
+      "id": "minnich_hall",
+      "name": "Minnich Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1962,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2018"
+      ],
+      "notes": "Renovated 2018.",
+      "osm_id": "way/182453481",
+      "site": null
+    },
+    {
+      "id": "phillips_hall",
+      "name": "Phillips Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1962,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/182453432",
+      "site": null
+    },
+    {
+      "id": "warfield_hall",
+      "name": "Warfield Hall",
+      "kind": "admin",
+      "campus": "main",
+      "built_year": 1962,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/182453440",
+      "site": null
+    },
+    {
+      "id": "hanna_house",
+      "name": "Hanna House",
+      "kind": "admin",
+      "campus": "main",
+      "built_year": 1963,
+      "built_precision": "year",
+      "demolished_year": 2026,
+      "status": "demolished",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour",
+        "wcpo_2026",
+        "ms_2025_women"
+      ],
+      "notes": "Built 1963 on the sites of two houses, dedicated 1964; demolition began June 2026.",
+      "osm_id": "way/182453429",
+      "site": null
+    },
+    {
+      "id": "thomson_hall",
+      "name": "Thomson Hall",
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 1963,
+      "built_precision": "year",
+      "demolished_year": 2025,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "oxfreepress_2025"
+      ],
+      "notes": "Spelled 'Thompson Hall' in Miami's timeline. Demolished January 2025.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "flower_hall",
+      "name": "Flower Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1966,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "ms_2025_women"
+      ],
+      "osm_id": "way/184557938",
+      "site": null
+    },
+    {
+      "id": "hahne_hall",
+      "name": "Hahne Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1966,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/184557935",
+      "site": null
+    },
+    {
+      "id": "king_library",
+      "name": "King Library",
+      "kind": "library",
+      "campus": "main",
+      "built_year": 1966,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 1972,
+          "event": "north section completed"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_tl_publicivy",
+        "wp_king_library_miami_university"
+      ],
+      "notes": "South section 1966 (King Undergraduate Library); north section completed 1972; three-phase renovation late 1990s–2007.",
+      "osm_id": "way/183831904",
+      "site": null
+    },
+    {
+      "id": "murstein_alumni_center",
+      "name": "Murstein Alumni Center",
+      "kind": "admin",
+      "campus": "main",
+      "built_year": 1967,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/323662309",
+      "site": null
+    },
+    {
+      "id": "shideler_hall",
+      "name": "Shideler Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1967,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "mu_news_2015"
+      ],
+      "notes": "Renovated 2015–16.",
+      "osm_id": "way/183833250",
+      "site": null
+    },
+    {
+      "id": "benton_hall",
+      "name": "Benton Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1968,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_benton_hall_miami_university"
+      ],
+      "osm_id": "way/397382395",
+      "site": null
+    },
+    {
+      "id": "millett_hall",
+      "name": "Millett Hall",
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 1968,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_millett_hall",
+        "oxfreepress_2025"
+      ],
+      "notes": "Opened 2 Dec 1968. A replacement arena on Cook Field is planned.",
+      "osm_id": "way/83701067",
+      "site": null
+    },
+    {
+      "id": "center_performing_arts",
+      "name": "Center for Performing Arts",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1969,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "wp_oxford_college_for_women"
+      ],
+      "notes": "Miami's timeline: 1969; Wikipedia (Oxford College article): completed 1968.",
+      "osm_id": "way/183700461",
+      "site": null
+    },
+    {
+      "id": "emerson_hall",
+      "name": "Emerson Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1969,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "ms_2025_women"
+      ],
+      "notes": "Miami's timeline: 1969; The Miami Student: built and dedicated 1970.",
+      "osm_id": "way/183697661",
+      "site": null
+    },
+    {
+      "id": "mcguffey_lab_school",
+      "name": "McGuffey Laboratory School",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1969,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national",
+        "oxford_walking_tour"
+      ],
+      "notes": "Built on the Bevier Cottage site; relationship to today's McGuffey Montessori School unverified.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "morris_hall",
+      "name": "Morris Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1969,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/183698672",
+      "site": null
+    },
+    {
+      "id": "hughes_laboratories",
+      "name": "Hughes Laboratories",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1970,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/184390716",
+      "site": null
+    },
+    {
+      "id": "tappan_hall",
+      "name": "Tappan Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 1970,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_national"
+      ],
+      "osm_id": "way/183698661",
+      "site": null
+    },
+    {
+      "id": "hoyt_hall",
+      "name": "Hoyt Hall",
+      "other_names": [
+        "Hoyt Library"
+      ],
+      "kind": "library",
+      "campus": "western",
+      "built_year": 1971,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_hoyt_hall_miami_university",
+        "wp_alumnae_hall_western_college_for_women",
+        "ms_2025_women"
+      ],
+      "notes": "Western College library: Miami's timeline 1971; Wikipedia 1967–71 (and 'opened 1970'); dedicated 1973; renamed Hoyt Hall 1981.",
+      "osm_id": "way/183701616",
+      "site": null
+    },
+    {
+      "id": "mckie_field_1973",
+      "name": "McKie Field (1973)",
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 1973,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "unknown",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "notes": "Baseball field; relationship to McKie Field at Hayden Park (2002) not established.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "goggin_ice_arena",
+      "name": "Goggin Ice Arena",
+      "other_names": [
+        "Miami Ice Arena"
+      ],
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 1976,
+      "built_precision": "year",
+      "demolished_year": 2006,
+      "status": "demolished",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "wp_goggin_ice_arena",
+        "mu_tl_publicivy",
+        "mu_tl_corporate"
+      ],
+      "notes": "Wikipedia: opened Sep 1976, demolished Sep 2006. Miami's timeline: constructed 1975, demolished 2003. Named Miami Ice Arena until 1984. Chose 1976/2006: the team used the arena until moving to the new Goggin Ice Center in 2006.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "art_museum",
+      "name": "Miami University Art Museum",
+      "kind": "academic",
+      "campus": "western",
+      "built_year": 1978,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "notes": "Today's Richard and Carole Cocks Art Museum (renaming year not found).",
+      "osm_id": "way/183831911",
+      "site": null
+    },
+    {
+      "id": "bachelor_hall",
+      "name": "Bachelor Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1979,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "conflicting",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_bachelor_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: 1979; Wikipedia: 1978.",
+      "osm_id": "relation/2445913",
+      "site": null
+    },
+    {
+      "id": "marcum_center",
+      "name": "Marcum Conference Center",
+      "kind": "other",
+      "campus": "main",
+      "built_year": 1982,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_oxford_college_for_women"
+      ],
+      "notes": "Opened Sep 1982 on the site of Fisher Hall; today The Marcum Hotel & Conference Center.",
+      "osm_id": "way/184390072",
+      "site": null
+    },
+    {
+      "id": "havighurst_hall",
+      "name": "Havighurst Hall",
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 1983,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "ms_2025_women"
+      ],
+      "osm_id": "way/183701613",
+      "site": null
+    },
+    {
+      "id": "yager_stadium",
+      "name": "Yager Stadium",
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 1983,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_yager_stadium_miami_university"
+      ],
+      "notes": "Opened 1 Oct 1983; renovated 2003–05.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "art_building",
+      "name": "Art Building",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1986,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": "way/183700455",
+      "site": null
+    },
+    {
+      "id": "pearson_hall",
+      "name": "Pearson Hall",
+      "other_names": [
+        "Biological Sciences Building"
+      ],
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 1986,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy",
+        "wp_pearson_hall_miami_university"
+      ],
+      "notes": "Built as the Biological Sciences Building on the site of Miami Field.",
+      "osm_id": "way/545759799",
+      "site": null
+    },
+    {
+      "id": "rec_sports_center",
+      "name": "Recreational Sports Center",
+      "kind": "student_life",
+      "campus": "athletics",
+      "built_year": 1994,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_publicivy"
+      ],
+      "osm_id": "way/182453474",
+      "site": null
+    },
+    {
+      "id": "health_services_center",
+      "name": "Health Services Center",
+      "kind": "student_life",
+      "campus": "main",
+      "built_year": 1996,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "demske_culinary",
+      "name": "Demske Culinary Support Center",
+      "kind": "dining",
+      "campus": "outlying",
+      "built_year": 2001,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_dining_dcsc"
+      ],
+      "notes": "Dining services headquarters 'since 2001'.",
+      "osm_id": "way/107937467",
+      "site": null
+    },
+    {
+      "id": "pulley_bell_tower",
+      "name": "Verlin Pulley Bell Tower",
+      "kind": "landmark",
+      "campus": "main",
+      "built_year": 2001,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "child_development_center",
+      "name": "Child Development Center",
+      "kind": "other",
+      "campus": "western",
+      "built_year": 2002,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "osm_id": "way/183702409",
+      "site": null
+    },
+    {
+      "id": "hayden_park",
+      "name": "McKie Field at Hayden Park",
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 2002,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "wp_hayden_park"
+      ],
+      "notes": "Opened 24 Mar 2002.",
+      "osm_id": "way/83701375",
+      "site": null
+    },
+    {
+      "id": "blanchard_house",
+      "name": "Blanchard House",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2005,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate",
+        "wp_reid_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: Heritage Commons apartments (six buildings) constructed 2005. Assignment of this building to that group is from its name/location in OSM (unverified).",
+      "osm_id": "way/183697200",
+      "site": null
+    },
+    {
+      "id": "fisher_hall",
+      "name": "Fisher Hall (Heritage Commons)",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2005,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate",
+        "wp_reid_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: Heritage Commons apartments (six buildings) constructed 2005. Assignment of this building to that group is from its name/location in OSM (unverified).",
+      "osm_id": "way/183697214",
+      "site": null
+    },
+    {
+      "id": "heritage_commons_center",
+      "name": "Heritage Commons Center",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2005,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate",
+        "wp_reid_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: Heritage Commons apartments (six buildings) constructed 2005. Assignment of this building to that group is from its name/location in OSM (unverified).",
+      "osm_id": "way/183697183",
+      "site": null
+    },
+    {
+      "id": "logan_lodge",
+      "name": "Logan Lodge",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2005,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate",
+        "wp_reid_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: Heritage Commons apartments (six buildings) constructed 2005. Assignment of this building to that group is from its name/location in OSM (unverified).",
+      "osm_id": "way/183697192",
+      "site": null
+    },
+    {
+      "id": "pines_lodge",
+      "name": "Pines Lodge",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2005,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate",
+        "wp_reid_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: Heritage Commons apartments (six buildings) constructed 2005. Assignment of this building to that group is from its name/location in OSM (unverified).",
+      "osm_id": "way/183697202",
+      "site": null
+    },
+    {
+      "id": "reid_hall",
+      "name": "Reid Hall (Heritage Commons)",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2005,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate",
+        "wp_reid_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: Heritage Commons apartments (six buildings) constructed 2005. Assignment of this building to that group is from its name/location in OSM (unverified).",
+      "osm_id": "way/183697199",
+      "site": null
+    },
+    {
+      "id": "tallawanda_hall",
+      "name": "Talawanda Hall (Heritage Commons)",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2005,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate",
+        "wp_reid_hall_miami_university"
+      ],
+      "notes": "Miami's timeline: Heritage Commons apartments (six buildings) constructed 2005. Assignment of this building to that group is from its name/location in OSM (unverified).",
+      "osm_id": "way/183697188",
+      "site": null
+    },
+    {
+      "id": "campus_avenue_garage",
+      "name": "Campus Avenue Garage",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": 2006,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "osm_id": "way/182453463",
+      "site": null
+    },
+    {
+      "id": "goggin_ice_center",
+      "name": "Goggin Ice Center",
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 2006,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate",
+        "wp_goggin_ice_center"
+      ],
+      "notes": "Opened 15 Jul 2006.",
+      "osm_id": "way/182453477",
+      "site": null
+    },
+    {
+      "id": "psychology_building",
+      "name": "Psychology Building",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 2006,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "osm_id": "way/184553436",
+      "site": null
+    },
+    {
+      "id": "engineering_building",
+      "name": "Engineering Building",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 2007,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "notes": "School of Engineering and Applied Science facilities in the new academic quad.",
+      "osm_id": "way/985373576",
+      "site": null
+    },
+    {
+      "id": "softball_stadium",
+      "name": "Softball Stadium",
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 2007,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "north_parking_garage",
+      "name": "North Parking Garage",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": 2008,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "farmer_school",
+      "name": "Farmer School of Business",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 2009,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2024"
+      ],
+      "notes": "Built on the site of the original Reid Hall.",
+      "osm_id": "way/184390046",
+      "site": null
+    },
+    {
+      "id": "etheridge_hall",
+      "name": "Etheridge Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2013,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2013"
+      ],
+      "osm_id": "way/324580220",
+      "site": null
+    },
+    {
+      "id": "geothermal_plant",
+      "name": "Geothermal Plant",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": 2013,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "aia_geothermal"
+      ],
+      "osm_id": "way/330126862",
+      "site": null
+    },
+    {
+      "id": "maplestreet_station",
+      "name": "Maplestreet Station",
+      "kind": "dining",
+      "campus": "main",
+      "built_year": 2013,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2013"
+      ],
+      "osm_id": "way/325445277",
+      "site": null
+    },
+    {
+      "id": "armstrong_student_center",
+      "name": "Armstrong Student Center",
+      "kind": "student_life",
+      "campus": "main",
+      "built_year": 2014,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 2017,
+          "event": "east wing completed"
+        }
+      ],
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2013",
+        "mu_news_2015"
+      ],
+      "notes": "Opened Jan/Feb 2014, incorporating Rowan, Culler and Gaskill Halls; east wing (phase 2) completed 2017.",
+      "osm_id": "way/724458869",
+      "site": null
+    },
+    {
+      "id": "hillcrest_hall",
+      "name": "Hillcrest Hall",
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 2014,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2014"
+      ],
+      "osm_id": "way/329363461",
+      "site": null
+    },
+    {
+      "id": "hodge_hall",
+      "name": "Hodge Hall",
+      "other_names": [
+        "Stonebridge Hall"
+      ],
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 2014,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 2023,
+          "event": "renamed Hodge Hall"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_news_2014",
+        "mu_news_2023_hodge",
+        "ms_2023_hodge"
+      ],
+      "notes": "Opened as Stonebridge Hall; renamed Hodge Hall 2023.",
+      "osm_id": "way/329363462",
+      "site": null
+    },
+    {
+      "id": "western_dining_commons",
+      "name": "Western Dining Commons",
+      "kind": "dining",
+      "campus": "western",
+      "built_year": 2014,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2014"
+      ],
+      "osm_id": "way/329363463",
+      "site": null
+    },
+    {
+      "id": "young_hall",
+      "name": "Young Hall",
+      "other_names": [
+        "Beechwoods Hall"
+      ],
+      "kind": "residence",
+      "campus": "western",
+      "built_year": 2014,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_news_2014",
+        "mu_young_hall"
+      ],
+      "notes": "Opened as Beechwoods Hall; renamed Young Hall (year not found).",
+      "osm_id": "way/329308596",
+      "site": null
+    },
+    {
+      "id": "dauch_indoor_sports_center",
+      "name": "David and Anita Dauch Indoor Sports Center",
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 2015,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2015"
+      ],
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "garden_commons",
+      "name": "Garden Commons",
+      "kind": "dining",
+      "campus": "main",
+      "built_year": 2015,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2015"
+      ],
+      "osm_id": "way/397382670",
+      "site": null
+    },
+    {
+      "id": "chestnut_field_house",
+      "name": "Chestnut Field House",
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 2016,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "ms_2016_chestnut"
+      ],
+      "notes": "Opened 31 Jan 2016.",
+      "osm_id": "way/107937750",
+      "site": null
+    },
+    {
+      "id": "gunlock_apc",
+      "name": "Randy Gunlock Family Athletic Performance Center",
+      "other_names": [
+        "Athletic Performance Center"
+      ],
+      "kind": "athletics",
+      "campus": "athletics",
+      "built_year": 2017,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "jn_apc"
+      ],
+      "osm_id": "way/613437913",
+      "site": null
+    },
+    {
+      "id": "marcum_hall",
+      "name": "Marcum Hall",
+      "other_names": [
+        "Presidents Hall"
+      ],
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2018,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 2021,
+          "event": "renamed Marcum Hall"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_news_2018",
+        "mu_marcum_hall",
+        "ms_2021_presidents"
+      ],
+      "notes": "Opened 2018 as Presidents Hall; renamed Marcum Hall 2021.",
+      "osm_id": "way/704247753",
+      "site": null
+    },
+    {
+      "id": "withrow_hall",
+      "name": "Withrow Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": 2018,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_news_2018",
+        "wp_withrow_hall"
+      ],
+      "notes": "On the site of Withrow Court (see that entry for the conflict).",
+      "osm_id": "way/704247777",
+      "site": null
+    },
+    {
+      "id": "clinical_health_sciences",
+      "name": "Clinical Health Sciences and Wellness Building",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 2023,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2024"
+      ],
+      "notes": "Opened June 2023.",
+      "osm_id": "way/1088928898",
+      "site": null
+    },
+    {
+      "id": "mcvey_data_science",
+      "name": "Richard M. McVey Data Science Building",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": 2024,
+      "built_precision": "year",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2024"
+      ],
+      "notes": "Opened January 2024.",
+      "osm_id": "way/1088928897",
+      "site": null
+    },
+    {
+      "id": "414_e_chestnut",
+      "name": "414 E. Chestnut",
+      "kind": "admin",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
       "verified": false,
       "sources": [],
-      "notes": "Year needs archival confirmation."
+      "notes": "Build year not found.",
+      "osm_id": "way/397473655",
+      "site": null
+    },
+    {
+      "id": "advancement_services",
+      "name": "Advancement Services",
+      "kind": "admin",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/323663101",
+      "site": null
+    },
+    {
+      "id": "bevier_cottage",
+      "name": "Bevier Cottage",
+      "kind": "house",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": 1967,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "oxford_walking_tour"
+      ],
+      "notes": "Frame dwelling sold to Miami 1920, named Bevier Cottage 1959, razed 1967 for the new laboratory school.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "climer_guest_lodge",
+      "name": "Climer Guest Lodge",
+      "kind": "house",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/323662173",
+      "site": null
+    },
+    {
+      "id": "cole_service_building",
+      "name": "Cole Service Building",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/184389094",
+      "site": null
+    },
+    {
+      "id": "cook_field_storage",
+      "name": "Cook Field Storage",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/397477511",
+      "site": null
+    },
+    {
+      "id": "east_end",
+      "name": "East End",
+      "kind": "other",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/184389104",
+      "site": null
+    },
+    {
+      "id": "fisher_hall_old",
+      "name": "Fisher Hall (former Oxford Female College / Oxford Retreat)",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": 1979,
+      "status": "demolished",
+      "events": [
+        {
+          "year": 1925,
+          "event": "purchased by Miami, renamed Fisher Hall"
+        },
+        {
+          "year": 1979,
+          "event": "torn down"
+        }
+      ],
+      "confidence": "corroborated",
+      "verified": false,
+      "sources": [
+        "mu_tl_new",
+        "wp_oxford_college_for_women",
+        "wp_wilson_hall_miami_university"
+      ],
+      "notes": "Oxford Female College (chartered 1854), later the Oxford Retreat sanitarium; purchased by Miami 15 Aug 1925 and renamed; men's residence hall and university theatre; torn down 1979; the Marcum Center (1982) stands on the site. Original build year not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "garland_hall",
+      "name": "Garland Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [
+        "mu_campus_map"
+      ],
+      "notes": "Shown as part of the Engineering Building complex on the campus map; build year not found.",
+      "osm_id": "way/397382396",
+      "site": null
+    },
+    {
+      "id": "gaskill_hall",
+      "name": "Gaskill Hall",
+      "kind": "academic",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": 2014,
+      "status": "incorporated",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "wp_rowan_hall",
+        "oxfreepress_2025"
+      ],
+      "notes": "Repurposed with Rowan and Culler into the Armstrong Student Center; build year not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "glos_center",
+      "name": "Glos Center",
+      "kind": "admin",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/183697665",
+      "site": null
+    },
+    {
+      "id": "hepburn_hall",
+      "name": "Hepburn Hall",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [
+        "mu_hepburn_hall"
+      ],
+      "notes": "Second building with this name (the first was demolished for King Library). Build year not found.",
+      "osm_id": "way/184557900",
+      "site": null
+    },
+    {
+      "id": "hepburn_hall_first",
+      "name": "Hepburn Hall (first)",
+      "kind": "residence",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_hepburn_hall",
+        "wp_king_library_miami_university"
+      ],
+      "notes": "Miami's first women's residence hall, west and north of Bishop Hall. A fire burned it on 14 Jan 1908 (Wikipedia). Demolished to make way for King Library (name reassigned). Build and demolition years not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "martin_dining_hall",
+      "name": "Martin Dining Hall",
+      "kind": "dining",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "A design firm's project page describes it as built in the 1960s (not checked directly).",
+      "osm_id": "way/184557874",
+      "site": null
+    },
+    {
+      "id": "miami_university_police_services_center",
+      "name": "Miami University Police Services Center",
+      "kind": "admin",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/184388051",
+      "site": null
+    },
+    {
+      "id": "nellie_craig_walker_hall",
+      "name": "Nellie Craig Walker Hall",
+      "other_names": [
+        "Campus Avenue Building"
+      ],
+      "kind": "academic",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "events": [
+        {
+          "year": 2021,
+          "event": "dedicated as Nellie Craig Walker Hall"
+        }
+      ],
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_news_2021_ncw",
+        "ms_2025_women"
+      ],
+      "notes": "Formerly the Campus Avenue Building; renamed 2020, dedicated 2021. Build year not found.",
+      "osm_id": "way/182453473",
+      "site": null
+    },
+    {
+      "id": "north_chiller_plant",
+      "name": "North Chiller Plant",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/184557950",
+      "site": null
+    },
+    {
+      "id": "oxford_water_tower",
+      "name": "Oxford water tower",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": 1998,
+      "status": "demolished",
+      "confidence": "sourced",
+      "verified": false,
+      "sources": [
+        "mu_tl_corporate"
+      ],
+      "notes": "Build year not found.",
+      "osm_id": null,
+      "site": null
+    },
+    {
+      "id": "recycling_center",
+      "name": "Recycling Center",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/209725786",
+      "site": null
+    },
+    {
+      "id": "south_chiller_plant",
+      "name": "South Chiller Plant",
+      "kind": "utility",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/182453450",
+      "site": null
+    },
+    {
+      "id": "walter_l_gross_center",
+      "name": "Walter L. Gross Center",
+      "kind": "athletics",
+      "campus": "main",
+      "built_year": null,
+      "built_precision": "unknown",
+      "demolished_year": null,
+      "status": "standing",
+      "confidence": "unknown",
+      "verified": false,
+      "sources": [],
+      "notes": "Build year not found.",
+      "osm_id": "way/83701117",
+      "site": null
     }
   ]
 }

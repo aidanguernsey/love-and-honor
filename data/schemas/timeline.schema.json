@@ -1,50 +1,77 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Timeline of real historic buildings (§30.3)",
+  "title": "Timeline of real Miami University (Oxford) buildings, current and past (§5.1b, §30.3)",
   "type": "object",
-  "required": ["entries"],
+  "required": ["sources", "entries"],
+  "additionalProperties": false,
   "patternProperties": { "^_": {} },
+  "$defs": {
+    "year": { "type": ["integer", "null"], "minimum": 1700, "maximum": 2200 },
+    "precision": { "enum": ["year", "approximate", "decade", "unknown"] }
+  },
   "properties": {
     "$schema": { "type": "string" },
+    "researched": { "type": "string" },
+    "sources": {
+      "type": "object",
+      "description": "Source id → citation. Entries cite sources by id.",
+      "propertyNames": { "pattern": "^[a-z0-9_]+$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["title", "url"],
+        "additionalProperties": false,
+        "properties": {
+          "title": { "type": "string" },
+          "url": { "type": "string", "pattern": "^https://" },
+          "publisher": { "type": "string" },
+          "date": { "type": "string" }
+        }
+      }
+    },
     "entries": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "name", "built_year", "demolished_year", "site", "verified", "sources"],
+        "required": ["id", "name", "campus", "built_year", "built_precision", "demolished_year", "status", "confidence", "verified", "sources"],
         "additionalProperties": false,
-        "patternProperties": { "^_": {} },
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
           "name": { "type": "string" },
+          "other_names": { "type": "array", "items": { "type": "string" } },
+          "kind": { "enum": ["academic", "residence", "dining", "library", "student_life", "athletics", "admin", "house", "utility", "landmark", "other"] },
+          "campus": { "enum": ["main", "western", "oxford_college", "uptown_edge", "athletics", "outlying"] },
           "building_def": { "type": "string", "description": "Optional id of a /data/buildings definition" },
-          "built_year": { "type": "integer", "minimum": 1700, "maximum": 2200 },
-          "demolished_year": { "type": ["integer", "null"], "minimum": 1700, "maximum": 2200 },
+          "built_year": { "$ref": "#/$defs/year" },
+          "built_precision": { "$ref": "#/$defs/precision" },
+          "demolished_year": { "$ref": "#/$defs/year", "description": "Year it left the map (demolished, moved away, or absorbed into another building)" },
+          "status": { "enum": ["standing", "demolished", "incorporated", "moved", "unknown"] },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object", "required": ["year", "event"], "additionalProperties": false,
+              "properties": { "year": { "type": "integer" }, "event": { "type": "string" } }
+            }
+          },
+          "confidence": { "enum": ["corroborated", "sourced", "conflicting", "estimate", "unknown"] },
+          "verified": { "type": "boolean", "description": "true only after checking against University Archives records" },
+          "sources": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" },
+          "osm_id": { "type": ["string", "null"], "pattern": "^(way|relation)/[0-9]+$", "description": "Present-day footprint in data/map/oxford_features.json" },
           "site": {
+            "description": "Footprint for buildings with no OSM outline (e.g. demolished). Tile coordinates, counter-clockwise.",
             "oneOf": [
               { "type": "null" },
               {
-                "type": "object",
-                "required": ["footprint"],
-                "additionalProperties": false,
+                "type": "object", "required": ["footprint"], "additionalProperties": false,
                 "properties": {
-                  "footprint": {
-                    "description": "Polygon in grid coordinates (tiles, 1 tile = 10 m), counter-clockwise",
-                    "type": "array",
-                    "minItems": 3,
-                    "items": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "minItems": 2, "maxItems": 2 }
-                  },
-                  "height_m": { "type": "number", "exclusiveMinimum": 0 },
-                  "osm_id": { "type": ["string", "null"] }
+                  "footprint": { "type": "array", "minItems": 3, "items": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "minItems": 2, "maxItems": 2 } },
+                  "height_m": { "type": "number", "exclusiveMinimum": 0 }
                 }
               }
             ]
-          },
-          "verified": { "type": "boolean" },
-          "sources": { "type": "array", "items": { "type": "string" } },
-          "notes": { "type": "string" }
+          }
         }
       }
     }
-  },
-  "additionalProperties": false
+  }
 }

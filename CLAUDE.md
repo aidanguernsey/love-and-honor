@@ -14,7 +14,9 @@ walkers, ~118 FPS (V-Sync cap), 0 dropped ticks at 8×. Screenshots in `docs/ima
 Step 3a (map pipeline) done: real Oxford data in `data/map/` (1 m USGS lidar → 5 m heightmap, OSM layers
 rasterized to the 400×400 tile grid). Step 3b done: real-map tile data layer (`RealMapLoader`), custom low-poly
 terrain (`TerrainMesher`, `scenes/spikes/terrain_spike.tscn`), build grid + tile inspector; Terrain3D trialled in a
-scratch project → recommend the custom generator (`docs/TERRAIN_COMPARISON.md`). Next: **3c** (timeline, look & feel).
+scratch project → recommend the custom generator (`docs/TERRAIN_COMPARISON.md`).
+Building-dates research done: `data/timeline.json` has 177 Miami buildings/landmarks (current + past) with cited sources,
+confidence levels and OSM links; report in `docs/research/BUILDING_DATES.md`. Next: **3c** (timeline, look & feel).
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The
@@ -31,6 +33,11 @@ scratch project → recommend the custom generator (`docs/TERRAIN_COMPARISON.md`
   path-dense because Miami really is. 2.5 m paths on 10 m tiles is coarse: paths should become their own meshes.
 - Land-state list gained 'water' (not in §5.1b) so creeks/ponds are unbuildable — flag for the design doc. §5.1b mixes
   physical state with ownership (town-owned / university-owned); implemented as listed plus a separate Ownership layer.
+- timeline.json format: `sources` table + entries with built_year/built_precision/demolished_year/status
+  (standing|demolished|incorporated|moved|unknown)/confidence (corroborated|sourced|conflicting|estimate|unknown)/
+  verified(false)/osm_id. Conflicts: Miami's own timeline wins unless a stated reason says otherwise (in notes).
+  Demolished-in-2026 buildings (Wells, Williams, Hanna, Joyner) still have OSM outlines and are linked to them.
+  Never mark verified:true without University Archives confirmation.
 - Terrain: custom GPU 0.5–1.5 ms/frame vs Terrain3D 1.2–1.9 ms; Terrain3D officially supports Godot 4.4–4.6 but ran on 4.7.2.
 - Rendered walkers: cosmetic sample of the latest tick's real walks, limited to a detail radius around the
   look-at point (at low tilt the view reaches km away; far walkers are sub-pixel → impostors later, §30.2).
@@ -44,6 +51,10 @@ scratch project → recommend the custom generator (`docs/TERRAIN_COMPARISON.md`
 - Spike B split into 3a (Python map pipeline) / 3b (terrain + tile layer + Terrain3D comparison) / 3c (timeline,
   look & feel). Downloads approved: PyPI packages into `tools/.venv`, USGS 3DEP + OSM data, Terrain3D plugin trial.
   Heightmap stored at 5 m; terrain mesh at 10 m (tile size). (2026-09-30)
+- **Terrain approach: custom mesh generator** (not Terrain3D) — resolves §38 open question 1. Record as a suggested
+  GAME_DESIGN.md update (§30.3, §38) in the Phase 0 report. (2026-09-30)
+- Before 3c: research construction/demolition dates for all current and past Miami (Oxford) campus buildings into
+  `data/timeline.json`, every entry sourced and still `verified: false`. (2026-09-30)
 - Proposed, not objected to: sim resolves walks within the hourly tick (depart/arrive minutes); rendered
   walkers use a cosmetic walk speed decoupled from game time. Spike campus adds off-campus housing blocks
   and doesn't enforce capacity. (Record as a suggested GAME_DESIGN.md update in the Phase 0 report.)

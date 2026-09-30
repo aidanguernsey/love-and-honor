@@ -8,7 +8,15 @@ The full design is in `GAME_DESIGN.md` (v0.3). **Read the relevant section befor
 **Phase 0 — Foundations & technical spikes** (§37). Build no gameplay content beyond what the spikes need.
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
 (4) art pipeline prep → (5) outreach drafts → (6) Phase 0 report.
-Status: Step 1 (scaffold) done. Next: Step 2, Spike A.
+Status: Step 1 (scaffold) done. Next: Step 2, Spike A — split into **2a** (headless sim + benchmark) and
+**2b** (rendering scene, camera, debug overlay), with a stop after each.
+
+### Decisions made during Phase 0 (by the user)
+- Spike A pass criterion: **p95 tick time ≤ 8 ms** over 1,000 ticks (avg and max reported too). (2026-09-30)
+- Spike A split into 2a / 2b checkpoints. (2026-09-30)
+- Proposed, not objected to: sim resolves walks within the hourly tick (depart/arrive minutes); rendered
+  walkers use a cosmetic walk speed decoupled from game time. Spike campus adds off-campus housing blocks
+  and doesn't enforce capacity. (Record as a suggested GAME_DESIGN.md update in the Phase 0 report.)
 
 ## Working rules
 - Work in small steps. At the end of each step: stop, summarize, explain how to verify, and wait for the user's go-ahead.

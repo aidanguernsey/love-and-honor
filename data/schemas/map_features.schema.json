@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Map vector features in tile coordinates (<prefix>_features.json)",
+  "type": "object",
+  "required": ["buildings", "roads", "waterways", "university_areas"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "point": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "minItems": 2, "maxItems": 2 },
+    "ring": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/point" } },
+    "line": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/point" } },
+    "osmId": { "type": "string", "pattern": "^(way|relation)/[0-9]+$" },
+    "nullableString": { "type": ["string", "null"] }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "buildings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["osm_id", "outline"],
+        "properties": {
+          "osm_id": { "$ref": "#/$defs/osmId" },
+          "name": { "$ref": "#/$defs/nullableString" },
+          "building": { "$ref": "#/$defs/nullableString" },
+          "levels": { "type": ["number", "null"] },
+          "height_m": { "type": ["number", "null"] },
+          "start_date": { "$ref": "#/$defs/nullableString" },
+          "outline": { "$ref": "#/$defs/ring" }
+        }
+      }
+    },
+    "roads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["osm_id", "class", "lines"],
+        "properties": {
+          "osm_id": { "$ref": "#/$defs/osmId" },
+          "class": { "type": "string" },
+          "highway": { "$ref": "#/$defs/nullableString" },
+          "name": { "$ref": "#/$defs/nullableString" },
+          "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/line" } }
+        }
+      }
+    },
+    "waterways": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["osm_id", "class", "lines"],
+        "properties": {
+          "osm_id": { "$ref": "#/$defs/osmId" },
+          "class": { "type": "string" },
+          "name": { "$ref": "#/$defs/nullableString" },
+          "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/line" } }
+        }
+      }
+    },
+    "university_areas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["osm_id", "outline"],
+        "properties": {
+          "osm_id": { "$ref": "#/$defs/osmId" },
+          "name": { "$ref": "#/$defs/nullableString" },
+          "outline": { "$ref": "#/$defs/ring" }
+        }
+      }
+    }
+  }
+}

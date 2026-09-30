@@ -24,6 +24,8 @@ venv/
 # Map pipeline: raw downloads and intermediate files (large; regenerate with /tools)
 tools/_downloads/
 tools/_work/
+# Python virtual environment for the map pipeline
+tools/.venv/
 
 # Blender autosaves / backups
 *.blend1
@@ -35,3 +37,4 @@ Thumbs.db
 desktop.ini
 .vscode/*
 !.vscode/extensions.json
+.pytest_cache/

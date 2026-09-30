@@ -85,11 +85,11 @@ public static class DataValidation
             }
         }
 
-        CrossChecks(docs, issues);
+        CrossChecks(dataDir, docs, issues);
         return issues;
     }
 
-    private static void CrossChecks(Dictionary<string, JsonNode> docs, List<ValidationIssue> issues)
+    private static void CrossChecks(string dataDir, Dictionary<string, JsonNode> docs, List<ValidationIssue> issues)
     {
         // Eras: unique ids, ordered, contiguous, only the last may be open-ended.
         var eraIds = new HashSet<string>();
@@ -147,6 +147,37 @@ public static class DataValidation
             {
                 var def = Str(list[i]!, "def");
                 if (!buildingIds.Contains(def)) issues.Add(new(rel, $"/campus/buildings/{i}", $"unknown building def '{def}'"));
+            }
+        }
+
+        // Map pipeline outputs: binary files exist with the declared size, and the grid still matches balance.json.
+        var balanceMap = docs.TryGetValue("balance.json", out var balanceDoc) ? balanceDoc["map"] : null;
+        foreach (var (rel, node) in docs.Where(d => d.Key.StartsWith("map/") && d.Key.EndsWith("_map.json")))
+        {
+            string dir = Path.GetDirectoryName(Path.Combine(dataDir, rel))!;
+            void CheckBinary(JsonNode? info, int bytesPerSample, string location)
+            {
+                if (info is null) return;
+                string file = Str(info, "file");
+                long expected = (long)(Int(info, "width") ?? 0) * (Int(info, "height") ?? 0) * bytesPerSample;
+                string path = Path.Combine(dir, file);
+                if (!File.Exists(path)) issues.Add(new(rel, location, $"missing file '{file}' (run tools/map_pipeline/build_map.py)"));
+                else if (new FileInfo(path).Length != expected)
+                    issues.Add(new(rel, location, $"'{file}' is {new FileInfo(path).Length} bytes, expected {expected} (is Git LFS installed and pulled?)"));
+            }
+            CheckBinary(node["heightmap"], 2, "/heightmap");
+            if (node["rasters"] is JsonObject rasters)
+                foreach (var (name, info) in rasters) CheckBinary(info, 1, $"/rasters/{name}");
+            if (!File.Exists(Path.Combine(dir, Str(node, "features_file"))))
+                issues.Add(new(rel, "/features_file", $"missing file '{Str(node, "features_file")}'"));
+
+            if (balanceMap is not null)
+            {
+                int tiles = Int(node, "tiles") ?? -1;
+                if (tiles != Int(balanceMap, "grid_width") || tiles != Int(balanceMap, "grid_height"))
+                    issues.Add(new(rel, "/tiles", $"map has {tiles} tiles per side but balance.json map grid is {balanceMap["grid_width"]}x{balanceMap["grid_height"]}; re-run the map pipeline"));
+                if (node["tile_size_m"]?.GetValue<double>() != balanceMap["tile_size_m"]?.GetValue<double>())
+                    issues.Add(new(rel, "/tile_size_m", "tile size differs from balance.json map.tile_size_m; re-run the map pipeline"));
             }
         }
 

@@ -10,7 +10,9 @@ Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford t
 (4) art pipeline prep → (5) outreach drafts → (6) Phase 0 report.
 Status: Step 1 done. Step 2 (Spike A) done: 2a headless sim + benchmark — PASS, p95 ≈ 3.5–4.0 ms on 4 E-cores
 (`docs/benchmarks/spike-a-2026-09-30.txt`); 2b rendering scene (`scenes/spikes/population_spike.tscn`) — 2,000
-walkers, ~118 FPS (V-Sync cap), 0 dropped ticks at 8×. Screenshots in `docs/images/`. Next: **Step 3, Spike B**.
+walkers, ~118 FPS (V-Sync cap), 0 dropped ticks at 8×. Screenshots in `docs/images/`.
+Step 3a (map pipeline) done: real Oxford data in `data/map/` (1 m USGS lidar → 5 m heightmap, OSM layers
+rasterized to the 400×400 tile grid). Next: **3b** (terrain mesh in Godot, tile data layer, Terrain3D comparison).
 
 ### Findings to carry into the Phase 0 report
 - Flow-field rebuild: ~1.4 s on 4 E-cores / ~0.3 s on 4 P-cores for 41 buildings (Dijkstra per building). The
@@ -20,6 +22,9 @@ walkers, ~118 FPS (V-Sync cap), 0 dropped ticks at 8×. Screenshots in `docs/ima
 - Lateness: agents depart on the hour, so any walk > class-change window (10 min) counts as late (avg walk
   11.9 min on the spike map). Phase 1 needs "leave before the hour" departures.
 - Free-hour activity is re-rolled every hour → ~14.8k walks/tick (stress case); smooth it in Phase 1.
+- Map data: elevation 231.6–296.8 m (65 m relief). OSM: 3,138 buildings, only 1 with a start_date → historic
+  timeline can't come from OSM. ~26% of tiles have no land-use tag ("open"). Overpass servers are often busy (504):
+  pipeline retries + falls back to a second server. `out geom tags` silently drops relation members (bug found & fixed).
 - Rendered walkers: cosmetic sample of the latest tick's real walks, limited to a detail radius around the
   look-at point (at low tilt the view reaches km away; far walkers are sub-pixel → impostors later, §30.2).
 - Instance colours need `VertexColorIsSrgb = true` on the material, or palette colours render washed out.
@@ -29,6 +34,9 @@ walkers, ~118 FPS (V-Sync cap), 0 dropped ticks at 8×. Screenshots in `docs/ima
 ### Decisions made during Phase 0 (by the user)
 - Spike A pass criterion: **p95 tick time ≤ 8 ms** over 1,000 ticks (avg and max reported too). (2026-09-30)
 - Spike A split into 2a / 2b checkpoints. (2026-09-30)
+- Spike B split into 3a (Python map pipeline) / 3b (terrain + tile layer + Terrain3D comparison) / 3c (timeline,
+  look & feel). Downloads approved: PyPI packages into `tools/.venv`, USGS 3DEP + OSM data, Terrain3D plugin trial.
+  Heightmap stored at 5 m; terrain mesh at 10 m (tile size). (2026-09-30)
 - Proposed, not objected to: sim resolves walks within the hourly tick (depart/arrive minutes); rendered
   walkers use a cosmetic walk speed decoupled from game time. Spike campus adds off-campus housing blocks
   and doesn't enforce capacity. (Record as a suggested GAME_DESIGN.md update in the Phase 0 report.)
@@ -114,6 +122,8 @@ dotnet run --project tools/DataValidator                    # validate /data (sc
 "$GODOT" --headless --path . --build-solutions --quit       # Godot import + C# build (bash; PowerShell: & $env:GODOT ...)
 "$GODOT" --headless --path . -- --smoke-test                # boot scene prints "SMOKE ..." and quits
 "$GODOT" --path . -e                                        # open editor
+tools/.venv/Scripts/python tools/map_pipeline/build_map.py                    # regenerate data/map/ (downloads cached)
+tools/.venv/Scripts/python -m pytest tools/map_pipeline                       # pipeline tests
 dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks            # Spike A benchmark (exit 1 = over budget)
 dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks -- --quick # gated run only
 ```
@@ -145,6 +155,13 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
 - Godot bridge (`scripts/bridge/`): `GodotDataSource` (res:// via FileAccess), `PopulationSpikeHost` (world,
   runner, ground/buildings/walkers MultiMeshes, stats for GDScript). GDScript: `camera_rig.gd`, `debug_overlay.gd`.
 - Presentation tunables live in `data/rendering.json`; colours there reference `branding.json` palette entries.
+- Map (`data/map/`, generated — never hand-edit): projection is a transverse Mercator centred on campus (grid north
+  = true north at the centre). Tile coords: x east, y SOUTH, origin NW corner (Godot +X east, +Z south). Heightmap
+  `oxford_heightmap.r16` = 801² uint16 LE on tile corners every 5 m; rasters `*.u8` = 400² bytes, codes in
+  `oxford_map.json`. Map size/tile size come from `balance.json`; the validator fails if they drift apart or a binary
+  file has the wrong size (e.g. missing Git LFS). Pipeline settings: `data/map/map_config.json`.
+- Downloads: never put the user's email or other personal data in request headers/URLs (the pipeline's
+  User-Agent is generic; optional `LH_PIPELINE_CONTACT` env var).
 - Tick determinism: work is split into fixed-size chunks (`performance.agent_chunk_size`), each agent touches
   only its own data, chunk results reduce in chunk order → 1 thread and N threads give identical `StateHash`
   (tested). Keep it that way: no shared mutable state inside `ProcessChunk`.

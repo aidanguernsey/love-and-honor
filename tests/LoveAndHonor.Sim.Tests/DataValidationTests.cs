@@ -45,6 +45,20 @@ public class DataValidationTests
     }
 
     [Fact]
+    public void Validator_CatchesTruncatedMapRaster()
+    {
+        var dir = CopyDataToTemp();
+        try
+        {
+            // e.g. a checkout without Git LFS leaves a tiny pointer file instead of the raster.
+            File.WriteAllText(Path.Combine(dir, "map", "oxford_landcover.u8"), "version https://git-lfs.github.com/spec/v1");
+            var issues = DataValidation.ValidateDirectory(dir);
+            Assert.Contains(issues, i => i.File == "map/oxford_map.json" && i.Message.Contains("oxford_landcover.u8"));
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+
+    [Fact]
     public void BrandingProfiles_AreInterchangeable()
     {
         // Both the active profile and the stand-in must satisfy the same schema (§36.1 swappable branding).

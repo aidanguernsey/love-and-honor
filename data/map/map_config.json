@@ -1,0 +1,39 @@
+{
+  "$schema": "../schemas/map_config.schema.json",
+  "_comment": "Inputs for the offline map pipeline (tools/map_pipeline, §30.5). Map size and tile size come from balance.json 'map'. Outputs are written next to this file.",
+  "center": {
+    "lat": 39.5087,
+    "lon": -84.7337,
+    "_comment": "From GAME_DESIGN.md §5. Checked 2026-09-30: lies inside the OSM 'Miami University' campus polygon (way 183831887, centroid 39.50755,-84.72901, ~400 m east); a 4 km box around it contains the whole polygon with >= 390 m margin and keeps Uptown / the Mile Square to the west in view.",
+    "checked": true
+  },
+  "projection": "local_transverse_mercator",
+  "heightmap_resolution_m": 5,
+  "dem": {
+    "service_url": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer",
+    "download_crs_epsg": 32616,
+    "download_pixel_m": 2.5,
+    "download_margin_m": 150
+  },
+  "osm": {
+    "overpass_urls": [
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.kumi.systems/api/interpreter"
+    ],
+    "retries_per_server": 2,
+    "margin_m": 100
+  },
+  "line_widths_m": {
+    "footway": 2.5,
+    "cycleway": 3,
+    "service": 5,
+    "residential": 8,
+    "tertiary": 10,
+    "secondary": 12,
+    "primary": 14,
+    "railway": 5,
+    "stream": 4,
+    "river": 10
+  },
+  "output_prefix": "oxford"
+}

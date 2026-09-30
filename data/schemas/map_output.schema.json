@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Map pipeline output metadata (<prefix>_map.json)",
+  "type": "object",
+  "required": ["generated", "center", "projection", "size_m", "tile_size_m", "tiles", "lonlat_bounds", "heightmap", "rasters", "codes", "features_file", "sources"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "raster": {
+      "type": "object",
+      "required": ["file", "width", "height", "format"],
+      "additionalProperties": false,
+      "properties": {
+        "file": { "type": "string" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "format": { "const": "uint8" }
+      }
+    },
+    "codeMap": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 255 } }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "generated": { "type": "string" },
+    "center": {
+      "type": "object", "required": ["lat", "lon"], "additionalProperties": false,
+      "properties": { "lat": { "type": "number" }, "lon": { "type": "number" } }
+    },
+    "projection": { "type": "string" },
+    "size_m": { "type": "number" },
+    "tile_size_m": { "type": "number" },
+    "tiles": { "type": "integer", "minimum": 1 },
+    "lonlat_bounds": {
+      "type": "object", "required": ["south", "west", "north", "east"],
+      "additionalProperties": { "type": "number" }
+    },
+    "axes": { "type": "string" },
+    "heightmap": {
+      "type": "object",
+      "required": ["file", "width", "height", "resolution_m", "format", "samples_on", "elevation_min_m", "elevation_max_m", "decode"],
+      "properties": {
+        "file": { "type": "string" },
+        "width": { "type": "integer", "minimum": 2 },
+        "height": { "type": "integer", "minimum": 2 },
+        "resolution_m": { "type": "number", "exclusiveMinimum": 0 },
+        "format": { "const": "uint16_le" },
+        "samples_on": { "const": "tile corners" },
+        "elevation_min_m": { "type": "number" },
+        "elevation_max_m": { "type": "number" },
+        "decode": { "type": "string" },
+        "vertical_datum": { "type": "string" }
+      }
+    },
+    "rasters": {
+      "type": "object",
+      "required": ["landcover", "ownership", "paths", "buildings"],
+      "additionalProperties": { "$ref": "#/$defs/raster" }
+    },
+    "codes": {
+      "type": "object",
+      "required": ["landcover", "ownership", "ownership_protected_bit", "paths", "buildings"],
+      "properties": {
+        "landcover": { "$ref": "#/$defs/codeMap" },
+        "ownership": { "$ref": "#/$defs/codeMap" },
+        "ownership_protected_bit": { "type": "integer" },
+        "paths": { "$ref": "#/$defs/codeMap" },
+        "buildings": { "$ref": "#/$defs/codeMap" }
+      }
+    },
+    "features_file": { "type": "string" },
+    "sources": {
+      "type": "object",
+      "required": ["elevation", "osm"],
+      "properties": {
+        "elevation": { "type": "object", "required": ["provider", "license", "retrieved"] },
+        "osm": { "type": "object", "required": ["attribution", "license", "retrieved"] }
+      }
+    }
+  }
+}

@@ -47,6 +47,9 @@ public sealed class BalanceConfig
         public int AgentChunkSize { get; init; }
         public int BenchmarkTicks { get; init; }
         public int BenchmarkWarmupTicks { get; init; }
+        public int PathingRebuildLatencyTicks { get; init; } = 6;
+        public int PathingRebuildThreads { get; init; } = 2;
+        public int BenchmarkEditEveryTicks { get; init; }
     }
 
     public sealed class MapSection

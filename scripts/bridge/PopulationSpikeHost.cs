@@ -17,7 +17,7 @@ namespace LoveAndHonor.Bridge;
 public partial class PopulationSpikeHost : Node3D
 {
     private SimData _data = null!;
-    private SpikeWorld _world = null!;
+    private SimWorld _world = null!;
     private SimRunner _runner = null!;
     private SimSnapshot _snapshot = null!;
     private RenderingConfig _render = null!;
@@ -44,7 +44,7 @@ public partial class PopulationSpikeHost : Node3D
         _data = SimData.Load(source);
         _render = RenderingConfig.Load(source);
         _palette = new Palette(source.ReadText("branding.json"));
-        _world = SpikeWorld.Create(_data);
+        _world = SimWorld.CreateSynthetic(_data);
 
         var grid = _world.Campus.Grid;
         _mapWidthM = grid.Width * grid.TileSizeM;

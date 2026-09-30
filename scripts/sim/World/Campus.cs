@@ -23,6 +23,8 @@ public sealed class CampusBuilding
     public required int H { get; init; }
     /// <summary>Walkable tile where agents enter/leave. Routes start and end here.</summary>
     public required int EntranceTile { get; init; }
+    /// <summary>Relative share when picking homes (off-campus housing zones: building tiles they stand for).</summary>
+    public float Weight { get; init; } = 1f;
 
     public static BuildingKind KindForCategory(string category) => category switch
     {

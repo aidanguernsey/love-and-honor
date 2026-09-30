@@ -45,6 +45,12 @@ public static class PopulationGenerator
             return best;
         }
 
+        // Off-campus homes are picked in proportion to Weight (real-map housing zones stand for different numbers
+        // of houses); with equal weights this is a plain uniform pick, as in Spike A.
+        float[] offWeights = offCampus.Select(i => campus.Buildings[i].Weight).ToArray();
+        bool weighted = offWeights.Any(x => x != offWeights[0]);
+        short OffCampusHome() => weighted ? offCampus[PickWeighted(offWeights, random)] : offCampus[random.NextInt(offCampus.Length)];
+
         var slots = BuildSlots(sched.ClassSlots);
         var onCampusYears = new HashSet<int>(spike.Students.OnCampusYears);
 
@@ -69,7 +75,7 @@ public static class PopulationGenerator
 
             bool onCampus = onCampusYears.Contains(year);
             pop.Housing[a] = onCampus ? HousingType.OnCampus : HousingType.OffCampus;
-            short home = onCampus ? residence[random.NextInt(residence.Length)] : offCampus[random.NextInt(offCampus.Length)];
+            short home = onCampus ? residence[random.NextInt(residence.Length)] : OffCampusHome();
             pop.Home[a] = home;
             pop.CurrentBuilding[a] = home;
             pop.Dining[a] = Nearest(home, dining);
@@ -93,7 +99,7 @@ public static class PopulationGenerator
         {
             int dept = random.NextInt(deptCount);
             short office = DeptBuilding(dept);
-            short home = offCampus[random.NextInt(offCampus.Length)];
+            short home = OffCampusHome();
             pop.Kind[a] = AgentKind.Faculty;
             pop.Department[a] = (ushort)dept;
             pop.Rank[a] = RankOrder[PickWeighted(rankShares, random)];

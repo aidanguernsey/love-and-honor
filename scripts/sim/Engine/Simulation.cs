@@ -16,7 +16,12 @@ public readonly record struct TickStats(
     int LateArrivals,
     long WalkMinutes,
     int RoutesTraced,
-    float AverageHappiness);
+    float AverageHappiness,
+    bool FieldsSwapped,
+    double FieldSwapWaitMs);
+
+/// <summary>A change to one tile's walking surface (paths laid or removed). Buildings come with placement (1e).</summary>
+public readonly record struct TileEdit(int Tile, TileType Type);
 
 /// <summary>
 /// Runs the hourly tick (§30.2) over the whole population.
@@ -45,8 +50,16 @@ public sealed class Simulation
     private readonly Action<int> _processChunk;
 
     // Per-chunk scratch, reused every tick (no per-tick allocation in the agent loop).
-    private readonly int[][] _pairCounts;
     private readonly ChunkStats[] _chunkStats;
+    // Walkers per (from, to) building pair this tick, and which pairs were touched (foot traffic).
+    private int[] _pairTotals = [];
+    private int[] _touchedPairs = [];
+    // Flow fields in use for the current tick (swapped only between ticks).
+    private FlowFieldData _paths = null!;
+    // Map edits waiting for their rebuilt flow fields.
+    private readonly HashSet<int> _changedTiles = new();
+    private readonly int _rebuildLatency;
+    private int _rebuildApplyTick = -1;
     // Agents that started a walk this tick, per chunk (read by the renderer via CopyLastTickWalkers).
     private readonly int[][] _chunkWalkers;
     private readonly int[] _chunkWalkerCount;
@@ -85,10 +98,9 @@ public sealed class Simulation
         _processChunk = ProcessChunk;
         Time = new SimTime(DateOnly.Parse(data.Spike.StartDate, System.Globalization.CultureInfo.InvariantCulture));
 
+        _rebuildLatency = Math.Max(1, data.Balance.Performance.PathingRebuildLatencyTicks);
         _fields.EnsureCurrent();
-        int pairs = _fields.BuildingCount * _fields.BuildingCount;
-        _pairCounts = new int[_chunkCount][];
-        for (int c = 0; c < _chunkCount; c++) _pairCounts[c] = new int[pairs];
+        UsePaths(_fields.Current);
         _chunkStats = new ChunkStats[_chunkCount];
         _chunkWalkers = new int[_chunkCount][];
         for (int c = 0; c < _chunkCount; c++) _chunkWalkers[c] = new int[_chunkSize];
@@ -97,11 +109,55 @@ public sealed class Simulation
         for (int a = 0; a < _pop.Count; a++) _pop.Happiness[a] = _needs.Happiness(_pop.Needs, a);
     }
 
+    /// <summary>The tick at which pending map edits get their new flow fields, or -1.</summary>
+    public int RebuildApplyTick => _rebuildApplyTick;
+
+    /// <summary>
+    /// Changes walking surfaces (Grass ↔ Path) on the sim thread, between ticks. Walkers keep using the current flow
+    /// fields; the rebuilt ones (computed in the background) are swapped in exactly pathing_rebuild_latency_ticks
+    /// later, waiting if needed, so the outcome never depends on timing.
+    /// </summary>
+    public void ApplyTileEdits(ReadOnlySpan<TileEdit> edits)
+    {
+        if (edits.IsEmpty) return;
+        foreach (var e in edits)
+        {
+            if (e.Type is not (TileType.Grass or TileType.Path))
+                throw new ArgumentException("Only Grass/Path edits are supported (buildings come with placement).");
+            if (_grid.Types[e.Tile] is not (TileType.Grass or TileType.Path) || _grid.Types[e.Tile] == e.Type) continue;
+            _grid.Types[e.Tile] = e.Type;
+            _grid.MarkChanged();
+            _changedTiles.Add(e.Tile);
+        }
+        if (_changedTiles.Count == 0) return;
+        _fields.BeginRebuild(_changedTiles);
+        _rebuildApplyTick = Time.Tick + _rebuildLatency;
+    }
+
+    private void UsePaths(FlowFieldData data)
+    {
+        _paths = data;
+        int pairs = data.BuildingCount * data.BuildingCount;
+        if (_pairTotals.Length != pairs)
+        {
+            _pairTotals = new int[pairs];
+            _touchedPairs = new int[pairs];
+        }
+    }
+
     public void Tick()
     {
         long t0 = Stopwatch.GetTimestamp();
-        if (_fields.EnsureCurrent())
-            throw new InvalidOperationException("Map changed: pair-count buffers must be resized (not needed in Spike A).");
+        bool swapped = false;
+        double swapWait = 0;
+        if (_rebuildApplyTick >= 0 && Time.Tick >= _rebuildApplyTick)
+        {
+            swapWait = _fields.CompleteRebuild();
+            UsePaths(_fields.Current);
+            _changedTiles.Clear();
+            _rebuildApplyTick = -1;
+            swapped = true;
+        }
 
         _tickStartMinute = Time.TickStartMinute;
         _day = Time.Day;
@@ -134,7 +190,7 @@ public sealed class Simulation
             Stopwatch.GetElapsedTime(t0, t1).TotalMilliseconds,
             Stopwatch.GetElapsedTime(t1, t2).TotalMilliseconds,
             walks, late, walkMinutes, routesTraced,
-            (float)(happiness / _pop.Count));
+            (float)(happiness / _pop.Count), swapped, swapWait);
         Time.Advance();
     }
 
@@ -143,11 +199,10 @@ public sealed class Simulation
         var p = _pop;
         int start = c * _chunkSize;
         int end = Math.Min(start + _chunkSize, p.Count);
-        int[] pairs = _pairCounts[c];
         int[] walkers = _chunkWalkers[c];
         int walkerCount = 0;
-        int b = _fields.BuildingCount;
-        float[] distance = _fields.DistanceM;
+        int b = _paths.BuildingCount;
+        float[] distance = _paths.DistanceM;
         int commute = _needs.CommuteIndex;
         var stats = new ChunkStats();
 
@@ -173,7 +228,6 @@ public sealed class Simulation
                     p.WalkDepartMinute[a] = _tickStartMinute;
                     p.WalkArriveMinute[a] = _tickStartMinute + minutes;
                     p.CurrentBuilding[a] = target;
-                    pairs[current * b + target]++;
                     walkers[walkerCount++] = a;
                     p.Needs[a * PopulationStore.NeedCount + commute] -= minutes * _commutePenalty;
                     stats.Walks++;
@@ -209,26 +263,34 @@ public sealed class Simulation
     }
 
     /// <summary>
-    /// Adds this tick's walkers to foot traffic. Walkers are counted per (from, to) building pair during the
-    /// agent phase, so each distinct route is traced once no matter how many agents took it (§12.4 desire paths).
+    /// Adds this tick's walkers to foot traffic. Walkers are grouped per (from, to) building pair (in chunk order, so
+    /// deterministic), and each distinct route is traced once no matter how many agents took it (§12.4 desire paths).
     /// </summary>
     private int AccumulateFootTraffic()
     {
-        int b = _fields.BuildingCount;
-        int[] traffic = _grid.FootTraffic;
-        int traced = 0;
-        for (int pair = 0; pair < b * b; pair++)
+        int b = _paths.BuildingCount;
+        int[] totals = _pairTotals, touched = _touchedPairs;
+        int touchedCount = 0;
+        var p = _pop;
+        for (int c = 0; c < _chunkCount; c++)
         {
-            int total = 0;
-            for (int c = 0; c < _chunkCount; c++)
+            int[] walkers = _chunkWalkers[c];
+            for (int i = 0; i < _chunkWalkerCount[c]; i++)
             {
-                total += _pairCounts[c][pair];
-                _pairCounts[c][pair] = 0;
+                int a = walkers[i];
+                int pair = p.WalkFrom[a] * b + p.WalkTo[a];
+                if (totals[pair]++ == 0) touched[touchedCount++] = pair;
             }
-            if (total == 0) continue;
-            foreach (int tile in _fields.Route(pair / b, pair % b)) traffic[tile] += total;
-            traced++;
         }
-        return traced;
+        int[] traffic = _grid.FootTraffic;
+        int[][] routes = _paths.Routes;
+        for (int k = 0; k < touchedCount; k++)
+        {
+            int pair = touched[k];
+            int total = totals[pair];
+            totals[pair] = 0;
+            foreach (int tile in routes[pair]) traffic[tile] += total;
+        }
+        return touchedCount;
     }
 }

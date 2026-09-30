@@ -69,6 +69,9 @@ public sealed class TileGrid
     public bool InBounds(int x, int y) => (uint)x < (uint)Width && (uint)y < (uint)Height;
     public bool IsWalkable(int index) => Types[index] is not (TileType.Building or TileType.Water);
 
+    /// <summary>Call after writing <see cref="Types"/> directly, so cached flow fields know they're stale.</summary>
+    public void MarkChanged() => Version++;
+
     public void SetType(int x, int y, TileType type)
     {
         if (!InBounds(x, y)) return;

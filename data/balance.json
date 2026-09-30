@@ -24,10 +24,14 @@
     "sim_worker_threads": 4,
     "agent_chunk_size": 1024,
     "benchmark_ticks": 1000,
-    "benchmark_warmup_ticks": 168
+    "benchmark_warmup_ticks": 168,
+    "_pathing_comment": "Phase 1 1a: flow fields rebuild on background threads after a map change and are swapped in exactly pathing_rebuild_latency_ticks later (the sim waits if they aren't ready), so results never depend on timing. benchmark_edit_every_ticks toggles a path tile in the benchmark to exercise this.",
+    "pathing_rebuild_latency_ticks": 24,
+    "pathing_rebuild_threads": 2,
+    "benchmark_edit_every_ticks": 48
   },
   "map": {
-    "_comment": "§5.1. NOTE: §5.1 says 15-degree rotation steps, §12.1 says rotate 90 degrees; flagged for the user.",
+    "_comment": "§5.1, §12.1: buildings rotate in 15-degree steps (resolved in GAME_DESIGN.md v0.4).",
     "extent_m": 4000,
     "tile_size_m": 10,
     "grid_width": 400,

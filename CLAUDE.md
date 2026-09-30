@@ -7,7 +7,16 @@ The full design is in `GAME_DESIGN.md` (v0.4). **Read the relevant section befor
 ## Current phase
 **Phase 0 complete (2026-09-30).** All 16 design-doc updates approved and applied (GAME_DESIGN.md v0.4).
 **Next: Phase 1 — "The Hill"**, checkpoints 1a–1k in `docs/PHASE0_REPORT.md` §5 (approved), starting with **1a**
-(sim on the real map + background flow-field rebuilds). Don't start 1a until the user says go; stop after every checkpoint.
+(sim on the real map + background flow-field rebuilds). Stop after every checkpoint.
+**1a IN PROGRESS (paused at usage limit, 2026-09-30):** done — `RealCampusBuilder` (84 Miami buildings + 108 housing
+zones from timeline/OSM, `data/real_campus.json`), `SimWorld.CreateReal`, FlowFieldSet rewrite (Dial full build,
+canonical directions, incremental background updates identical to full rebuilds — 20-map test, swap at a fixed tick
+`pathing_rebuild_latency_ticks`=24, pooled scratch = 0 GCs), benchmark `--map real|synthetic`, edits, `--pace-speed`,
+`--pace-all`, `--traffic-png`. 96 tests pass. Findings: rebuild after a path edit ~85 ms avg (was ~930 ms full);
+real map unpaced p95 ≈5.0 ms; **paced at 1× (idle gaps like the real game) p95 ≈7.1 ms real / 6.1 ms synthetic** on
+4 E-cores (cold cores after idle) — close to the 8 ms budget. Left: decide gate (paced vs unpaced), maybe keep workers
+warm / trim foot-traffic phase (1.2 ms paced), full benchmark run + save to docs/benchmarks, heatmap image to
+docs/images, update PHASE0-style notes/README, final commit, then stop for the user.
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →

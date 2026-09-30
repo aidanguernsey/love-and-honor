@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Real-map campus derivation for the simulation (Phase 1, 1a)",
+  "type": "object",
+  "required": ["kind_map", "entrance_search_radius_tiles", "prefer_path_within_tiles", "housing"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": { "type": "string" },
+    "kind_map": {
+      "type": "object",
+      "propertyNames": { "pattern": "^(_.*|[a-z_]+)$" },
+      "patternProperties": {
+        "^_": {},
+        "^[a-z][a-z_]*$": { "enum": ["academic", "residence", "dining", "library", "recreation"] }
+      },
+      "minProperties": 1
+    },
+    "entrance_search_radius_tiles": { "type": "integer", "minimum": 1, "maximum": 50 },
+    "prefer_path_within_tiles": { "type": "integer", "minimum": 0, "maximum": 50 },
+    "housing": {
+      "type": "object",
+      "required": ["zone_size_tiles", "max_distance_m", "min_building_tiles"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "zone_size_tiles": { "type": "integer", "minimum": 2, "maximum": 100 },
+        "max_distance_m": { "type": "number", "exclusiveMinimum": 0 },
+        "min_building_tiles": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

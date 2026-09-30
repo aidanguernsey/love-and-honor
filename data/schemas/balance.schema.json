@@ -89,9 +89,26 @@
         "sim_worker_threads",
         "agent_chunk_size",
         "benchmark_ticks",
-        "benchmark_warmup_ticks"
+        "benchmark_warmup_ticks",
+        "pathing_rebuild_latency_ticks",
+        "pathing_rebuild_threads",
+        "benchmark_edit_every_ticks"
       ],
       "properties": {
+        "pathing_rebuild_latency_ticks": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "A map change's new flow fields are swapped in exactly this many ticks later (deterministic)"
+        },
+        "pathing_rebuild_threads": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "benchmark_edit_every_ticks": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Benchmark: toggle a path tile this often to exercise background rebuilds (0 = never)"
+        },
         "tick_budget_ms": {
           "type": "number",
           "exclusiveMinimum": 0

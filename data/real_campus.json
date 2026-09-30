@@ -1,0 +1,20 @@
+{
+  "$schema": "./schemas/real_campus.schema.json",
+  "_comment": "How the simulation's campus is derived from the real Oxford map and data/timeline.json (Phase 1, checkpoint 1a). Every number is a [TWEAK] starting guess.",
+  "kind_map": {
+    "_comment": "timeline.json kind -> sim destination kind. Kinds not listed (admin, athletics, house, landmark, utility, other) aren't destinations yet; they still block walking.",
+    "academic": "academic",
+    "residence": "residence",
+    "dining": "dining",
+    "library": "library",
+    "student_life": "recreation"
+  },
+  "entrance_search_radius_tiles": 8,
+  "prefer_path_within_tiles": 3,
+  "housing": {
+    "_comment": "Off-campus housing: the town's other buildings grouped into zones of zone_size_tiles x zone_size_tiles, each one sim destination weighted by its building tiles. Zones with fewer than min_building_tiles are dropped.",
+    "zone_size_tiles": 20,
+    "max_distance_m": 1800,
+    "min_building_tiles": 6
+  }
+}

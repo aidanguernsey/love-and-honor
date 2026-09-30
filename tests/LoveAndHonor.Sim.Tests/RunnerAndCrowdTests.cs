@@ -9,9 +9,9 @@ public class RunnerAndCrowdTests
 {
     private static readonly SimData Data = SimData.Load(new FileSystemDataSource(RepoPaths.Data));
 
-    private static (SpikeWorld world, SimRunner runner) NewRunner()
+    private static (SimWorld world, SimRunner runner) NewRunner()
     {
-        var world = SpikeWorld.Create(Data, threads: 2, students: 2000, faculty: 200, chunkSize: 256);
+        var world = SimWorld.CreateSynthetic(Data, threads: 2, students: 2000, faculty: 200, chunkSize: 256);
         var t = Data.Balance.Time;
         return (world, new SimRunner(world.Simulation, world.Campus.Grid, t.Speeds, t.RealSecondsPerGameDay, t.TicksPerGameDay));
     }

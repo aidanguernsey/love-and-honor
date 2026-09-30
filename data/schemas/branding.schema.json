@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Branding profile (§36.1) — all names, colors, logos, songs; swappable",
+  "type": "object",
+  "required": ["profile_id", "permission_status", "game_title", "university", "athletics", "colors", "assets", "music", "show_disclaimer", "disclaimer", "unverified"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "hex": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+    "resPathOrNull": { "type": ["string", "null"], "pattern": "^res://" }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "profile_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "permission_status": { "enum": ["pending", "granted", "limited", "denied", "not_applicable"] },
+    "game_title": { "type": "string", "minLength": 1 },
+    "university": {
+      "type": "object",
+      "required": ["name", "short_name", "town", "state", "founded_year", "demonym"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "short_name": { "type": "string", "minLength": 1 },
+        "town": { "type": "string" },
+        "state": { "type": "string" },
+        "founded_year": { "type": "integer" },
+        "demonym": { "type": "string" }
+      }
+    },
+    "athletics": {
+      "type": "object",
+      "required": ["nickname", "mascot_name", "conference"],
+      "additionalProperties": false,
+      "properties": {
+        "nickname": { "type": "string" },
+        "mascot_name": { "type": "string" },
+        "conference": { "type": "string" }
+      }
+    },
+    "colors": {
+      "type": "object",
+      "required": ["primary", "secondary", "brick", "trim", "slate", "copper", "lawn", "limestone"],
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "$ref": "#/$defs/hex" },
+        "secondary": { "$ref": "#/$defs/hex" },
+        "brick": { "type": "array", "items": { "$ref": "#/$defs/hex" }, "minItems": 1 },
+        "trim": { "$ref": "#/$defs/hex" },
+        "slate": { "$ref": "#/$defs/hex" },
+        "copper": { "$ref": "#/$defs/hex" },
+        "lawn": { "type": "array", "items": { "$ref": "#/$defs/hex" }, "minItems": 1 },
+        "limestone": { "$ref": "#/$defs/hex" }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "required": ["logo_primary", "wordmark", "seal", "athletic_mark"],
+      "additionalProperties": { "$ref": "#/$defs/resPathOrNull" }
+    },
+    "music": {
+      "type": "object",
+      "required": ["alma_mater", "fight_song"],
+      "additionalProperties": { "$ref": "#/$defs/resPathOrNull" }
+    },
+    "show_disclaimer": { "type": "boolean" },
+    "disclaimer": { "type": "string" },
+    "unverified": { "type": "array", "items": { "type": "string" }, "description": "Dotted paths of values still marked [VERIFY]" }
+  },
+  "if": { "properties": { "show_disclaimer": { "const": true } } },
+  "then": { "properties": { "disclaimer": { "minLength": 1 } } }
+}

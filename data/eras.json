@@ -1,0 +1,14 @@
+{
+  "$schema": "./schemas/eras.schema.json",
+  "_comment": "§25.1 era list; §5.1b road evolution. Year boundaries are an interpretation of the doc's era labels (1820s, 1880s, ...) and the 1809 start; price multipliers and clothing sets are placeholders.",
+  "eras": [
+    { "id": "founding",  "name": "Founding Era",   "start_year": 1809, "end_year": 1879, "road_type": "dirt",    "clothing_set": "c1820s", "price_multiplier": 0.02 },
+    { "id": "gilded",    "name": "Reopening Era",  "start_year": 1880, "end_year": 1899, "road_type": "gravel",  "clothing_set": "c1880s", "price_multiplier": 0.04 },
+    { "id": "early20",   "name": "Early 1900s",    "start_year": 1900, "end_year": 1949, "road_type": "brick",   "clothing_set": "c1900s", "price_multiplier": 0.08 },
+    { "id": "postwar",   "name": "Postwar Boom",   "start_year": 1950, "end_year": 1969, "road_type": "asphalt", "clothing_set": "c1950s", "price_multiplier": 0.15 },
+    { "id": "late20",    "name": "Late 1900s",     "start_year": 1970, "end_year": 1999, "road_type": "asphalt", "clothing_set": "c1970s", "price_multiplier": 0.35 },
+    { "id": "turn21",    "name": "Turn of the Century", "start_year": 2000, "end_year": 2019, "road_type": "asphalt", "clothing_set": "c2000s", "price_multiplier": 0.75 },
+    { "id": "modern",    "name": "Modern Era",     "start_year": 2020, "end_year": 2026, "road_type": "asphalt", "clothing_set": "c2020s", "price_multiplier": 1.0 },
+    { "id": "future",    "name": "Future",         "start_year": 2027, "end_year": null, "road_type": "asphalt", "clothing_set": "c2020s", "price_multiplier": 1.0 }
+  ]
+}

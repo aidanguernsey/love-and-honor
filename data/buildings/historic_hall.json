@@ -1,0 +1,16 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "Elliott/Stoddard-style. Landmark only (cost null). Beds 60-120 in §11.3; 90 is a placeholder midpoint. Upkeep is a placeholder.",
+  "id": "historic_hall",
+  "name": "Historic Hall",
+  "category": "residence",
+  "footprint": { "w": 3, "h": 4 },
+  "cost_usd": null,
+  "upkeep_usd_per_year": 150000,
+  "capacity": { "kind": "beds", "value": 90 },
+  "style": "georgian_revival",
+  "unlock_era": "founding",
+  "needs_served": ["sleep", "belonging"],
+  "model": null,
+  "design_ref": "§11.3"
+}

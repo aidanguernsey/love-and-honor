@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "id": "small_classroom_hall",
+  "name": "Small Classroom Hall",
+  "category": "academic",
+  "footprint": { "w": 4, "h": 4 },
+  "cost_usd": 8000000,
+  "upkeep_usd_per_year": 250000,
+  "capacity": { "kind": "seats", "value": 600 },
+  "style": "georgian_revival",
+  "unlock_era": "founding",
+  "needs_served": ["study"],
+  "model": null,
+  "design_ref": "§11.1"
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "./schemas/timeline.schema.json",
+  "_comment": "Real historic building dates & sites (§30.3). Every entry stays verified:false until checked against university archives. Sites are filled in during Spike B (grid coords, 1 tile = 10 m).",
+  "entries": [
+    {
+      "id": "elliott_hall",
+      "name": "Elliott Hall",
+      "building_def": "historic_hall",
+      "built_year": 1825,
+      "demolished_year": null,
+      "site": null,
+      "verified": false,
+      "sources": [],
+      "notes": "Commonly cited as Miami's oldest standing building. Year needs archival confirmation."
+    },
+    {
+      "id": "stoddard_hall",
+      "name": "Stoddard Hall",
+      "building_def": "historic_hall",
+      "built_year": 1836,
+      "demolished_year": null,
+      "site": null,
+      "verified": false,
+      "sources": [],
+      "notes": "Year needs archival confirmation."
+    }
+  ]
+}

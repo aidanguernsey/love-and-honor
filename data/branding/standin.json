@@ -1,0 +1,43 @@
+{
+  "$schema": "../schemas/branding.schema.json",
+  "_comment": "Fictional stand-in profile (§36.1) for use if permission is limited or denied. Copy over /data/branding.json to activate. Names are invented and must not reference real institutions.",
+  "profile_id": "standin_fictional",
+  "permission_status": "not_applicable",
+  "game_title": "Love & Honor",
+  "university": {
+    "name": "Redbrick University",
+    "short_name": "Redbrick",
+    "town": "Oxford",
+    "state": "Ohio",
+    "founded_year": 1809,
+    "demonym": "Redbrickers"
+  },
+  "athletics": {
+    "nickname": "Kestrels",
+    "mascot_name": "Rusty",
+    "conference": "Heartland Athletic Conference"
+  },
+  "colors": {
+    "primary": "#9E2A2B",
+    "secondary": "#FFFFFF",
+    "brick": ["#8E3B2E", "#A94A3A", "#B85C47"],
+    "trim": "#F4F1EA",
+    "slate": "#4A5563",
+    "copper": "#5E9C8A",
+    "lawn": ["#6DA34D", "#4E8A3A"],
+    "limestone": "#D9CFBF"
+  },
+  "assets": {
+    "logo_primary": null,
+    "wordmark": null,
+    "seal": null,
+    "athletic_mark": null
+  },
+  "music": {
+    "alma_mater": null,
+    "fight_song": null
+  },
+  "show_disclaimer": false,
+  "disclaimer": "",
+  "unverified": []
+}

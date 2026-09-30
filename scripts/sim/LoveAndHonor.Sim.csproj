@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Simulation core. Plain .NET: must never reference Godot, so it can be unit-tested and benchmarked headless. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>LoveAndHonor.Sim</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Godot exports build referenced projects with its own configuration names; treat ExportRelease like Release
+       so the shipped sim is optimized (plain SDK projects only optimize the "Release" configuration). -->
+  <PropertyGroup Condition="'$(Configuration)' == 'ExportRelease'">
+    <Optimize>true</Optimize>
+    <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LoveAndHonor.Sim.Tests" />
+  </ItemGroup>
+</Project>

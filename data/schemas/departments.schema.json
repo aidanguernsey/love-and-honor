@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Colleges and departments (§13.1-13.2)",
+  "type": "object",
+  "required": ["colleges", "departments"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": { "type": "string" },
+    "colleges": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "verified"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "name": { "type": "string" },
+          "verified": { "type": "boolean" }
+        }
+      }
+    },
+    "departments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "college", "space_type", "verified"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "name": { "type": "string" },
+          "college": { "type": "string" },
+          "shared_with": { "type": "array", "items": { "type": "string" } },
+          "space_type": { "enum": ["classroom", "lab", "studio"] },
+          "verified": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "King-style. §11.2 gives no numbers; footprint, cost, upkeep, capacity and unlock era are placeholders.",
+  "id": "main_library",
+  "name": "Main Library",
+  "category": "library",
+  "footprint": { "w": 8, "h": 6 },
+  "cost_usd": 45000000,
+  "upkeep_usd_per_year": 1200000,
+  "capacity": { "kind": "study_seats", "value": 2000 },
+  "style": "georgian_revival",
+  "unlock_era": "founding",
+  "needs_served": ["study"],
+  "model": null,
+  "design_ref": "§11.2"
+}

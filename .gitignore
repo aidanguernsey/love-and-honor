@@ -1,0 +1,37 @@
+# Godot 4
+.godot/
+/android/
+*.translation
+export.cfg
+export_credentials.cfg
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+mono_crash.*.json
+TestResults/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Map pipeline: raw downloads and intermediate files (large; regenerate with /tools)
+tools/_downloads/
+tools/_work/
+
+# Blender autosaves / backups
+*.blend1
+*.blend2
+
+# OS / editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json

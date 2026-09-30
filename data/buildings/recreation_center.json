@@ -1,0 +1,16 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "§11.5 gives no numbers; footprint, cost, upkeep, capacity and unlock era are placeholders.",
+  "id": "recreation_center",
+  "name": "Recreation Center",
+  "category": "student_life",
+  "footprint": { "w": 8, "h": 8 },
+  "cost_usd": 50000000,
+  "upkeep_usd_per_year": 1500000,
+  "capacity": { "kind": "visitors_per_hour", "value": 1200 },
+  "style": "georgian_revival",
+  "unlock_era": "early20",
+  "needs_served": ["health", "fun"],
+  "model": null,
+  "design_ref": "§11.5"
+}

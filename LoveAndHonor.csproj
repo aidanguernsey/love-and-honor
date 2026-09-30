@@ -1,0 +1,20 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+  <!-- Godot game assembly: scene glue and the thin C# bridge to the sim core.
+       The simulation itself lives in scripts/sim (a plain class library with no Godot dependency). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>LoveAndHonor</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- These folders are separate projects; keep them out of the Godot assembly's default glob. -->
+    <Compile Remove="scripts/sim/**" />
+    <Compile Remove="tests/**" />
+    <Compile Remove="tools/**" />
+    <None Remove="scripts/sim/**;tests/**;tools/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="scripts/sim/LoveAndHonor.Sim.csproj" />
+  </ItemGroup>
+</Project>

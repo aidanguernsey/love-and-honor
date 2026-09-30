@@ -8,7 +8,7 @@ The full design is in `GAME_DESIGN.md` (v0.3). **Read the relevant section befor
 **Phase 0 — Foundations & technical spikes** (§37). Build no gameplay content beyond what the spikes need.
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
 (4) art pipeline prep → (5) outreach drafts → (6) Phase 0 report.
-Status: environment checked, CLAUDE.md written. Step 1 not started.
+Status: Step 1 (scaffold) done. Next: Step 2, Spike A.
 
 ## Working rules
 - Work in small steps. At the end of each step: stop, summarize, explain how to verify, and wait for the user's go-ahead.
@@ -60,11 +60,11 @@ Status: environment checked, CLAUDE.md written. Step 1 not started.
 ## Environment (checked 2026-09-30)
 | Tool | Status |
 |---|---|
-| Godot | 4.7.2-stable **mono** (.NET) at `C:\Users\aidan\Downloads\Godot_v4.7.2-stable_mono_win64\...` — not on PATH. GodotSharp targets `net8.0`. |
-| .NET | Runtime 10.0.11 only — **no SDK installed** (required) |
-| git / git-lfs | 2.54.0 / 3.7.1 ✔ |
-| Python | **Not installed** (only the Microsoft Store alias) — needed for `/tools` pipeline |
-| Blender | Not installed (optional, Step 4) |
+| Godot | 4.7.2-stable **mono** (.NET) at `C:\Tools\Godot\`, `GODOT` env var → console exe. GodotSharp targets `net8.0`; we target `net10.0` (works). |
+| .NET | SDK 10.0.401, runtime 10.0.12 |
+| git / git-lfs | 2.54.0 / 3.7.1 (LFS enabled per-repo with `--local`) |
+| Python | 3.13.15 (`...\Programs\Python\Python313\python.exe`) |
+| Blender | 5.2 at `C:\Program Files\Blender Foundation\Blender 5.2` |
 | Dev machine | i9-14900HX (24C/32T), RTX 4070 Laptop, 32 GB — far above min spec; benchmarks must constrain to 4 threads and results must be caveated |
 
 ## Repo layout (§30.6, planned — created in Step 1)
@@ -82,7 +82,35 @@ docs/            ART_PIPELINE.md, outreach drafts, PHASE0_REPORT.md
 ```
 
 ## Build / run / test
-_To be filled in during Step 1 once the .NET SDK is installed and the projects exist._
+Godot console exe: `$GODOT` env var (= `C:\Tools\Godot\Godot_v4.7.2-stable_mono_win64_console.exe`). Shells
+opened before it was set may not see it; use the full path then. Python: `C:\Users\aidan\AppData\Local\Programs\Python\Python313\python.exe`.
+```
+dotnet build LoveAndHonor.sln                               # everything
+dotnet test LoveAndHonor.sln                                # unit tests incl. data validation
+dotnet run --project tools/DataValidator                    # validate /data (schemas + cross-refs)
+"$GODOT" --headless --path . --build-solutions --quit       # Godot import + C# build
+"$GODOT" --headless --path . -- --smoke-test                # boot scene prints "SMOKE ..." and quits
+"$GODOT" --path . -e                                        # open editor
+```
+
+## Project structure & conventions
+- `LoveAndHonor.sln`: `LoveAndHonor.csproj` (Godot.NET.Sdk 4.7.2, net10.0) → ProjectReference →
+  `scripts/sim/LoveAndHonor.Sim.csproj` (plain net10.0). Also `tools/DataValidator` and `tests/LoveAndHonor.Sim.Tests` (xUnit).
+- The Godot csproj excludes `scripts/sim/**`, `tests/**`, `tools/**` from its compile glob. Those folders (and `docs/`)
+  have `.gdignore`.
+- Namespaces: `LoveAndHonor.Sim.*` (sim core), `LoveAndHonor.Bridge` (Godot nodes wrapping the sim),
+  `LoveAndHonor.Tools`, `LoveAndHonor.Sim.Tests`.
+- GDScript calls C# bridge methods by their PascalCase names (e.g. `_bridge.GetSimDescription()`).
+- **The sim never does file I/O on `res://`.** Exported games pack `res://` into a .pck that `System.IO` can't read.
+  The bridge reads data via Godot `FileAccess` and hands JSON text/streams to the sim.
+- `LoveAndHonor.Sim.csproj` sets `Optimize=true` for Godot's `ExportRelease` config (plain SDK projects wouldn't).
+  Editor runs use Debug, so in-editor sim timings are pessimistic; benchmark with `-c Release`.
+- RNG: `DeterministicRng` (xoshiro256**, pinned by golden-value test) via `RngStreams.For("system", index)`.
+  Never use `System.Random` or `string.GetHashCode()` for anything that affects sim state.
+- Data: every `data/**/*.json` declares `"$schema"`; `_`-prefixed keys are comments; unverified real-world facts
+  carry `"verified": false`. New data file → add a schema + (if needed) cross-checks in `tools/DataValidator/DataValidation.cs`.
+- Branding: active profile `data/branding.json`, fictional stand-in `data/branding/standin.json`. Same schema.
+- Line endings: LF in the repo (`.gitattributes`); binary art/audio/geodata via Git LFS.
 
 ## Content sensitivity (applies to any text or data written here)
 - Alcohol: only 21+ agents drink; underage drinking only ever has negative outcomes; no drinking rewards/achievements.

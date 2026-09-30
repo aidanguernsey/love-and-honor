@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Timeline of real historic buildings (§30.3)",
+  "type": "object",
+  "required": ["entries"],
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "built_year", "demolished_year", "site", "verified", "sources"],
+        "additionalProperties": false,
+        "patternProperties": { "^_": {} },
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "name": { "type": "string" },
+          "building_def": { "type": "string", "description": "Optional id of a /data/buildings definition" },
+          "built_year": { "type": "integer", "minimum": 1700, "maximum": 2200 },
+          "demolished_year": { "type": ["integer", "null"], "minimum": 1700, "maximum": 2200 },
+          "site": {
+            "oneOf": [
+              { "type": "null" },
+              {
+                "type": "object",
+                "required": ["footprint"],
+                "additionalProperties": false,
+                "properties": {
+                  "footprint": {
+                    "description": "Polygon in grid coordinates (tiles, 1 tile = 10 m), counter-clockwise",
+                    "type": "array",
+                    "minItems": 3,
+                    "items": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "minItems": 2, "maxItems": 2 }
+                  },
+                  "height_m": { "type": "number", "exclusiveMinimum": 0 },
+                  "osm_id": { "type": ["string", "null"] }
+                }
+              }
+            ]
+          },
+          "verified": { "type": "boolean" },
+          "sources": { "type": "array", "items": { "type": "string" } },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

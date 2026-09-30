@@ -1,0 +1,43 @@
+{
+  "$schema": "./schemas/branding.schema.json",
+  "_comment": "ACTIVE branding profile. Game code must read every name, color, logo and song from here, never hard-code them. To swap, replace this file with a profile from /data/branding/ (e.g. standin.json). permission_status tracks the §36.1 licensing request.",
+  "profile_id": "miami_real",
+  "permission_status": "pending",
+  "game_title": "Love & Honor",
+  "university": {
+    "name": "Miami University",
+    "short_name": "Miami",
+    "town": "Oxford",
+    "state": "Ohio",
+    "founded_year": 1809,
+    "demonym": "Miamians"
+  },
+  "athletics": {
+    "nickname": "RedHawks",
+    "mascot_name": "Swoop",
+    "conference": "Mid-American Conference"
+  },
+  "colors": {
+    "primary": "#C3142D",
+    "secondary": "#FFFFFF",
+    "brick": ["#8E3B2E", "#A94A3A", "#B85C47"],
+    "trim": "#F4F1EA",
+    "slate": "#4A5563",
+    "copper": "#5E9C8A",
+    "lawn": ["#6DA34D", "#4E8A3A"],
+    "limestone": "#D9CFBF"
+  },
+  "assets": {
+    "logo_primary": null,
+    "wordmark": null,
+    "seal": null,
+    "athletic_mark": null
+  },
+  "music": {
+    "alma_mater": null,
+    "fight_song": null
+  },
+  "show_disclaimer": true,
+  "disclaimer": "Unofficial fan project — not affiliated with or endorsed by Miami University.",
+  "unverified": ["colors.primary", "athletics.conference"]
+}

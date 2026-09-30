@@ -1,0 +1,16 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "§11.4 gives no numbers; footprint, cost, upkeep, capacity and unlock era are placeholders.",
+  "id": "dining_commons",
+  "name": "Dining Commons",
+  "category": "dining",
+  "footprint": { "w": 5, "h": 5 },
+  "cost_usd": 20000000,
+  "upkeep_usd_per_year": 800000,
+  "capacity": { "kind": "diners_per_hour", "value": 1500 },
+  "style": "georgian_revival",
+  "unlock_era": "founding",
+  "needs_served": ["food", "social"],
+  "model": null,
+  "design_ref": "§11.4"
+}

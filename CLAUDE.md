@@ -81,6 +81,14 @@ courtesy note, README with a send log). **Nothing sent.** Next: **Step 6** (Phas
      `_renovated` models only where the shape really changed.
   4. Rendered characters: **vertex-animation textures on a MultiMesh** (one mesh, shared rig, short loops).
   5. Mobile renderer compatibility: noted; test on the Mobile renderer before any iPad work.
+- Walking & desire paths (user, current Miami student, 2026-09-30): most people stay on paved paths and cut across
+  grass only when it clearly saves time; only regularly walked shortcuts get matted down to dirt. **Keep desire paths**,
+  but they should be less common than now. Phase 1 model: (1) paths strongly preferred — grass cost multiplier plus
+  a one-off "step off the path" penalty, so small corner cuts aren't worth it but long diagonals (Slant Walk) still
+  are; (2) wear from *sustained* traffic with grass regrowth (recent-traffic decay), not all-time totals, so only
+  regular shortcuts turn to dirt ("over weeks", §12.4). Spike A's 1.3× grass cost + cumulative wear overstate grass
+  use (its synthetic map also removes path segments on purpose). Suggested §12.4 update ("Students walk shortest
+  routes" → "prefer paved paths; cut across grass when it saves enough") goes in the Phase 0 report.
 
 ## Working rules
 - Work in small steps. At the end of each step: stop, summarize, explain how to verify, and wait for the user's go-ahead.

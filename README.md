@@ -74,6 +74,18 @@ Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F 
 `--speed=N` (0 = pause … 4 = 8×), `--camera=x,z,distance,pitch,yaw`, `--spike-smoke` (print stats after 6 s and quit).
 Tick times shown in the editor come from a Debug build of the sim; use the benchmark for real numbers.
 
+The game (Phase 1 preview: the real 2026 campus with everyone simulated, no building yet): click **Play** on the boot
+screen, or run it directly:
+
+```powershell
+& $env:GODOT --path . res://scenes/game/game.tscn
+```
+
+Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F tilt · Space pause/resume · 1–4 speed
+(1×/2×/4×/8×) · O foot-traffic overlay · G build grid · Esc main menu. Hover a building for its name. Desire paths wear
+into the campus lawns over a few in-game weeks. Launch options (after `--`): `--speed=N`, `--camera=x,z,distance,pitch,yaw`,
+`--game-smoke[=seconds]` (print stats and quit), `--screenshot=FILE` (with `--game-smoke`).
+
 Spike B terrain (real Oxford, 1 m lidar + OSM): click **Spike B** on the boot screen, or run it directly:
 
 ```powershell
@@ -142,8 +154,13 @@ The Godot project (`LoveAndHonor.csproj`) references the sim library as a normal
 
 ## Exporting
 
-Export presets must include `*.json, *.r16, *.u8` in "Filters to export non-resource files", or the game won't
-find `data/` (the map's heightmap and tile rasters are raw binary files).
+`export_presets.cfg` has a **Windows Desktop** preset (output `build/windows/`, git-ignored). It includes
+`*.json, *.r16, *.u8` as non-resource files: without them the game can't find `data/` (the map's heightmap and tile
+rasters are raw binary files). Needs the Godot 4.7.2 .NET export templates (Editor → Manage Export Templates).
+
+```powershell
+& $env:GODOT --headless --path . --export-release "Windows Desktop" build/windows/LoveAndHonor.exe
+```
 
 ## Data conventions
 

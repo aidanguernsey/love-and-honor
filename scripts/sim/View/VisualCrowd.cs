@@ -92,15 +92,18 @@ public sealed class VisualCrowd
     }
 
     /// <summary>Writes active walkers as MultiMesh instances (row-major 3×4 transform + colour). Returns the count written.</summary>
-    public int WriteInstances(Span<float> buffer, float scale, float halfHeightM, ReadOnlySpan<float> categoryRgba)
+    /// <param name="ground">Terrain height under a point (render space), or null for flat ground at y = 0.</param>
+    public int WriteInstances(Span<float> buffer, float scale, float halfHeightM, ReadOnlySpan<float> categoryRgba,
+        Heightmap? ground = null)
     {
         int n = Math.Min(ActiveCount, buffer.Length / FloatsPerInstance);
         float y = halfHeightM * scale;
         for (int i = 0; i < n; i++)
         {
             var b = buffer.Slice(i * FloatsPerInstance, FloatsPerInstance);
+            float baseY = ground is null ? 0f : ground.HeightAt(_x[i], _z[i]);
             b[0] = scale; b[1] = 0; b[2] = 0; b[3] = _x[i];
-            b[4] = 0; b[5] = scale; b[6] = 0; b[7] = y;
+            b[4] = 0; b[5] = scale; b[6] = 0; b[7] = baseY + y;
             b[8] = 0; b[9] = 0; b[10] = scale; b[11] = _z[i];
             int c = _category[i] * 4;
             b[12] = categoryRgba[c]; b[13] = categoryRgba[c + 1]; b[14] = categoryRgba[c + 2]; b[15] = categoryRgba[c + 3];

@@ -17,6 +17,10 @@ town yards: only university land counts as lawn); desire paths from >=40 walkers
 free time chosen per 2-hour block. Real map: 98.6% of crossings on paths, 259 worn tiles after 48 days
 (`docs/images/real-map-desire-paths.png`). Benchmark `docs/benchmarks/phase1-1b-walking-2026-10-01.txt`: gated p95
 6.1 ms, paced 1x 6.7 ms (machine ~1 ms slower today than for 1a: the 1a code measured 6.0 ms). Next: **1c** (game shell).
+**1c done (2026-10-01), awaiting the user's review:** game scene `scenes/game/game.tscn` (boot → Play): real terrain +
+buildings (`MapRenderer`), real-map sim on the sim thread (`GameHost`, built on a worker behind a loading message),
+walkers on the terrain, sun/seasons/desire paths from the sim clock, academic calendar (`data/calendar.json`, classes
+only in term), HUD skeleton (§27.1) in `scripts/ui/game_hud.gd`, Windows export preset. Next: **1d** (land: 1824 start).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -226,6 +230,14 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   SimSnapshot), `View/` (VisualCrowd: engine-agnostic rendered-subset logic, unit-tested).
 - Threading: `SimRunner` owns the sim thread; the main thread only calls `AdvanceRealTime`, `AcquireLatest`,
   `RequestTraffic`, `SpeedIndex`. Never read `PopulationStore` arrays from the main thread — use the snapshot.
+- Game shell (1c): `MapRenderer` (bridge, plain class) draws the real map for both Spike B (`TerrainSpikeHost`, now a
+  thin wrapper) and the game: terrain chunks + LODs, tile texture (`TileColorizer`: land/season/roads, plus
+  `ApplyWear`/`ApplyTraffic` overlays; repaints can run on a worker via `RepaintAsync`, uploaded in `Process`), building
+  extrusions, sun. `GameHost` (game scene) owns the sim (`SimWorld.CreateReal(..., map:)` on a worker; shares the
+  RealMap: the renderer only reads heights/land states/paths), `SimRunner`, `VisualCrowd` walkers (ground heights via
+  `WriteInstances(..., heights)`), and exposes `GetHud()`/controls to `game_hud.gd`. Calendar: `AcademicCalendar`
+  (Core) from `data/calendar.json` (month-day phases, `verified:false`); `Simulation` passes `classes` to
+  `ScheduleModel.Resolve`. Students still live on campus in breaks/summer (presence comes with enrollment, 1h).
 - Godot bridge (`scripts/bridge/`): `GodotDataSource` (res:// via FileAccess), `PopulationSpikeHost` (world,
   runner, ground/buildings/walkers MultiMeshes, stats for GDScript). GDScript: `camera_rig.gd`, `debug_overlay.gd`.
 - Presentation tunables live in `data/rendering.json`; colours there reference `branding.json` palette entries.

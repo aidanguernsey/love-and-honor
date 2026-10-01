@@ -24,6 +24,7 @@ public sealed class SimData
     public required DepartmentsConfig Departments { get; init; }
     public required IReadOnlyDictionary<string, BuildingDef> Buildings { get; init; }
     public required PopulationSpikeConfig Spike { get; init; }
+    public required Core.AcademicCalendar Calendar { get; init; }
 
     public const string SpikeFile = "spikes/population_spike.json";
 
@@ -43,6 +44,7 @@ public sealed class SimData
             Departments = SimJson.Parse<DepartmentsConfig>(source.ReadText("departments.json"), "departments.json"),
             Buildings = buildings,
             Spike = SimJson.Parse<PopulationSpikeConfig>(source.ReadText(SpikeFile), SpikeFile),
+            Calendar = Core.AcademicCalendar.Load(source),
         };
     }
 }

@@ -35,15 +35,16 @@ public sealed class ScheduleModel
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public short Resolve(PopulationStore p, int a, int day, int weekday, int hour, out Activity activity) =>
+    /// <param name="classes">False outside term time (academic calendar, §6.2): nobody goes to class.</param>
+    public short Resolve(PopulationStore p, int a, int day, int weekday, int hour, out Activity activity, bool classes = true) =>
         p.Kind[a] == AgentKind.Student
-            ? ResolveStudent(p, a, day, weekday, hour, out activity)
-            : ResolveFaculty(p, a, weekday, hour, out activity);
+            ? ResolveStudent(p, a, day, weekday, hour, out activity, classes)
+            : ResolveFaculty(p, a, weekday, hour, out activity, classes);
 
-    private short ResolveStudent(PopulationStore p, int a, int day, int weekday, int hour, out Activity activity)
+    private short ResolveStudent(PopulationStore p, int a, int day, int weekday, int hour, out Activity activity, bool classes)
     {
         bool weekend = weekday >= 5;
-        if (!weekend && TryClass(p, a, weekday, hour, out short classBuilding))
+        if (classes && !weekend && TryClass(p, a, weekday, hour, out short classBuilding))
         {
             activity = Activity.Class;
             return classBuilding;
@@ -78,7 +79,7 @@ public sealed class ScheduleModel
         };
     }
 
-    private short ResolveFaculty(PopulationStore p, int a, int weekday, int hour, out Activity activity)
+    private short ResolveFaculty(PopulationStore p, int a, int weekday, int hour, out Activity activity, bool classes)
     {
         if (hour < p.WakeHour[a] || hour >= p.BedHour[a])
         {
@@ -87,7 +88,7 @@ public sealed class ScheduleModel
         }
         if (weekday < 5)
         {
-            if (TryClass(p, a, weekday, hour, out short classBuilding))
+            if (classes && TryClass(p, a, weekday, hour, out short classBuilding))
             {
                 activity = Activity.Teach;
                 return classBuilding;

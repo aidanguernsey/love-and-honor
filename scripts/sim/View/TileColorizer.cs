@@ -101,4 +101,42 @@ public sealed class TileColorizer
             Pixels[p + 3] = 255;
         }
     }
+
+    /// <summary>
+    /// Desire paths (§12.4) on top of <see cref="Paint"/>: worn tiles blend toward <paramref name="dirt"/> by their wear,
+    /// fully worn ones (a desire path) all the way.
+    /// </summary>
+    public void ApplyWear(ReadOnlySpan<float> wear, Rgb dirt)
+    {
+        for (int i = 0; i < wear.Length; i++)
+        {
+            float w = wear[i];
+            if (w <= 0) continue;
+            float a = w >= TileGrid.DesirePathWear ? 1f : 0.2f + 0.6f * w;
+            int p = i * 4;
+            Pixels[p] = (byte)(Pixels[p] * (1 - a) + dirt.R * 255 * a + 0.5f);
+            Pixels[p + 1] = (byte)(Pixels[p + 1] * (1 - a) + dirt.G * 255 * a + 0.5f);
+            Pixels[p + 2] = (byte)(Pixels[p + 2] * (1 - a) + dirt.B * 255 * a + 0.5f);
+        }
+    }
+
+    /// <summary>Foot-traffic overlay on top of <see cref="Paint"/>: the map dimmed, crossed tiles from <paramref name="low"/>
+    /// to <paramref name="high"/> on a log scale.</summary>
+    public void ApplyTraffic(ReadOnlySpan<int> traffic, Rgb low, Rgb high)
+    {
+        int max = 1;
+        foreach (int t in traffic) if (t > max) max = t;
+        float logMax = MathF.Log(1 + max);
+        for (int i = 0; i < traffic.Length; i++)
+        {
+            int p = i * 4;
+            if (traffic[i] <= 0)
+            {
+                Pixels[p] = (byte)(Pixels[p] * 0.45f); Pixels[p + 1] = (byte)(Pixels[p + 1] * 0.45f); Pixels[p + 2] = (byte)(Pixels[p + 2] * 0.45f);
+                continue;
+            }
+            var c = Rgb.Lerp(low, high, MathF.Log(1 + traffic[i]) / logMax);
+            Pixels[p] = (byte)(c.R * 255 + 0.5f); Pixels[p + 1] = (byte)(c.G * 255 + 0.5f); Pixels[p + 2] = (byte)(c.B * 255 + 0.5f);
+        }
+    }
 }

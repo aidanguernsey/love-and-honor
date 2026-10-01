@@ -103,6 +103,9 @@ public sealed class SimRunner : IDisposable
     }
 
     public IReadOnlyList<float> Speeds => _speeds;
+
+    /// <summary>Main thread: how far game time has got toward the next tick (0..1), for smooth clocks and sun.</summary>
+    public double TickFraction => _tickDebt;
     public float CurrentSpeed => _speeds[_speedIndex];
 
     public int SpeedIndex

@@ -68,6 +68,8 @@ public sealed class Simulation
 
     // Values for the tick in progress, read by ProcessChunk.
     private int _tickStartMinute, _day, _weekday, _hour;
+    private bool _classesHeld;
+    private readonly AcademicCalendar _calendar;
 
     private struct ChunkStats
     {
@@ -89,6 +91,7 @@ public sealed class Simulation
         _fields = fields;
         _grid = campus.Grid;
         _schedule = new ScheduleModel(data.Schedules, rng);
+        _calendar = data.Calendar;
         _needs = new NeedsModel(data.Balance.Needs);
         _walkSpeed = data.Balance.Walking.SpeedMPerMin;
         _commutePenalty = data.Balance.Walking.CommutePenaltyPerMinute;
@@ -178,6 +181,7 @@ public sealed class Simulation
         _day = Time.Day;
         _weekday = Time.WeekdayIndex;
         _hour = Time.HourOfDay;
+        _classesHeld = _calendar.ClassesHeld(Time.Date);
 
         if (_threads == 1)
             for (int c = 0; c < _chunkCount; c++) ProcessChunk(c);
@@ -233,7 +237,7 @@ public sealed class Simulation
             }
             else
             {
-                short target = _schedule.Resolve(p, a, _day, _weekday, _hour, out activity);
+                short target = _schedule.Resolve(p, a, _day, _weekday, _hour, out activity, _classesHeld);
                 if (target != current)
                 {
                     int minutes = (int)MathF.Ceiling(distance[current * b + target] / _walkSpeed);

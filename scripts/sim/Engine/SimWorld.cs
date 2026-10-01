@@ -39,11 +39,11 @@ public sealed class SimWorld
     /// land_history.json). Uses the population settings of population_spike.json until Phase 1's own start data exists.
     /// </summary>
     public static SimWorld CreateReal(SimData data, IDataSource source, int? year = null, int? threads = null,
-        int? students = null, int? faculty = null, int? chunkSize = null)
+        int? students = null, int? faculty = null, int? chunkSize = null, RealMap? map = null)
     {
         var rng = new RngStreams(data.Spike.Seed);
         var sw = Stopwatch.StartNew();
-        var map = RealMapLoader.Load(source);
+        map ??= RealMapLoader.Load(source);
         var features = FeatureBuilding.Load(source, map.Meta.FeaturesFile);
         var timeline = TimelineData.Load(source);
         int present = LandHistoryConfig.Load(source).PresentYear;

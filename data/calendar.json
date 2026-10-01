@@ -1,0 +1,24 @@
+{
+  "$schema": "./schemas/calendar.schema.json",
+  "_comment": "Academic calendar (§6.2), modelled on Miami's yearly rhythm. Each phase runs from its start date until the next phase starts (wrapping at year end). Dates are APPROXIMATE month-day anchors chosen to match §6.2's 'approx. dates'; they don't follow weekdays and are not Miami's official calendar for any year. classes = regular classes are held. term = which semester the phase belongs to (week numbers count from the term's first class day).",
+  "verified": false,
+  "phases": [
+    { "start": "01-05", "id": "winter_term", "name": "Winter Term", "term": null, "classes": false, "_note": "Optional winter term: small enrollment, not simulated yet." },
+    { "start": "01-26", "id": "spring_classes", "name": "Spring Semester", "term": "spring", "classes": true },
+    { "start": "03-14", "id": "spring_break", "name": "Spring Break", "term": "spring", "classes": false },
+    { "start": "03-23", "id": "spring_classes", "name": "Spring Semester", "term": "spring", "classes": true },
+    { "start": "05-09", "id": "spring_finals", "name": "Finals Week", "term": "spring", "classes": false },
+    { "start": "05-16", "id": "commencement", "name": "Commencement Weekend", "term": null, "classes": false },
+    { "start": "05-18", "id": "summer", "name": "Summer", "term": null, "classes": false },
+    { "start": "08-19", "id": "move_in", "name": "Move-In & Welcome Weekend", "term": "fall", "classes": false },
+    { "start": "08-24", "id": "fall_classes", "name": "Fall Semester", "term": "fall", "classes": true },
+    { "start": "11-21", "id": "thanksgiving_break", "name": "Thanksgiving Break", "term": "fall", "classes": false },
+    { "start": "11-30", "id": "fall_classes", "name": "Fall Semester", "term": "fall", "classes": true },
+    { "start": "12-12", "id": "fall_finals", "name": "Finals Week", "term": "fall", "classes": false },
+    { "start": "12-19", "id": "winter_break", "name": "Winter Break", "term": null, "classes": false }
+  ],
+  "events": [
+    { "start": "08-23", "end": "08-23", "name": "Love & Honor Convocation" },
+    { "start": "10-09", "end": "10-11", "name": "Homecoming Weekend" }
+  ]
+}

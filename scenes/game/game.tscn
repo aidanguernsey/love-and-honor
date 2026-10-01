@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/bridge/GameHost.cs" id="1_host"]
+[ext_resource type="Script" path="res://scripts/ui/camera_rig.gd" id="2_rig"]
+[ext_resource type="Script" path="res://scripts/ui/game_hud.gd" id="3_hud"]
+
+[sub_resource type="ProceduralSkyMaterial" id="sky_material"]
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_material")
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 3
+tonemap_mode = 2
+
+[node name="Game" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation = Vector3(-0.75, 0.6, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 1500.0
+
+[node name="World" type="Node3D" parent="."]
+script = ExtResource("1_host")
+SunPath = NodePath("../Sun")
+EnvironmentPath = NodePath("../WorldEnvironment")
+
+[node name="CameraRig" type="Node3D" parent="."]
+script = ExtResource("2_rig")
+host_path = NodePath("../World")
+start_distance_m = 650.0
+start_pitch_deg = 50.0
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+near = 0.5
+far = 10000.0
+
+[node name="Hud" type="CanvasLayer" parent="."]
+script = ExtResource("3_hud")
+host_path = NodePath("../World")

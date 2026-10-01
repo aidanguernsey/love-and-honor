@@ -4,6 +4,8 @@
 *.translation
 export.cfg
 export_credentials.cfg
+# Exported builds
+/build/
 
 # .NET
 bin/

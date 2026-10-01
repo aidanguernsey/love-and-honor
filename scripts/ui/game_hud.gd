@@ -4,7 +4,7 @@ extends CanvasLayer
 ## · O overlays · G build grid · C clear forest · L buy land · B build menu · Z/X turn the building · Del cancel
 ## construction · H Heritage sites · N day/night cycle · Esc stop tool / close menu / main menu.
 ## The day/night and Heritage-site settings are remembered in user://settings.cfg (`--day-night=on|off` overrides
-## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs).
+## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs), `--build-menu` (open the build list).
 ## Launch options (after `--`; start from the boot scene with `--play`): `--speed=N` (0–4), `--camera=...` (see camera_rig.gd), `--game-smoke[=seconds]`
 ## (print GAME_SMOKE stats once the sim has run that long, then quit), `--screenshot=<file.png>` (with --game-smoke).
 
@@ -93,6 +93,7 @@ func _process(delta: float) -> void:
 	if not _started:
 		_started = true
 		_host.SetSpeedIndex(_start_speed)
+		if "--build-menu" in OS.get_cmdline_user_args(): _open_build_list("")  # screenshots
 
 	_date_label.text = "%s   %s" % [hud["date"], hud["time"]]
 	var phase: String = hud["phase"]
@@ -264,7 +265,7 @@ func _build_build_menu() -> void:
 
 	# The list of buildings in a category, beside the menu.
 	_build_popup = _panel()
-	_anchor(_build_popup, 0, 0.5, 0, 0.5, 190, 0, 190, 0)
+	_anchor(_build_popup, 0, 0.5, 0, 0.5, 240, 0, 240, 0)
 	_build_popup.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_build_popup.visible = false
 	var list_col := VBoxContainer.new()

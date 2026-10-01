@@ -66,7 +66,7 @@ public class SimulationTests
             single.Simulation.Tick();
             multi.Simulation.Tick();
         }
-        Assert.Equal(StateHash.Compute(single.Population, single.Campus.Grid), StateHash.Compute(multi.Population, multi.Campus.Grid));
+        Assert.Equal(StateHash.Compute(single.Simulation, single.Campus.Grid), StateHash.Compute(multi.Simulation, multi.Campus.Grid));
         Assert.Equal(single.Simulation.LastTick.AverageHappiness, multi.Simulation.LastTick.AverageHappiness);
     }
 
@@ -127,6 +127,7 @@ public class SimulationTests
         Assert.All(p.Happiness, v => Assert.InRange(v, 0f, 100f));
 
         var grid = w.Campus.Grid;
+        w.Simulation.SyncFootTraffic();
         long grassTraffic = 0, pathTraffic = 0;
         for (int i = 0; i < grid.FootTraffic.Length; i++)
         {

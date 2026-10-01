@@ -40,7 +40,8 @@ public sealed class TileGrid
     public TileType[] Types { get; }
     /// <summary>Index into Campus.Buildings of the building on this tile, or -1.</summary>
     public short[] BuildingAt { get; }
-    /// <summary>Cumulative walkers that crossed each tile. Grass tiles with high traffic become desire paths (§12.4).</summary>
+    /// <summary>Cumulative walkers that crossed each tile. Grass tiles with high traffic become desire paths (§12.4).
+    /// Written by a background work item: call Simulation.SyncFootTraffic() before reading.</summary>
     public int[] FootTraffic { get; }
     public LandState[] LandState { get; }
     public Ownership[] Ownership { get; }

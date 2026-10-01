@@ -8,15 +8,11 @@ The full design is in `GAME_DESIGN.md` (v0.4). **Read the relevant section befor
 **Phase 0 complete (2026-09-30).** All 16 design-doc updates approved and applied (GAME_DESIGN.md v0.4).
 **Next: Phase 1 — "The Hill"**, checkpoints 1a–1k in `docs/PHASE0_REPORT.md` §5 (approved), starting with **1a**
 (sim on the real map + background flow-field rebuilds). Stop after every checkpoint.
-**1a IN PROGRESS (paused at usage limit, 2026-09-30):** done — `RealCampusBuilder` (84 Miami buildings + 108 housing
-zones from timeline/OSM, `data/real_campus.json`), `SimWorld.CreateReal`, FlowFieldSet rewrite (Dial full build,
-canonical directions, incremental background updates identical to full rebuilds — 20-map test, swap at a fixed tick
-`pathing_rebuild_latency_ticks`=24, pooled scratch = 0 GCs), benchmark `--map real|synthetic`, edits, `--pace-speed`,
-`--pace-all`, `--traffic-png`. 96 tests pass. Findings: rebuild after a path edit ~85 ms avg (was ~930 ms full);
-real map unpaced p95 ≈5.0 ms; **paced at 1× (idle gaps like the real game) p95 ≈7.1 ms real / 6.1 ms synthetic** on
-4 E-cores (cold cores after idle) — close to the 8 ms budget. Left: decide gate (paced vs unpaced), maybe keep workers
-warm / trim foot-traffic phase (1.2 ms paced), full benchmark run + save to docs/benchmarks, heatmap image to
-docs/images, update PHASE0-style notes/README, final commit, then stop for the user.
+**1a done (2026-10-01), awaiting the user's review:** the sim runs on the real Oxford map (84 Miami buildings standing
+in 2026 + 108 off-campus housing zones, `data/real_campus.json`); flow fields rebuilt incrementally in the background
+and swapped in at a fixed tick. Benchmark (`docs/benchmarks/phase1-1a-real-map-2026-10-01.txt`): gated 4 E-cores p95
+5.1 ms with a path edit every 48 ticks; every tick paced at 1x p95 5.5 ms; edit → new fields in ~90 ms (no stalls,
+none estimated at 8x); 0 GCs. Heatmap `docs/images/real-map-foot-traffic.png`. Next: **1b** (walking model v2).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -193,8 +189,9 @@ dotnet run --project tools/DataValidator                    # validate /data (sc
 "$GODOT" --path . -e                                        # open editor
 tools/.venv/Scripts/python tools/map_pipeline/build_map.py                    # regenerate data/map/ (downloads cached)
 tools/.venv/Scripts/python -m pytest tools/map_pipeline                       # pipeline tests
-dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks            # Spike A benchmark (exit 1 = over budget)
+dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks            # population benchmark, real map (exit 1 = over budget)
 dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks -- --quick # gated run only
+#   options: --map synthetic (Spike A campus), --edit-every N, --pace-all [--pace-speed S], --traffic-png FILE
 ```
 Always benchmark with `-c Release`. The gated run pins to 4 E-cores on hybrid Intel CPUs (conservative
 stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference only.
@@ -215,7 +212,7 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   Never use `System.Random` or `string.GetHashCode()` for anything that affects sim state. Inside the parallel
   tick use `StatelessRandom` (hash of seed, agent, day, hour) so results don't depend on thread scheduling.
 - Sim library layout (`scripts/sim/`): `Core/` (RNG, SimTime), `Data/` (typed configs, `IDataSource`, `SimData.Load`),
-  `World/` (TileGrid, Campus, SyntheticCampusGenerator), `Pathing/` (FlowFieldSet: per-building Dijkstra fields,
+  `World/` (TileGrid, Campus, SyntheticCampusGenerator, RealCampusBuilder), `Pathing/` (FlowFieldSet: per-building fields,
   distance matrix, route cache + bounds), `Population/` (SoA `PopulationStore`, generator), `Engine/` (Simulation
   tick, ScheduleModel, NeedsModel, StateHash, SpikeWorld factory, SimRunner = sim thread + triple-buffered
   SimSnapshot), `View/` (VisualCrowd: engine-agnostic rendered-subset logic, unit-tested).
@@ -253,6 +250,18 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   meta). `PaletteMaterials` (bridge) swaps materials at runtime by name so colours follow branding.json.
   `tools/DataValidator` also runs `ModelValidation` (GLB JSON chunk: names, folder, budgets, LOD ratios, materials,
   scale, pivot) — DataValidator now references the sim library. Blender exe: `C:\Program Files\Blender Foundation\Blender 5.2\blender.exe`.
+- Real-map sim (Phase 1 1a): `SimWorld.CreateReal(data, source, year)` → `RealCampusBuilder` (timeline entries standing
+  that year, kinds mapped by `real_campus.json`, entrance = nearest path tile in the main walkable component; town
+  houses grouped into weighted housing zones). `SimWorld.CreateSynthetic` keeps the Spike A campus.
+- Flow fields (`FlowFieldSet`): ushort costs (`CostScale` 30/tile), full build = Dial's bucket queue, directions picked
+  by a fixed rule from the (unique) costs → incremental updates are bit-identical to a full rebuild (tested on 20 random
+  maps). Housing zones have no field (routes = reversed). Map edits: `Simulation.ApplyTileEdits` (sim thread, between
+  ticks) → background update into a spare buffer → swapped in exactly `pathing_rebuild_latency_ticks` later (the sim
+  waits if not ready) → deterministic. Never read `FlowFieldSet.CostsTo/DirectionsTo` off the sim thread.
+- Foot-traffic route tracing runs as a thread-pool work item after each tick (overlapping idle time). Call
+  `Simulation.SyncFootTraffic()` before reading `TileGrid.FootTraffic` (`StateHash.Compute(sim, grid)` does it).
+- Benchmark methodology: the gated run is back-to-back ticks with a path edit every 48 ticks (paced at 1x while a
+  rebuild is pending); a reference run paces every tick at 1x, because idle cores start ticks slower (~+1 ms here).
 - Downloads: never put the user's email or other personal data in request headers/URLs (the pipeline's
   User-Agent is generic; optional `LH_PIPELINE_CONTACT` env var).
 - Tick determinism: work is split into fixed-size chunks (`performance.agent_chunk_size`), each agent touches

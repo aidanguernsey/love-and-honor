@@ -12,24 +12,24 @@ namespace LoveAndHonor.Bridge;
 /// </summary>
 public sealed class GodotDataSource(string root = "res://data") : IDataSource
 {
-    public string ReadText(string relativePath)
-    {
-        string path = $"{root}/{relativePath}";
-        if (!Godot.FileAccess.FileExists(path)) throw new FileNotFoundException($"Data file not found: {path}");
-        return Godot.FileAccess.GetFileAsString(path);
-    }
+	public string ReadText(string relativePath)
+	{
+		string path = $"{root}/{relativePath}";
+		if (!Godot.FileAccess.FileExists(path)) throw new FileNotFoundException($"Data file not found: {path}");
+		return Godot.FileAccess.GetFileAsString(path);
+	}
 
-    public byte[] ReadBytes(string relativePath)
-    {
-        string path = $"{root}/{relativePath}";
-        if (!Godot.FileAccess.FileExists(path)) throw new FileNotFoundException($"Data file not found: {path}");
-        return Godot.FileAccess.GetFileAsBytes(path);
-    }
+	public byte[] ReadBytes(string relativePath)
+	{
+		string path = $"{root}/{relativePath}";
+		if (!Godot.FileAccess.FileExists(path)) throw new FileNotFoundException($"Data file not found: {path}");
+		return Godot.FileAccess.GetFileAsBytes(path);
+	}
 
-    public IReadOnlyList<string> ListJson(string relativeDir) =>
-        DirAccess.GetFilesAt($"{root}/{relativeDir}")
-            .Where(f => f.EndsWith(".json"))
-            .OrderBy(f => f, System.StringComparer.Ordinal)
-            .Select(f => $"{relativeDir.TrimEnd('/')}/{f}")
-            .ToList();
+	public IReadOnlyList<string> ListJson(string relativeDir) =>
+		DirAccess.GetFilesAt($"{root}/{relativeDir}")
+			.Where(f => f.EndsWith(".json"))
+			.OrderBy(f => f, System.StringComparer.Ordinal)
+			.Select(f => $"{relativeDir.TrimEnd('/')}/{f}")
+			.ToList();
 }

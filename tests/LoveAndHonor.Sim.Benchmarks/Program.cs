@@ -63,29 +63,34 @@ Console.WriteLine(editEvery > 0
     : "Map edits: off");
 Console.WriteLine(opts.PaceAll
     ? $"Pacing: every tick starts {realTickMs(paceSpeed):F0} ms after the previous one ({paceSpeed}x game speed)"
-    : $"Pacing: {realTickMs(paceSpeed):F0} ms per tick ({paceSpeed}x) while a rebuild is pending, otherwise back-to-back");
+    : $"Pacing: {realTickMs(paceSpeed):F0} ms per tick ({paceSpeed}x) while a rebuild is pending, otherwise back-to-back (the 'paced' reference run paces every tick)");
 Console.WriteLine();
 
 var topology = CpuTopology.Read();
 var process = Process.GetCurrentProcess();
 long allCpus = GetAffinity(process);
 
-var runs = new List<(string name, long? mask, string cores, int threads, bool gated)>();
+var runs = new List<(string name, long? mask, string cores, int threads, bool gated, bool paceAll)>();
 var slow = CpuTopology.PickCores(topology, threads, fast: false);
 var fast = CpuTopology.PickCores(topology, threads, fast: true);
 bool hybrid = topology.Select(c => c.EfficiencyClass).Distinct().Count() > 1;
 
 if (hybrid && slow is { } s)
-    runs.Add(($"{threads} E-cores (gated)", s.mask, s.description, threads, true));
+    runs.Add(($"{threads} E-cores (gated)", s.mask, s.description, threads, true, opts.PaceAll));
 if (fast is { } f)
-    runs.Add(($"{threads} P-cores{(hybrid ? "" : " (gated)")}", f.mask, f.description, threads, !hybrid));
+    runs.Add(($"{threads} P-cores{(hybrid ? "" : " (gated)")}", f.mask, f.description, threads, !hybrid, opts.PaceAll));
 if (runs.Count == 0)
-    runs.Add(($"{threads} threads, unpinned (gated)", null, "no pinning (topology unavailable)", threads, true));
+    runs.Add(($"{threads} threads, unpinned (gated)", null, "no pinning (topology unavailable)", threads, true, opts.PaceAll));
 if (!opts.Quick)
 {
+    // The game at 1x runs a tick every ~83 ms with the CPU idle in between, and idle cores start the next tick
+    // slower. This run paces every tick like that, on the gated cores.
+    var gatedRun = runs[0];
+    if (!opts.PaceAll)
+        runs.Add(($"{gatedRun.name.Replace(" (gated)", "")}, every tick paced at {paceSpeed}x (reference)", gatedRun.mask, gatedRun.cores, gatedRun.threads, false, true));
     if (fast is { } f1 && CpuTopology.PickCores(topology, 1, fast: true) is { } one)
-        runs.Add(("1 P-core, 1 thread (reference)", one.mask, one.description, 1, false));
-    runs.Add(($"all cores, {Environment.ProcessorCount} threads (reference)", null, "all logical CPUs", Environment.ProcessorCount, false));
+        runs.Add(("1 P-core, 1 thread (reference)", one.mask, one.description, 1, false, false));
+    runs.Add(($"all cores, {Environment.ProcessorCount} threads (reference)", null, "all logical CPUs", Environment.ProcessorCount, false, false));
 }
 else
 {
@@ -97,7 +102,7 @@ var summaries = new List<string>();
 foreach (var run in runs)
 {
     SetAffinity(process, run.mask ?? allCpus);
-    var result = Bench(run.name, run.cores, run.threads, run.gated ? opts.TrafficPng : null);
+    var result = Bench(run.name, run.cores, run.threads, run.gated ? opts.TrafficPng : null, run.paceAll);
     if (run.gated) passed = result.pass;
     summaries.Add(result.summary);
 }
@@ -108,7 +113,7 @@ foreach (var line in summaries) Console.WriteLine(line);
 Console.WriteLine(passed ? "RESULT: PASS" : "RESULT: FAIL — tick budget missed");
 return passed ? 0 : 1;
 
-(bool pass, string summary) Bench(string name, string cores, int runThreads, string? trafficPng)
+(bool pass, string summary) Bench(string name, string cores, int runThreads, string? trafficPng, bool paceAll)
 {
     Console.WriteLine($"--- {name} ---");
     Console.WriteLine($"Pinned to: {cores}");
@@ -136,7 +141,8 @@ return passed ? 0 : 1;
     int lastPath = -1;
     var swapWaits = new List<double>();
     var rebuildMs = new List<double>();
-    var rebuiltFields = new List<int>();
+    var updatedFields = new List<int>();
+    var recomputedTiles = new List<long>();
 
     for (int i = 0; i < warmup; i++) sim.Tick();
     GC.Collect();
@@ -147,6 +153,7 @@ return passed ? 0 : 1;
     var agentPhase = new double[ticks];
     var trafficPhase = new double[ticks];
     long walks = 0, late = 0, routes = 0, walkMinutes = 0;
+    double traceMs = 0, traceMax = 0;
     int maxWalks = 0, worstTickIndex = 0;
     int gen0 = GC.CollectionCount(0), gen1 = GC.CollectionCount(1), gen2 = GC.CollectionCount(2);
     long allocBefore = GC.GetTotalAllocatedBytes(precise: true);
@@ -169,7 +176,7 @@ return passed ? 0 : 1;
             toggles++;
         }
 
-        if (opts.PaceAll || sim.RebuildApplyTick >= 0)
+        if (paceAll || sim.RebuildApplyTick >= 0)
         {
             // Real-time pacing while the background rebuild runs, as in the game (not measured).
             double due = realTickMs(paceSpeed) - Stopwatch.GetElapsedTime(lastTickStart).TotalMilliseconds;
@@ -188,11 +195,15 @@ return passed ? 0 : 1;
         walkMinutes += st.WalkMinutes;
         if (st.WalksStarted > maxWalks) maxWalks = st.WalksStarted;
         if (total[i] > total[worstTickIndex]) worstTickIndex = i;
+        double tr = sim.LastTrafficTraceMs;
+        traceMs += tr;
+        if (tr > traceMax) traceMax = tr;
         if (st.FieldsSwapped)
         {
             swapWaits.Add(st.FieldSwapWaitMs);
             rebuildMs.Add(world.Fields.Current.BuildMs);
-            rebuiltFields.Add(world.Fields.Current.FieldsBuilt);
+            updatedFields.Add(world.Fields.Current.FieldsUpdated + world.Fields.Current.FieldsBuilt);
+            recomputedTiles.Add(world.Fields.Current.TilesRecomputed);
         }
     }
 
@@ -205,7 +216,8 @@ return passed ? 0 : 1;
     bool pass = gatedValue <= perf.TickBudgetMs;
 
     Console.WriteLine($"Tick time (ms): avg {avg:F3} | p50 {p50:F3} | p95 {p95:F3} | p99 {p99:F3} | max {max:F3}");
-    Console.WriteLine($"  agent phase avg {agentPhase.Average():F3} ms (max {agentPhase.Max():F3}) | foot-traffic phase avg {trafficPhase.Average():F3} ms (max {trafficPhase.Max():F3})");
+    Console.WriteLine($"  agent phase avg {agentPhase.Average():F3} ms (max {agentPhase.Max():F3}) | foot-traffic phase avg {trafficPhase.Average():F3} ms (max {trafficPhase.Max():F3}) " +
+                      $"+ route tracing off the tick avg {traceMs / ticks:F3} ms (max {traceMax:F3})");
     Console.WriteLine($"  worst tick: #{worstTickIndex + warmup} ({HourLabel(worstTickIndex + warmup)})");
     Console.WriteLine($"Work: {walks / (double)ticks:F0} walks/tick avg (peak {maxWalks:N0}), {routes / (double)ticks:F0} distinct routes traced/tick, " +
                       $"avg walk {walkMinutes / (double)Math.Max(1, walks):F1} min, {late:N0} late-to-class walks (walk > class-change window), " +
@@ -214,12 +226,13 @@ return passed ? 0 : 1;
                       (swapWaits.Count > 0 ? " (includes the rebuilt flow fields)" : ""));
     if (swapWaits.Count > 0)
         Console.WriteLine($"Map edits: {toggles} path toggles -> {swapWaits.Count} flow-field swaps | background rebuild avg {rebuildMs.Average():F0} ms, " +
-                          $"max {rebuildMs.Max():F0} ms, {rebuiltFields.Average():F0} of {initial.FieldsBuilt} fields rebuilt on average | " +
+                          $"max {rebuildMs.Max():F0} ms; per edit {updatedFields.Average():F0} of {initial.FieldsBuilt} fields changed, {recomputedTiles.Average():N0} tile costs recomputed (all fields) | " +
                           $"stalled (waited for the rebuild) at {swapWaits.Count(x => x > 0.05)} of {swapWaits.Count} swaps at {paceSpeed}x, max {swapWaits.Max():F0} ms | " +
                           $"estimated stall at 8x: up to {Math.Max(0, rebuildMs.Max() - perf.PathingRebuildLatencyTicks * realTickMs(8)):F0} ms per edit");
     Console.WriteLine($"Budget ({perf.TickBudgetStatistic} <= {perf.TickBudgetMs} ms): {(pass ? "PASS" : "FAIL")} — {perf.TickBudgetStatistic} = {gatedValue:F3} ms");
     if (trafficPng is not null && world.Map is not null)
     {
+        sim.SyncFootTraffic();
         TrafficImage.Write(trafficPng, world.Map, world.Campus);
         Console.WriteLine($"Foot-traffic heatmap written to {Path.GetFullPath(trafficPng)}");
     }

@@ -51,9 +51,11 @@ public sealed class Simulation
 
     // Per-chunk scratch, reused every tick (no per-tick allocation in the agent loop).
     private readonly ChunkStats[] _chunkStats;
-    // Walkers per (from, to) building pair this tick, and which pairs were touched (foot traffic).
+    // Walkers per (from, to) building pair this tick, and which pairs were touched (foot traffic). Two sets: the sim
+    // fills one while the traffic work item traces the other.
     private int[] _pairTotals = [];
     private int[] _touchedPairs = [];
+    private readonly TrafficWork _traffic;
     // Flow fields in use for the current tick (swapped only between ticks).
     private FlowFieldData _paths = null!;
     // Map edits waiting for their rebuilt flow fields.
@@ -99,6 +101,7 @@ public sealed class Simulation
         Time = new SimTime(DateOnly.Parse(data.Spike.StartDate, System.Globalization.CultureInfo.InvariantCulture));
 
         _rebuildLatency = Math.Max(1, data.Balance.Performance.PathingRebuildLatencyTicks);
+        _traffic = new TrafficWork(campus.Grid.FootTraffic);
         _fields.EnsureCurrent();
         UsePaths(_fields.Current);
         _chunkStats = new ChunkStats[_chunkCount];
@@ -140,10 +143,21 @@ public sealed class Simulation
         int pairs = data.BuildingCount * data.BuildingCount;
         if (_pairTotals.Length != pairs)
         {
+            SyncFootTraffic();
             _pairTotals = new int[pairs];
             _touchedPairs = new int[pairs];
+            _traffic.Resize(pairs);
         }
     }
+
+    /// <summary>
+    /// Waits until foot traffic from earlier ticks has been added to the grid. Call before reading
+    /// <see cref="TileGrid.FootTraffic"/> (snapshots, state hashes, tests). Sim thread only.
+    /// </summary>
+    public void SyncFootTraffic() => _traffic.Wait();
+
+    /// <summary>Milliseconds the last foot-traffic trace took on its worker (it overlaps the idle time between ticks).</summary>
+    public double LastTrafficTraceMs => _traffic.LastMs;
 
     public void Tick()
     {
@@ -265,6 +279,8 @@ public sealed class Simulation
     /// <summary>
     /// Adds this tick's walkers to foot traffic. Walkers are grouped per (from, to) building pair (in chunk order, so
     /// deterministic), and each distinct route is traced once no matter how many agents took it (§12.4 desire paths).
+    /// The tracing itself runs as a thread-pool work item while the sim moves on (usually in the idle time before the
+    /// next tick): it only adds to the grid, so the result is the same in any order. Readers call SyncFootTraffic.
     /// </summary>
     private int AccumulateFootTraffic()
     {
@@ -282,15 +298,55 @@ public sealed class Simulation
                 if (totals[pair]++ == 0) touched[touchedCount++] = pair;
             }
         }
-        int[] traffic = _grid.FootTraffic;
-        int[][] routes = _paths.Routes;
-        for (int k = 0; k < touchedCount; k++)
-        {
-            int pair = touched[k];
-            int total = totals[pair];
-            totals[pair] = 0;
-            foreach (int tile in routes[pair]) traffic[tile] += total;
-        }
+        if (touchedCount == 0) return 0;
+        // Hand this tick's set to the work item and take the one it finished with.
+        _traffic.Wait();
+        (_pairTotals, _touchedPairs) = _traffic.Start(totals, touched, touchedCount, _paths.Routes);
         return touchedCount;
+    }
+
+    /// <summary>Traces grouped walks into the foot-traffic grid on a thread-pool thread. No allocation per tick.</summary>
+    private sealed class TrafficWork(int[] traffic) : IThreadPoolWorkItem
+    {
+        private readonly ManualResetEventSlim _idle = new(true);
+        private int[] _totals = [], _pairs = [];
+        private int _count;
+        private int[][] _routes = [];
+        public volatile float LastMsValue;
+        public double LastMs => LastMsValue;
+
+        public void Resize(int pairs)
+        {
+            _totals = new int[pairs];
+            _pairs = new int[pairs];
+        }
+
+        public void Wait() => _idle.Wait();
+
+        /// <summary>Starts tracing the given set; returns the (cleared) set it used last time, for the sim to refill.</summary>
+        public (int[] totals, int[] pairs) Start(int[] totals, int[] pairs, int count, int[][] routes)
+        {
+            var spare = (_totals, _pairs);
+            (_totals, _pairs, _count, _routes) = (totals, pairs, count, routes);
+            _idle.Reset();
+            ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+            return spare;
+        }
+
+        public void Execute()
+        {
+            long t0 = Stopwatch.GetTimestamp();
+            int[] totals = _totals, pairs = _pairs;
+            int[][] routes = _routes;
+            for (int k = 0; k < _count; k++)
+            {
+                int pair = pairs[k];
+                int total = totals[pair];
+                totals[pair] = 0;
+                foreach (int tile in routes[pair]) traffic[tile] += total;
+            }
+            LastMsValue = (float)Stopwatch.GetElapsedTime(t0).TotalMilliseconds;
+            _idle.Set();
+        }
     }
 }

@@ -10,6 +10,13 @@ namespace LoveAndHonor.Sim.Engine;
 /// </summary>
 public static class StateHash
 {
+    /// <summary>Hash of a running simulation (waits for pending foot-traffic work first).</summary>
+    public static ulong Compute(Simulation sim, TileGrid grid)
+    {
+        sim.SyncFootTraffic();
+        return Compute(sim.Population, grid);
+    }
+
     public static ulong Compute(PopulationStore p, TileGrid grid)
     {
         ulong h = 14695981039346656037UL;

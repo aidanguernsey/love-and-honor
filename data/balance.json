@@ -25,7 +25,7 @@
     "agent_chunk_size": 1024,
     "benchmark_ticks": 1000,
     "benchmark_warmup_ticks": 168,
-    "_pathing_comment": "Phase 1 1a: flow fields rebuild on background threads after a map change and are swapped in exactly pathing_rebuild_latency_ticks later (the sim waits if they aren't ready), so results never depend on timing. benchmark_edit_every_ticks toggles a path tile in the benchmark to exercise this.",
+    "_pathing_comment": "Phase 1 1a: after a map change, flow fields are updated on background threads and swapped in exactly pathing_rebuild_latency_ticks later (the sim waits if they aren't ready), so results never depend on timing. 24 ticks = one in-game day: a new path is used from the next day, like a short construction job; an update takes ~0.1 s, well under the 2 s a game day lasts at 1x. benchmark_edit_every_ticks toggles a path tile in the benchmark to exercise this.",
     "pathing_rebuild_latency_ticks": 24,
     "pathing_rebuild_threads": 2,
     "benchmark_edit_every_ticks": 48

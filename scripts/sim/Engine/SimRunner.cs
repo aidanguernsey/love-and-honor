@@ -214,6 +214,7 @@ public sealed class SimRunner : IDisposable
 
         if (Interlocked.Exchange(ref _trafficRequested, 0) == 1)
         {
+            _sim.SyncFootTraffic();
             Array.Copy(_grid.FootTraffic, s.Traffic, s.Traffic.Length);
             s.TrafficVersion = ++_trafficVersion;
         }

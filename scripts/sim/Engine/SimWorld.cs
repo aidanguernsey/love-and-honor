@@ -22,6 +22,9 @@ public sealed class SimWorld
     /// <summary>Set for real-map worlds.</summary>
     public RealMap? Map { get; init; }
     public RealCampusReport? CampusReport { get; init; }
+    /// <summary>Set for scenario worlds (Phase 1 1d): the land layer and money, and the scenario itself.</summary>
+    public LandSystem? Land { get; init; }
+    public ScenarioConfig? Scenario { get; init; }
     public double CampusMs { get; init; }
     public double FlowFieldsMs { get; init; }
     public double PopulationMs { get; init; }
@@ -51,8 +54,37 @@ public sealed class SimWorld
         return Assemble(data, rng, campus, sw.Elapsed.TotalMilliseconds, threads, students, faculty, chunkSize, map, report);
     }
 
+    /// <summary>
+    /// A game start from data/scenarios/&lt;id&gt;.json (Phase 1 1d): Chapter 1 in 1824 (the map as it stood that year,
+    /// the university's starting land, Old Main) or the 2026 preview. Includes the land layer and money.
+    /// </summary>
+    public static SimWorld CreateScenario(SimData data, IDataSource source, string scenarioId, int? threads = null,
+        int? students = null, int? faculty = null, int? chunkSize = null, RealMap? map = null)
+    {
+        var s = ScenarioConfig.Load(source, scenarioId);
+        var rng = new RngStreams(s.Seed);
+        var sw = Stopwatch.StartNew();
+        map ??= RealMapLoader.Load(source);
+        var features = FeatureBuilding.Load(source, map.Meta.FeaturesFile);
+        var timeline = TimelineData.Load(source);
+        var historyCfg = LandHistoryConfig.Load(source);
+        int present = historyCfg.PresentYear;
+        var historic = HistoricBuilding.Build(features, timeline, present, out _);
+        var seeds = historic.Where(b => b.Entry?.BuiltYear is not null)
+            .Select(b => { var c = b.Footprint.Centroid(); return (c.X, c.Y, b.BuiltYear); });
+        var history = new LandHistory(map.Grid, historyCfg, seeds); // copies today's map before it's changed
+        bool past = s.Campus is not null;
+        bool[] pathOn = past ? HistoricMap.Apply(map, historic, history, s) : map.Grid.Types.Select(t => t == TileType.Path).ToArray();
+        var campus = RealCampusBuilder.Build(map, features, timeline, RealCampusConfig.Load(source), s.MapYear, present, out var report, past);
+        var land = new LandSystem(map.Grid, LandConfig.Load(source), EraTable.Load(source), past ? history : null, pathOn,
+            new Treasury((long)Math.Round(s.StartingCash * 100)));
+        return Assemble(data, rng, campus, sw.Elapsed.TotalMilliseconds, threads, students ?? s.Students, faculty ?? s.Faculty,
+            chunkSize, map, report, s.Start, land, s);
+    }
+
     private static SimWorld Assemble(SimData data, RngStreams rng, Campus campus, double campusMs, int? threads, int? students,
-        int? faculty, int? chunkSize, RealMap? map, RealCampusReport? report)
+        int? faculty, int? chunkSize, RealMap? map, RealCampusReport? report,
+        DateOnly? startDate = null, LandSystem? land = null, ScenarioConfig? scenario = null)
     {
         int t = threads ?? data.Balance.Performance.SimWorkerThreads;
         var sw = Stopwatch.StartNew();
@@ -67,8 +99,8 @@ public sealed class SimWorld
         return new SimWorld
         {
             Data = data, Rng = rng, Campus = campus, Fields = fields, Population = pop,
-            Simulation = new Simulation(data, campus, fields, pop, rng, t, chunkSize),
-            Map = map, CampusReport = report,
+            Simulation = new Simulation(data, campus, fields, pop, rng, t, chunkSize, startDate, land),
+            Map = map, CampusReport = report, Land = land, Scenario = scenario,
             CampusMs = campusMs, FlowFieldsMs = fieldsMs, PopulationMs = popMs,
         };
     }

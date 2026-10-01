@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Land clearing, purchase and town growth settings (§5.1b, §5.3)",
+  "type": "object",
+  "required": ["clearing", "purchase", "town_growth"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "money": { "type": "number", "minimum": 0 }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "clearing": {
+      "type": "object",
+      "required": ["cost_per_tile", "tiles_per_day", "winter_speed", "winter_months"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "cost_per_tile": { "$ref": "#/$defs/money" },
+        "tiles_per_day": { "type": "number", "exclusiveMinimum": 0 },
+        "winter_speed": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "winter_months": { "type": "array", "items": { "type": "integer", "minimum": 1, "maximum": 12 }, "uniqueItems": true }
+      }
+    },
+    "purchase": {
+      "type": "object",
+      "required": ["price_per_tile", "town_relations_penalty_per_tile", "must_touch_university_land"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "price_per_tile": {
+          "type": "object",
+          "required": ["forest", "pasture", "farmland", "town", "developed", "protected"],
+          "additionalProperties": false,
+          "properties": {
+            "forest": { "$ref": "#/$defs/money" },
+            "pasture": { "$ref": "#/$defs/money" },
+            "farmland": { "$ref": "#/$defs/money" },
+            "town": { "$ref": "#/$defs/money" },
+            "developed": { "$ref": "#/$defs/money" },
+            "protected": { "$ref": "#/$defs/money" }
+          }
+        },
+        "town_relations_penalty_per_tile": { "type": "number", "minimum": 0 },
+        "must_touch_university_land": { "type": "boolean" }
+      }
+    },
+    "town_growth": {
+      "type": "object",
+      "required": ["update_every_days"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "update_every_days": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

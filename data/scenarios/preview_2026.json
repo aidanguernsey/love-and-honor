@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/scenario.schema.json",
+  "_comment": "Preview of the modern campus (the Phase 1 1c shell): the real 2026 map with Miami's buildings and present-day ownership. Population and start date as in the Spike A setup. Not a finished mode (the Modern 2026 sandbox is Phase 2).",
+  "id": "preview_2026",
+  "name": "Preview: 2026 campus",
+  "start_date": "2026-08-24",
+  "map_year": 2026,
+  "verified": false,
+  "seed": 20260930,
+  "starting_cash": 50000000,
+  "_cash_comment": "Placeholder until the budget system (1i).",
+  "students": 30000,
+  "faculty": 2500,
+  "campus": null
+}

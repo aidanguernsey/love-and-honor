@@ -84,9 +84,13 @@ public sealed class Simulation
     public FlowFieldSet Fields => _fields;
     public int Threads => _threads;
 
+    /// <summary>The land layer and money (Phase 1 1d), or null for worlds without land actions (benchmarks, Spike A).</summary>
+    public LandSystem? Land { get; }
+
     public Simulation(SimData data, Campus campus, FlowFieldSet fields, PopulationStore population, RngStreams rng,
-        int? threads = null, int? chunkSize = null)
+        int? threads = null, int? chunkSize = null, DateOnly? startDate = null, LandSystem? land = null)
     {
+        Land = land;
         _pop = population;
         _fields = fields;
         _grid = campus.Grid;
@@ -101,7 +105,7 @@ public sealed class Simulation
         _chunkCount = (population.Count + _chunkSize - 1) / _chunkSize;
         _parallel = new ParallelOptions { MaxDegreeOfParallelism = _threads };
         _processChunk = ProcessChunk;
-        Time = new SimTime(DateOnly.Parse(data.Spike.StartDate, System.Globalization.CultureInfo.InvariantCulture));
+        Time = new SimTime(startDate ?? DateOnly.Parse(data.Spike.StartDate, System.Globalization.CultureInfo.InvariantCulture));
 
         _rebuildLatency = Math.Max(1, data.Balance.Performance.PathingRebuildLatencyTicks);
         var wear = data.Balance.Walking.DesirePaths;
@@ -163,9 +167,29 @@ public sealed class Simulation
     /// <summary>Milliseconds the last foot-traffic trace took on its worker (it overlaps the idle time between ticks).</summary>
     public double LastTrafficTraceMs => _traffic.LastMs;
 
+    /// <summary>
+    /// Applies queued land orders now (sim thread, between ticks; also used while paused). Walking-surface changes go
+    /// to the flow fields like any other map edit.
+    /// </summary>
+    public void ApplyLandCommands()
+    {
+        if (Land is null || !Land.HasPendingCommands) return;
+        var edits = Land.ApplyCommands(Time.Date);
+        if (edits.Count > 0) ApplyTileEdits(edits.ToArray());
+    }
+
     public void Tick()
     {
         long t0 = Stopwatch.GetTimestamp();
+        if (Land is not null)
+        {
+            ApplyLandCommands();
+            if (Time.HourOfDay == 0)
+            {
+                var edits = Land.DailyUpdate(Time.Date, Time.Day);
+                if (edits.Count > 0) ApplyTileEdits(edits.ToArray());
+            }
+        }
         bool swapped = false;
         double swapWait = 0;
         if (_rebuildApplyTick >= 0 && Time.Tick >= _rebuildApplyTick)

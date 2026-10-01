@@ -10,6 +10,7 @@ const BRANDING_PATH := "res://data/branding.json"
 @onready var _sim_info: Label = %SimInfo
 @onready var _bridge: Node = $SimBridge
 @onready var _play: Button = %Play
+@onready var _preview: Button = %Preview2026
 @onready var _spike_a: Button = %SpikeA
 @onready var _spike_b: Button = %SpikeB
 @onready var _art_test: Button = %ArtTest
@@ -28,7 +29,8 @@ func _ready() -> void:
 	_disclaimer.visible = branding["show_disclaimer"]
 	_disclaimer.text = branding["disclaimer"]
 	_sim_info.text = _bridge.GetSimDescription()
-	_play.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/game/game.tscn"))
+	_play.pressed.connect(func(): _start_game("chapter1_the_hill"))
+	_preview.pressed.connect(func(): _start_game("preview_2026"))
 	_spike_a.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/spikes/population_spike.tscn"))
 	_spike_b.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/spikes/terrain_spike.tscn"))
 	_art_test.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/spikes/art_import_test.tscn"))
@@ -39,7 +41,14 @@ func _ready() -> void:
 		get_tree().quit()
 	elif "--play" in OS.get_cmdline_user_args():
 		# Straight into the game (exported release builds can't take a scene path on the command line).
-		get_tree().change_scene_to_file.call_deferred("res://scenes/game/game.tscn")
+		_start_game.call_deferred("chapter1_the_hill")
+
+
+## Scenario ids are data/scenarios/<id>.json; the game scene reads the choice from the root's "scenario" meta
+## (a `--scenario=<id>` launch option overrides it).
+func _start_game(scenario: String) -> void:
+	get_tree().root.set_meta("scenario", scenario)
+	get_tree().change_scene_to_file("res://scenes/game/game.tscn")
 
 
 func _load_json(path: String) -> Dictionary:

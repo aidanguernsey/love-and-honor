@@ -47,18 +47,23 @@ public sealed record RealCampusReport(
 /// </summary>
 public static class RealCampusBuilder
 {
+    /// <param name="historic">A past-year start (1d): walking surfaces were already set from the land layer, and
+    /// housing zones come from town land (we don't know where the houses of that year stood) instead of today's buildings.</param>
     public static Campus Build(RealMap map, IReadOnlyList<FeatureBuilding> features, TimelineData timeline, RealCampusConfig cfg,
-        int year, int presentYear, out RealCampusReport report)
+        int year, int presentYear, out RealCampusReport report, bool historic = false)
     {
         var grid = map.Grid;
         int w = grid.Width, h = grid.Height, tiles = w * h;
         var byOsm = features.ToDictionary(f => f.OsmId);
 
         // Walking surface: lawn where the land is town/campus, rough ground (fields, pasture, woods) elsewhere.
-        var lawn = cfg.LawnLandStates.Select(s => Enum.Parse<LandState>(s, ignoreCase: true)).ToHashSet();
-        for (int t = 0; t < tiles; t++)
-            if (grid.Types[t] == TileType.Grass && !lawn.Contains(grid.LandState[t])) grid.Types[t] = TileType.Rough;
-        grid.MarkChanged();
+        if (!historic)
+        {
+            var lawn = cfg.LawnLandStates.Select(s => Enum.Parse<LandState>(s, ignoreCase: true)).ToHashSet();
+            for (int t = 0; t < tiles; t++)
+                if (grid.Types[t] == TileType.Grass && !lawn.Contains(grid.LandState[t])) grid.Types[t] = TileType.Rough;
+            grid.MarkChanged();
+        }
 
         var component = MainComponent(grid);
 
@@ -105,8 +110,9 @@ public static class RealCampusBuilder
             for (int x = 0; x < w; x++)
             {
                 int t = y * w + x;
-                if (grid.Types[t] != TileType.Building || grid.BuildingAt[t] >= 0) continue;
-                if (grid.Ownership[t] == Ownership.University) continue;
+                bool home = historic ? grid.LandState[t] == LandState.Town && grid.Types[t] != TileType.Building
+                                     : grid.Types[t] == TileType.Building && grid.BuildingAt[t] < 0;
+                if (!home || grid.Ownership[t] == Ownership.University) continue;
                 if ((x - cx) * (x - cx) + (y - cy) * (y - cy) > maxTiles * maxTiles) continue;
                 int z = (y / zone) * zonesX + x / zone;
                 count[z]++; sumX[z] += x; sumY[z] += y;

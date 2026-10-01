@@ -23,7 +23,15 @@ walkers on the terrain, sun/seasons/desire paths from the sim clock, academic ca
 only in term), HUD skeleton (§27.1) in `scripts/ui/game_hud.gd`, Windows export preset. **Windows release export tested (2026-10-01)**:
 `LoveAndHonor.exe` (109 MB) + `.pck` (3.6 MB) + .NET 10 runtime folder; boot and game scenes run (`-- --play`), sim
 optimized (flow fields 372 ms). Export templates 4.7.2.stable.mono installed in %APPDATA%\Godot\export_templates
-(downloaded with the user's OK). Next: **1d** (land: 1824 start).
+(downloaded with the user's OK).
+**1d done (2026-10-01), awaiting the user's review:** scenarios (`data/scenarios/`): **Chapter 1 starts 1 Nov 1824** (boot →
+Play) on the map as it stood then (`HistoricMap`: land states/roads/town from land history, Old Main on its approximate
+site, a placeholder 300 m square of university land, 20 students + 3 faculty boarding in town, $3,000); `preview_2026`
+keeps the modern campus. Land layer + money (`World/Land.cs`: `LandSystem`, `Treasury`, `data/land.json`): clear
+university forest (cost, crews, slower in winter), buy land touching the campus (town land dearer + town-relations
+penalty recorded), monthly town growth; orders via `SimRunner.Submit`, applied at tick boundaries (or at once when
+paused). HUD: cash, land tools (C/L, drag with cost preview), ownership overlay, notifications, day/night switch (N,
+remembered). Next: **1e** (placement).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -82,6 +90,10 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
   back-to-back ones (both reported). The real map's agent phase costs more than the synthetic one (2.9 vs 2.1 ms on
   E-cores): the 192x192 distance table misses cache (synthetic: 41x41) — a smaller (ushort minutes) table is an option.
   Students who walk home for a few minutes before a class can still be late (chained walks); acceptable for now.
+- 1d placeholders to revisit: the 1824 starting land (a square), 1824 enrollment/faculty/cash, land prices and clearing
+  speed, the modern academic calendar applied to 1824 (Miami's early terms differed), clearing doesn't yet cost
+  Sustainability/Beauty (those scores don't exist) and replanting isn't in. land_history clearing spread changed 60 → 30
+  m/yr so the Hill is still wooded in 1824 (today's map unaffected).
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 
@@ -241,6 +253,15 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   `WriteInstances(..., heights)`), and exposes `GetHud()`/controls to `game_hud.gd`. Calendar: `AcademicCalendar`
   (Core) from `data/calendar.json` (month-day phases, `verified:false`); `Simulation` passes `classes` to
   `ScheduleModel.Resolve`. Students still live on campus in breaks/summer (presence comes with enrollment, 1h).
+- Scenarios & land (1d): `SimWorld.CreateScenario(data, source, id, map:)` loads `data/scenarios/<id>.json`; a
+  scenario with `campus` is a past-year start: `HistoricMap.Apply` rewrites the grid for `map_year` (LandHistory is built
+  from today's grid FIRST), `RealCampusBuilder.Build(..., historic: true)` takes housing zones from town land. Walking
+  surface rule `LandSystem.SurfaceFor`: path if the road exists, lawn if university-owned and not forest, else rough.
+  Land/money changes only on the sim thread: `Simulation.Tick` applies queued orders, then (hour 0) `DailyUpdate`; the
+  resulting surface changes go through `ApplyTileEdits` (incremental flow fields). Money = whole cents. Snapshot copies
+  land arrays when `land.Version + grid.Version` changes; player messages go through `SimRunner.TryTakeMessage` (never
+  lost). Map painting in the game uses `TileColorizer.PaintLive` + `ApplyOwnership`; overlays: None/Ownership/Foot
+  traffic (desire paths always). `VisualCrowd` never draws more walkers than people, each walk once per hour.
 - Godot bridge (`scripts/bridge/`): `GodotDataSource` (res:// via FileAccess), `PopulationSpikeHost` (world,
   runner, ground/buildings/walkers MultiMeshes, stats for GDScript). GDScript: `camera_rig.gd`, `debug_overlay.gd`.
 - Presentation tunables live in `data/rendering.json`; colours there reference `branding.json` palette entries.

@@ -74,17 +74,20 @@ Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F 
 `--speed=N` (0 = pause … 4 = 8×), `--camera=x,z,distance,pitch,yaw`, `--spike-smoke` (print stats after 6 s and quit).
 Tick times shown in the editor come from a Debug build of the sim; use the benchmark for real numbers.
 
-The game (Phase 1 preview: the real 2026 campus with everyone simulated, no building yet): click **Play** on the boot
-screen, or run it directly:
+The game: click **Play** on the boot screen for Campaign Chapter 1, "The Hill" (starts 1 November 1824 on the map as it
+stood then), or **Preview — 2026 campus** for the modern campus with everyone simulated. Or run it directly:
 
 ```powershell
 & $env:GODOT --path . res://scenes/game/game.tscn
 ```
 
 Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F tilt · Space pause/resume · 1–4 speed
-(1×/2×/4×/8×) · O foot-traffic overlay · G build grid · Esc main menu. Hover a building for its name. Desire paths wear
-into the campus lawns over a few in-game weeks. Launch options (after `--`): `--speed=N`, `--camera=x,z,distance,pitch,yaw`,
-`--game-smoke[=seconds]` (print stats and quit), `--screenshot=FILE` (with `--game-smoke`).
+(1×/2×/4×/8×) · O overlays (ownership, foot traffic) · C clear forest · L buy land (drag a rectangle; the cost shows
+before you let go) · N day/night cycle on/off (remembered) · G build grid · Esc stop the tool / main menu. Hover a
+building for its name. Desire paths wear into the campus lawns over a few in-game weeks. Launch options (after `--`):
+`--scenario=chapter1_the_hill|preview_2026`, `--speed=N`, `--camera=x,z,distance,pitch,yaw`, `--day-night=on|off`,
+`--demo-land` (place a sample clearing order and purchase), `--game-smoke[=seconds]` (print stats and quit),
+`--screenshot=FILE` (with `--game-smoke`).
 
 Spike B terrain (real Oxford, 1 m lidar + OSM): click **Spike B** on the boot screen, or run it directly:
 

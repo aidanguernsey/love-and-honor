@@ -33,6 +33,9 @@ func _ready() -> void:
 	_distance = start_distance_m if start_distance_m > 0.0 else float(_cfg["start_distance_m"])
 	_pitch = start_pitch_deg if start_pitch_deg > 0.0 else float(_cfg["start_pitch_deg"])
 	position = Vector3(_map_size.x * 0.5, 0.0, _map_size.y * 0.5)
+	if _host and _host.has_method("GetStartFocus"):
+		var focus: Vector2 = _host.GetStartFocus()
+		position = Vector3(focus.x, 0.0, focus.y)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--camera="):
 			var v := arg.trim_prefix("--camera=").split_floats(",")

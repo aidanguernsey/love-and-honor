@@ -43,6 +43,8 @@ public sealed class VisualCrowd
     private readonly float[] _x, _z;
 
     public int Capacity { get; }
+    private bool[] _used = [];
+    private int _usedTick = -1;
     public int ActiveCount { get; private set; }
 
     public VisualCrowd(FlowFieldSet fields, TileGrid grid, int capacity, float speedMps, float lateralSpreadM,
@@ -113,8 +115,16 @@ public sealed class VisualCrowd
 
     private void Spawn(GroundRect view, SimSnapshot s)
     {
-        int free = Capacity - ActiveCount;
+        // Never more walkers than people (a small early college), and each of this hour's walks drawn at most once.
+        int limit = Math.Min(Capacity, s.WalkAgent.Length);
+        int free = limit - ActiveCount;
         if (free <= 0 || s.WalkCount == 0) return;
+        if (s.Tick != _usedTick)
+        {
+            _usedTick = s.Tick;
+            if (_used.Length < s.WalkCount) _used = new bool[s.WalkAgent.Length];
+            else Array.Clear(_used, 0, s.WalkCount);
+        }
         int b = _fields.BuildingCount;
         var bounds = _fields.RouteBounds;
         // View rectangle in tile coordinates, for the cheap route-bounds test.
@@ -122,9 +132,10 @@ public sealed class VisualCrowd
         int vx0 = (int)(view.MinX * inv), vz0 = (int)(view.MinZ * inv), vx1 = (int)(view.MaxX * inv), vz1 = (int)(view.MaxZ * inv);
 
         int attempts = free * _attemptsPerSlot;
-        for (int k = 0; k < attempts && ActiveCount < Capacity; k++)
+        for (int k = 0; k < attempts && ActiveCount < limit; k++)
         {
             int e = _rng.NextInt(s.WalkCount);
+            if (_used[e]) continue;
             int from = s.WalkFrom[e], to = s.WalkTo[e];
             if (from < 0 || to < 0 || from == to) continue;
             int pair = from * b + to;
@@ -143,6 +154,7 @@ public sealed class VisualCrowd
             _category[slot] = s.WalkCategory[e];
             Position(slot, out _x[slot], out _z[slot]);
             if (!view.Contains(_x[slot], _z[slot])) continue;
+            _used[e] = true;
             ActiveCount++;
         }
     }

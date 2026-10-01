@@ -36,6 +36,15 @@ public sealed class SimSnapshot
     public readonly float[] Wear;
     public int TrafficVersion;
 
+    /// <summary>Land layer (Phase 1 1d), copied when it changes: compare LandVersion. Empty for worlds without land.</summary>
+    public readonly LandState[] LandStates;
+    public readonly Ownership[] Owners;
+    public readonly byte[] Clearing;
+    public readonly TileType[] Surfaces;
+    public int LandVersion = -1;
+    public long CashCents;
+    public int ClearingTiles;
+
     public SimSnapshot(int agentCount, int tileCount)
     {
         WalkAgent = new int[agentCount];
@@ -44,6 +53,10 @@ public sealed class SimSnapshot
         WalkCategory = new byte[agentCount];
         Traffic = new int[tileCount];
         Wear = new float[tileCount];
+        LandStates = new LandState[tileCount];
+        Owners = new Ownership[tileCount];
+        Clearing = new byte[tileCount];
+        Surfaces = new TileType[tileCount];
     }
 }
 
@@ -73,6 +86,12 @@ public sealed class SimRunner : IDisposable
     private int _pendingTicks;
     private long _droppedTicks;
     private int _trafficRequested;
+    private int _commandsPending;
+    private readonly System.Collections.Concurrent.ConcurrentQueue<string> _messages = new();
+
+    /// <summary>Main thread: the next message for the player (land orders and their results), if any. Not part of the
+    /// snapshot, so none are lost when the renderer skips snapshots.</summary>
+    public bool TryTakeMessage(out string message) => _messages.TryDequeue(out message!);
 
     // Triple buffer: _state holds the index of the "middle" snapshot plus a fresh bit.
     private const int FreshBit = 4;
@@ -144,6 +163,16 @@ public sealed class SimRunner : IDisposable
     /// <summary>Main thread: ask for the foot-traffic grid to be included in the next snapshot.</summary>
     public void RequestTraffic() => Interlocked.Exchange(ref _trafficRequested, 1);
 
+    /// <summary>Main thread: a land order (clear / buy). Applied on the sim thread at the next tick boundary, or right
+    /// away while paused, so the player can plan with the game stopped.</summary>
+    public void Submit(LandCommand command)
+    {
+        if (_sim.Land is null) return;
+        _sim.Land.Enqueue(command);
+        Interlocked.Exchange(ref _commandsPending, 1);
+        _signal.Set();
+    }
+
     /// <summary>Main thread: the newest published snapshot. Valid until the next call.</summary>
     public SimSnapshot AcquireLatest()
     {
@@ -165,7 +194,16 @@ public sealed class SimRunner : IDisposable
         {
             _signal.WaitOne(100);
             int n = Interlocked.Exchange(ref _pendingTicks, 0);
-            if (n == 0) continue;
+            if (n == 0)
+            {
+                if (Interlocked.Exchange(ref _commandsPending, 0) == 1)
+                {
+                    _sim.ApplyLandCommands();
+                    Publish();
+                }
+                continue;
+            }
+            Interlocked.Exchange(ref _commandsPending, 0); // ticks apply queued commands themselves
             for (int i = 0; i < n && !_stop; i++) TickOnce();
             Publish();
         }
@@ -196,6 +234,21 @@ public sealed class SimRunner : IDisposable
         s.LateLastTick = last.LateArrivals;
         s.DroppedTicks = Interlocked.Read(ref _droppedTicks);
         s.LastTickMs = last.ElapsedMs;
+
+        if (_sim.Land is { } land)
+        {
+            s.CashCents = land.Treasury.Cents;
+            s.ClearingTiles = land.ActiveClearingTiles;
+            if (s.LandVersion != land.Version + _grid.Version)
+            {
+                Array.Copy(_grid.LandState, s.LandStates, s.LandStates.Length);
+                Array.Copy(_grid.Ownership, s.Owners, s.Owners.Length);
+                Array.Copy(land.Clearing, s.Clearing, s.Clearing.Length);
+                Array.Copy(_grid.Types, s.Surfaces, s.Surfaces.Length);
+                s.LandVersion = land.Version + _grid.Version;
+            }
+            foreach (var m in land.TakeMessages()) _messages.Enqueue(m);
+        }
 
         s.TicksInWindow = _windowCount;
         if (_windowCount > 0)

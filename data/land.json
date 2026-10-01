@@ -1,0 +1,21 @@
+{
+  "$schema": "./schemas/land.schema.json",
+  "_comment": "Land clearing and acquisition (§5.1b, §5.3), Phase 1 checkpoint 1d. All numbers are [TWEAK] placeholders, not historical facts. Prices are in MODERN dollars per 10 m x 10 m tile (1/40 acre) and are multiplied by the era's price_multiplier (eras.json) at the time of the action.",
+  "clearing": {
+    "_comment": "Clearing turns university-owned forest into cleared land (pasture). Each order is worked by its own crew; winter (December-February) is slower.",
+    "cost_per_tile": 100,
+    "tiles_per_day": 4,
+    "winter_speed": 0.5,
+    "winter_months": [12, 1, 2]
+  },
+  "purchase": {
+    "_comment": "Buying land next to university land. Town land (inside the platted town) costs far more and hurts town relations (§5.3); the penalty is only recorded until the Town Relations score exists (Phase 2).",
+    "price_per_tile": { "forest": 250, "pasture": 250, "farmland": 300, "town": 5000, "developed": 5000, "protected": 2000 },
+    "town_relations_penalty_per_tile": 0.05,
+    "must_touch_university_land": true
+  },
+  "town_growth": {
+    "_comment": "The town grows on its own by the placeholder rules in map/land_history.json; changes are applied once a month to land the university doesn't own.",
+    "update_every_days": 30
+  }
+}

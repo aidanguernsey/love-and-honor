@@ -66,7 +66,14 @@ custom_minimum_size = Vector2(320, 52)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
-text = "Play — 2026 campus (preview)"
+text = "Play — Chapter 1: The Hill (1824)"
+
+[node name="Preview2026" type="Button" parent="Center/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Preview — 2026 campus"
 
 [node name="SimBridge" type="Node" parent="."]
 script = ExtResource("2_bridge")

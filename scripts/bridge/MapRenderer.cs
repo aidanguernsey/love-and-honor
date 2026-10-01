@@ -11,8 +11,8 @@ using LoveAndHonor.Sim.World;
 
 namespace LoveAndHonor.Bridge;
 
-/// <summary>Ground colouring on top of the land/season colours.</summary>
-public enum MapOverlay { None, DesirePaths, FootTraffic }
+/// <summary>Extra ground colouring on top of the land/season colours (desire paths are always drawn).</summary>
+public enum MapOverlay { None, Ownership, FootTraffic }
 
 /// <summary>
 /// Draws the real Oxford map (shared by the Spike B scene and the game, Phase 1 1c): custom low-poly terrain chunks
@@ -65,6 +65,11 @@ public sealed class MapRenderer
     // Overlay data (copies owned by the renderer) and the background repaint.
     private float[] _wear = [];
     private int[] _traffic = [];
+    // Live land layer from the sim (game); null = land states from the land-history model (Spike B timeline).
+    private LandState[]? _liveStates;
+    private TileType[]? _liveSurfaces;
+    private Ownership[]? _liveOwners;
+    private byte[]? _liveClearing;
     private Task? _paintTask;
     private bool _repaintQueued;
 
@@ -168,6 +173,32 @@ public sealed class MapRenderer
         return GridVisible;
     }
 
+    /// <summary>Paint from the sim's live land layer from now on (copies the arrays). Repaints in the background.</summary>
+    public void SetLiveLand(ReadOnlySpan<LandState> states, ReadOnlySpan<TileType> surfaces, ReadOnlySpan<Ownership> owners, ReadOnlySpan<byte> clearing)
+    {
+        _liveStates = states.ToArray();
+        _liveSurfaces = surfaces.ToArray();
+        _liveOwners = owners.ToArray();
+        _liveClearing = clearing.ToArray();
+        RepaintAsync();
+    }
+
+    /// <summary>Changes the overlay mode without new data. Repaints in the background.</summary>
+    public void SetOverlayMode(MapOverlay overlay)
+    {
+        if (overlay == Overlay) return;
+        Overlay = overlay;
+        RepaintAsync();
+    }
+
+    /// <summary>Land-tool selection (tile rectangle, inclusive) or null; green when the order is possible, red when not.</summary>
+    public void SetSelection(Rect2I? tiles, bool ok)
+    {
+        var r = tiles is { } t ? new Vector4(t.Position.X, t.Position.Y, t.End.X - 1, t.End.Y - 1) : new Vector4(-1, -1, -1, -1);
+        _terrainMaterial.SetShaderParameter("selection_rect", r);
+        _terrainMaterial.SetShaderParameter("selection_color", ok ? new Color(0.35f, 0.95f, 0.45f, 0.45f) : new Color(1f, 0.3f, 0.25f, 0.45f));
+    }
+
     /// <summary>Overlay mode plus the data it needs (copied). Repaints in the background.</summary>
     public void SetOverlay(MapOverlay overlay, ReadOnlySpan<float> wear, ReadOnlySpan<int> traffic)
     {
@@ -238,12 +269,19 @@ public sealed class MapRenderer
     private void PaintPixels()
     {
         var sw = Stopwatch.StartNew();
-        _colorizer.Paint(Year, DayOfYear);
+        var states = _liveStates; var surfaces = _liveSurfaces; var owners = _liveOwners; var clearing = _liveClearing;
+        if (states is not null && surfaces is not null) _colorizer.PaintLive(states, surfaces, Year, DayOfYear);
+        else _colorizer.Paint(Year, DayOfYear);
         var g = Render.Ground;
-        if (Overlay == MapOverlay.DesirePaths && _wear.Length > 0)
-            _colorizer.ApplyWear(_wear, _palette.Resolve(g.Wear));
-        else if (Overlay == MapOverlay.FootTraffic && _traffic.Length > 0)
+        if (Overlay == MapOverlay.FootTraffic && _traffic.Length > 0)
             _colorizer.ApplyTraffic(_traffic, _palette.Resolve(g.HeatmapLow), _palette.Resolve(g.HeatmapHigh));
+        else
+        {
+            if (_wear.Length > 0) _colorizer.ApplyWear(_wear, _palette.Resolve(g.Wear));
+            if (owners is not null)
+                _colorizer.ApplyOwnership(owners, clearing ?? [], _palette.Resolve("primary"), _palette.Resolve("slate"),
+                    new Rgb(0.93f, 0.62f, 0.18f), Overlay == MapOverlay.Ownership);
+        }
         PaintMs = sw.Elapsed.TotalMilliseconds;
     }
 

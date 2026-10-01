@@ -32,13 +32,17 @@ public static class PopulationGenerator
         short[] dining = Indices(campus, BuildingKind.Dining);
         short[] library = Indices(campus, BuildingKind.Library);
         short[] recreation = Indices(campus, BuildingKind.Recreation);
-        if (academic.Length == 0 || residence.Length == 0 || offCampus.Length == 0 || dining.Length == 0 || library.Length == 0 || recreation.Length == 0)
-            throw new InvalidOperationException("Spike campus needs at least one of each building kind.");
+        // A campus needs somewhere to teach and somewhere to live. Everything else falls back (an early campus such as
+        // 1824 has one building): no dining hall → meals at home (boarding), no library → study at home, no
+        // recreation → exercise near home, no residence halls → everyone lives in town.
+        if (academic.Length == 0 || (residence.Length == 0 && offCampus.Length == 0))
+            throw new InvalidOperationException("A campus needs at least one academic building and somewhere to live.");
 
         int deptCount = data.Departments.Departments.Length;
         short DeptBuilding(int dept) => academic[dept % academic.Length];
         short Nearest(short from, short[] candidates)
         {
+            if (candidates.Length == 0) return from;
             short best = candidates[0];
             foreach (var c in candidates)
                 if (fields.Distance(from, c) < fields.Distance(from, best)) best = c;
@@ -49,7 +53,8 @@ public static class PopulationGenerator
         // of houses); with equal weights this is a plain uniform pick, as in Spike A.
         float[] offWeights = offCampus.Select(i => campus.Buildings[i].Weight).ToArray();
         bool weighted = offWeights.Any(x => x != offWeights[0]);
-        short OffCampusHome() => weighted ? offCampus[PickWeighted(offWeights, random)] : offCampus[random.NextInt(offCampus.Length)];
+        short OffCampusHome() => offCampus.Length == 0 ? residence[random.NextInt(residence.Length)]
+            : weighted ? offCampus[PickWeighted(offWeights, random)] : offCampus[random.NextInt(offCampus.Length)];
 
         var slots = BuildSlots(sched.ClassSlots);
         var onCampusYears = new HashSet<int>(spike.Students.OnCampusYears);
@@ -74,8 +79,9 @@ public static class PopulationGenerator
             pop.Department[a] = (ushort)dept;
 
             bool onCampus = onCampusYears.Contains(year);
+            short home = onCampus && residence.Length > 0 ? residence[random.NextInt(residence.Length)] : OffCampusHome();
+            onCampus = residence.Length > 0 && onCampus;
             pop.Housing[a] = onCampus ? HousingType.OnCampus : HousingType.OffCampus;
-            short home = onCampus ? residence[random.NextInt(residence.Length)] : OffCampusHome();
             pop.Home[a] = home;
             pop.CurrentBuilding[a] = home;
             pop.Dining[a] = Nearest(home, dining);

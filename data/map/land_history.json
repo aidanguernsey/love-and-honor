@@ -13,7 +13,7 @@
   "clearing": {
     "_comment": "Present-day open land starts as forest and is cleared outward from Uptown: pasture first, farmland farmland_delay_years later.",
     "start_year": 1810,
-    "spread_m_per_year": 60,
+    "spread_m_per_year": 30,
     "farmland_delay_years": 15
   },
   "university": {

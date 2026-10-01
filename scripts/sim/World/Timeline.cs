@@ -57,6 +57,7 @@ public sealed class EraTable
         public int StartYear { get; init; }
         public int? EndYear { get; init; }
         public string RoadType { get; init; } = "";
+        public double PriceMultiplier { get; init; } = 1.0;
     }
 
     public Era At(int year) =>

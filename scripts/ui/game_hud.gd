@@ -1,12 +1,14 @@
 extends CanvasLayer
-## Main HUD skeleton (§27.1), Phase 1 checkpoint 1c. Systems that don't exist yet show "—" with a tooltip saying
-## which checkpoint brings them. Keys (§27.5): Space pause/resume · 1–4 speed (1×/2×/4×/8×) · 5 skip to next event
-## (reserved) · O overlays · G build grid · Esc main menu.
+## Main HUD (§27.1), Phase 1 checkpoints 1c–1d. Systems that don't exist yet show "—" with a tooltip saying which
+## checkpoint brings them. Keys (§27.5): Space pause/resume · 1–4 speed (1×/2×/4×/8×) · 5 skip to next event (reserved)
+## · O overlays · G build grid · C clear forest · L buy land · N day/night cycle · Esc stop tool / main menu.
+## The day/night setting is remembered in user://settings.cfg (`--day-night=on|off` overrides it for one run).
 ## Launch options (after `--`; start from the boot scene with `--play`): `--speed=N` (0–4), `--camera=...` (see camera_rig.gd), `--game-smoke[=seconds]`
 ## (print GAME_SMOKE stats once the sim has run that long, then quit), `--screenshot=<file.png>` (with --game-smoke).
 
 const BUILD_CATEGORIES := ["Academic", "Housing", "Dining", "Student Life", "Athletics", "Admin / Utilities", "Landscape", "Landmarks"]
 const SPEED_LABELS := ["Pause", "1×", "2×", "4×", "8×"]
+const SETTINGS_PATH := "user://settings.cfg"
 
 @export var host_path: NodePath
 
@@ -21,6 +23,12 @@ var _debug_label: Label
 var _overlay_button: Button
 var _notice_label: Label
 var _notice_timer := 0.0
+var _notice_text := ""
+var _scenario_label: Label
+var _tool_buttons := {}
+var _tool_hint: Label
+var _day_night_button: CheckButton
+var _settings := ConfigFile.new()
 var _start_speed := 1
 var _smoke_seconds := -1.0
 var _smoke_elapsed := 0.0
@@ -47,12 +55,26 @@ func _ready() -> void:
 	add_child(_loading_label)
 	_hover_label = _label(13)
 	add_child(_hover_label)
+	_tool_hint = _label(15)
+	_anchor(_tool_hint, 0.5, 1, 0.5, 1, 0, -64, 0, -64)
+	_tool_hint.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_tool_hint.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_tool_hint.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_tool_hint.add_theme_constant_override("outline_size", 6)
+	add_child(_tool_hint)
+	_settings.load(SETTINGS_PATH)
+	var day_night: bool = _settings.get_value("view", "day_night_cycle", true)
+	if "--day-night=off" in OS.get_cmdline_user_args(): day_night = false  # testing; not saved
+	elif "--day-night=on" in OS.get_cmdline_user_args(): day_night = true
+	_day_night_button.set_pressed_no_signal(day_night)
+	_host.SetDayNight(day_night)
 
 
 func _process(delta: float) -> void:
 	var hud: Dictionary = _host.GetHud()
 	var ready: bool = hud["ready"]
 	_loading_label.visible = not ready
+	_scenario_label.text = hud["scenario"]
 	if not ready:
 		_loading_label.text = hud["load_status"]
 		return
@@ -70,6 +92,20 @@ func _process(delta: float) -> void:
 		_speed_buttons[i].button_pressed = i == speed_index
 	_stat_labels["enrollment"].text = "%s students · %s faculty" % [_thousands(hud["students"]), _thousands(hud["faculty"])]
 	_stat_labels["happiness"].text = "%d%%" % roundi(hud["happiness"])
+	_stat_labels["cash"].text = hud["cash"]
+	_overlay_button.text = "Overlays: %s (O)" % hud["overlay"]
+
+	var tool: String = hud["tool"]
+	for key in _tool_buttons:
+		_tool_buttons[key].set_pressed_no_signal(key == tool)
+	_tool_hint.text = hud["tool_hint"]
+	_tool_hint.visible = tool != ""
+
+	var notes := PackedStringArray()
+	if _notice_timer > 0.0: notes.append(_notice_text)
+	if hud["clearing_tiles"] > 0: notes.append("Clearing in progress: %d tiles left." % hud["clearing_tiles"])
+	if hud["messages"] != "": notes.append(hud["messages"])
+	_notice_label.text = "\n".join(notes) if notes.size() > 0 else "No notifications yet."
 
 	var hover: String = hud["hover"]
 	_hover_label.visible = hover != ""
@@ -83,7 +119,6 @@ func _process(delta: float) -> void:
 
 	if _notice_timer > 0.0:
 		_notice_timer -= delta
-		if _notice_timer <= 0.0: _notice_label.text = "No notifications yet."
 
 	if _smoke_seconds >= 0.0:
 		_smoke_elapsed += delta
@@ -108,7 +143,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_O: _cycle_overlay()
 		KEY_G: _host.ToggleGrid()
 		KEY_B: _notify("Building comes in checkpoint 1e.")
-		KEY_ESCAPE: get_tree().change_scene_to_file("res://scenes/boot.tscn")
+		KEY_C: _toggle_tool("clear")
+		KEY_L: _toggle_tool("buy")
+		KEY_N: _day_night_button.button_pressed = not _day_night_button.button_pressed
+		KEY_ESCAPE:
+			if _host.GetLandTool() != "": _host.SetLandTool("")
+			else: get_tree().change_scene_to_file("res://scenes/boot.tscn")
 
 
 # ---------------- layout ----------------
@@ -122,6 +162,9 @@ func _build_top_bar() -> void:
 
 	var when := VBoxContainer.new()
 	when.custom_minimum_size = Vector2(300, 0)
+	_scenario_label = _label(11)
+	_scenario_label.modulate = Color(1, 1, 1, 0.65)
+	when.add_child(_scenario_label)
 	_date_label = _label(17)
 	_phase_label = _label(13)
 	_phase_label.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -152,7 +195,7 @@ func _build_top_bar() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(spacer)
 
-	_add_stat(row, "cash", "Cash", "—", "Budget and money come in checkpoint 1i.")
+	_add_stat(row, "cash", "Cash", "—", "Operating cash (§8.1). Spent on clearing and buying land; income and the budget come in 1i.")
 	_add_stat(row, "enrollment", "Enrollment", "—", "Everyone simulated on the real campus. Admissions and enrollment change come in 1h.")
 	_add_stat(row, "happiness", "Happiness", "—", "Average student and faculty happiness from their needs (§10.1).")
 	_add_stat(row, "reputation", "Reputation", "—", "Rankings come later (Phase 2).")
@@ -165,6 +208,19 @@ func _build_build_menu() -> void:
 	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	var col := VBoxContainer.new()
 	panel.add_child(col)
+	col.add_child(_label(14, "Land"))
+	for spec in [["clear", "Clear forest (C)", "Clear university-owned woods: drag a rectangle. Costs money and takes days of work (slower in winter)."],
+			["buy", "Buy land (L)", "Buy land next to the campus: drag a rectangle. Town land costs far more and annoys the town."]]:
+		var t := Button.new()
+		t.text = spec[1]
+		t.tooltip_text = spec[2]
+		t.toggle_mode = true
+		t.focus_mode = Control.FOCUS_NONE
+		t.custom_minimum_size = Vector2(150, 30)
+		var key: String = spec[0]
+		t.pressed.connect(func(): _toggle_tool(key))
+		col.add_child(t)
+		_tool_buttons[key] = t
 	col.add_child(_label(14, "Build"))
 	for category in BUILD_CATEGORIES:
 		var b := Button.new()
@@ -187,9 +243,16 @@ func _build_right_panel() -> void:
 	_overlay_button = Button.new()
 	_overlay_button.text = "Overlays: None (O)"
 	_overlay_button.focus_mode = Control.FOCUS_NONE
-	_overlay_button.tooltip_text = "Foot-traffic heatmap. Desire paths worn into the lawns are always shown."
+	_overlay_button.tooltip_text = "Ownership (university / town land) and the foot-traffic heatmap. Desire paths worn into the lawns are always shown."
 	_overlay_button.pressed.connect(_cycle_overlay)
 	col.add_child(_overlay_button)
+	_day_night_button = CheckButton.new()
+	_day_night_button.text = "Day/night cycle (N)"
+	_day_night_button.button_pressed = true
+	_day_night_button.focus_mode = Control.FOCUS_NONE
+	_day_night_button.tooltip_text = "Off: always early afternoon light. The clock and the simulation keep running."
+	_day_night_button.toggled.connect(_set_day_night)
+	col.add_child(_day_night_button)
 	col.add_child(_label(14, "Demand"))
 	var demand := _label(12, "Demand bars come with building (1e).")
 	demand.modulate = Color(1, 1, 1, 0.6)
@@ -237,8 +300,18 @@ func _cycle_overlay() -> void:
 
 
 func _notify(text: String) -> void:
-	_notice_label.text = text
+	_notice_text = text
 	_notice_timer = 4.0
+
+
+func _toggle_tool(tool: String) -> void:
+	_host.SetLandTool("" if _host.GetLandTool() == tool else tool)
+
+
+func _set_day_night(on: bool) -> void:
+	_host.SetDayNight(on)
+	_settings.set_value("view", "day_night_cycle", on)
+	_settings.save(SETTINGS_PATH)
 
 
 # ---------------- helpers ----------------

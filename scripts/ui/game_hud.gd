@@ -2,7 +2,7 @@ extends CanvasLayer
 ## Main HUD skeleton (§27.1), Phase 1 checkpoint 1c. Systems that don't exist yet show "—" with a tooltip saying
 ## which checkpoint brings them. Keys (§27.5): Space pause/resume · 1–4 speed (1×/2×/4×/8×) · 5 skip to next event
 ## (reserved) · O overlays · G build grid · Esc main menu.
-## Launch options (after `--`): `--speed=N` (0–4), `--camera=...` (see camera_rig.gd), `--game-smoke[=seconds]`
+## Launch options (after `--`; start from the boot scene with `--play`): `--speed=N` (0–4), `--camera=...` (see camera_rig.gd), `--game-smoke[=seconds]`
 ## (print GAME_SMOKE stats once the sim has run that long, then quit), `--screenshot=<file.png>` (with --game-smoke).
 
 const BUILD_CATEGORIES := ["Academic", "Housing", "Dining", "Student Life", "Athletics", "Admin / Utilities", "Landscape", "Landmarks"]

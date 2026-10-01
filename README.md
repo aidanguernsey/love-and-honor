@@ -162,6 +162,10 @@ rasters are raw binary files). Needs the Godot 4.7.2 .NET export templates (Edit
 & $env:GODOT --headless --path . --export-release "Windows Desktop" build/windows/LoveAndHonor.exe
 ```
 
+Ship the whole `build/windows/` folder (the `.exe`, the `.pck` and the `data_LoveAndHonor_windows_x86_64` folder with the
+.NET runtime). Release builds can't open a scene from the command line; `LoveAndHonor.exe -- --play` starts the game
+directly.
+
 ## Data conventions
 
 - Every JSON file in `data/` starts with `"$schema": "<relative path to data/schemas/...>"`. Editors like

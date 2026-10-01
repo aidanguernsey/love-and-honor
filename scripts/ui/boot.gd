@@ -37,6 +37,9 @@ func _ready() -> void:
 		print("SMOKE title=%s | university=%s | branding=%s | sim=%s" % [
 			_title.text, uni["name"], branding["profile_id"], _sim_info.text])
 		get_tree().quit()
+	elif "--play" in OS.get_cmdline_user_args():
+		# Straight into the game (exported release builds can't take a scene path on the command line).
+		get_tree().change_scene_to_file.call_deferred("res://scenes/game/game.tscn")
 
 
 func _load_json(path: String) -> Dictionary:

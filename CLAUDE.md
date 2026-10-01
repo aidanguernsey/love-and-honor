@@ -20,7 +20,10 @@ free time chosen per 2-hour block. Real map: 98.6% of crossings on paths, 259 wo
 **1c done (2026-10-01), awaiting the user's review:** game scene `scenes/game/game.tscn` (boot → Play): real terrain +
 buildings (`MapRenderer`), real-map sim on the sim thread (`GameHost`, built on a worker behind a loading message),
 walkers on the terrain, sun/seasons/desire paths from the sim clock, academic calendar (`data/calendar.json`, classes
-only in term), HUD skeleton (§27.1) in `scripts/ui/game_hud.gd`, Windows export preset. Next: **1d** (land: 1824 start).
+only in term), HUD skeleton (§27.1) in `scripts/ui/game_hud.gd`, Windows export preset. **Windows release export tested (2026-10-01)**:
+`LoveAndHonor.exe` (109 MB) + `.pck` (3.6 MB) + .NET 10 runtime folder; boot and game scenes run (`-- --play`), sim
+optimized (flow fields 372 ms). Export templates 4.7.2.stable.mono installed in %APPDATA%\Godot\export_templates
+(downloaded with the user's OK). Next: **1d** (land: 1824 start).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →

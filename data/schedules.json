@@ -19,7 +19,9 @@
     "weekday_free": { "study": 0.5, "leisure": 0.3, "social": 0.2 },
     "weekday_evening": { "study": 0.4, "social": 0.4, "exercise": 0.2 },
     "weekend": { "social": 0.4, "exercise": 0.2, "study": 0.2, "leisure": 0.2 },
-    "evening_start_hour": 19
+    "evening_start_hour": 19,
+    "_free_block_comment": "Free time is chosen per block of free_block_hours (staggered per student), so people stay put for a while instead of re-deciding every hour (Phase 1 1b).",
+    "free_block_hours": 2
   },
   "faculty": {
     "wake_hour": { "min": 6, "max": 7 },

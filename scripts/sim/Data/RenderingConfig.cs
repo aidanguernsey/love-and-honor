@@ -48,7 +48,6 @@ public sealed class RenderingConfig
         public string Path { get; init; } = "";
         public string Building { get; init; } = "";
         public string Wear { get; init; } = "";
-        public float WearFullAtWalkers { get; init; }
         public string HeatmapLow { get; init; } = "";
         public string HeatmapHigh { get; init; } = "";
         public float RefreshSeconds { get; init; }

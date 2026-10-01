@@ -29,6 +29,8 @@ public static class StateHash
         h = Mix(h, p.WalkDepartMinute);
         h = Mix(h, p.WalkArriveMinute);
         h = Mix(h, grid.FootTraffic);
+        h = Mix(h, grid.TrafficAtMidnight);
+        h = Mix(h, grid.Wear);
         return h;
     }
 

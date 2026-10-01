@@ -9,6 +9,8 @@
     "library": "library",
     "student_life": "recreation"
   },
+  "lawn_land_states": ["university"],
+  "_lawn_comment": "Unpaved tiles in these land states are lawn (grass cost): campus lawns. Every other unpaved tile is rough ground (rough cost): fields and woods, but also town yards and other private land, which people walk round on the streets (Phase 1 1b; Mile Square ownership is \"town\" for the whole plat, so town land is mostly private yards).",
   "entrance_search_radius_tiles": 8,
   "prefer_path_within_tiles": 3,
   "housing": {

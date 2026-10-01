@@ -8,11 +8,15 @@ The full design is in `GAME_DESIGN.md` (v0.4). **Read the relevant section befor
 **Phase 0 complete (2026-09-30).** All 16 design-doc updates approved and applied (GAME_DESIGN.md v0.4).
 **Next: Phase 1 — "The Hill"**, checkpoints 1a–1k in `docs/PHASE0_REPORT.md` §5 (approved), starting with **1a**
 (sim on the real map + background flow-field rebuilds). Stop after every checkpoint.
-**1a done (2026-10-01), awaiting the user's review:** the sim runs on the real Oxford map (84 Miami buildings standing
-in 2026 + 108 off-campus housing zones, `data/real_campus.json`); flow fields rebuilt incrementally in the background
-and swapped in at a fixed tick. Benchmark (`docs/benchmarks/phase1-1a-real-map-2026-10-01.txt`): gated 4 E-cores p95
-5.1 ms with a path edit every 48 ticks; every tick paced at 1x p95 5.5 ms; edit → new fields in ~90 ms (no stalls,
-none estimated at 8x); 0 GCs. Heatmap `docs/images/real-map-foot-traffic.png`. Next: **1b** (walking model v2).
+**1a done (2026-10-01):** sim on the real Oxford map (84 Miami buildings + 108 housing zones), incremental background
+flow-field updates swapped in at a fixed tick (`docs/benchmarks/phase1-1a-real-map-2026-10-01.txt`).
+**1b done (2026-10-01), awaiting the user's review:** walking model v2 (§12.4 v0.4) — classes start on the hour and
+people leave early (late only after a back-to-back class or a walk that ended too late: 134k late walks vs 1.12M);
+lawn 1.25x + 15 m path-exit penalty (big quads get cut, small lawns/corners don't); rough ground 3x (fields, woods AND
+town yards: only university land counts as lawn); desire paths from >=40 walkers/day, 14 days to wear, 30 to regrow;
+free time chosen per 2-hour block. Real map: 98.6% of crossings on paths, 259 worn tiles after 48 days
+(`docs/images/real-map-desire-paths.png`). Benchmark `docs/benchmarks/phase1-1b-walking-2026-10-01.txt`: gated p95
+6.1 ms, paced 1x 6.7 ms (machine ~1 ms slower today than for 1a: the 1a code measured 6.0 ms). Next: **1c** (game shell).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -67,6 +71,10 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
   shader. Real OSM footprints aren't on a 3 m grid → recommend a procedural kit assembler + per-building recipes
   (hero landmarks hand-made). Era variants ×4 → mostly shader parameters. Rendered characters need vertex-animation
   textures on a MultiMesh. Project still uses Forward+; nothing tested on the Mobile renderer yet.
+- Phase 1 1a/1b: idle cores start a tick slower, so ticks paced like the game at 1x are ~0.5-1 ms slower than
+  back-to-back ones (both reported). The real map's agent phase costs more than the synthetic one (2.9 vs 2.1 ms on
+  E-cores): the 192x192 distance table misses cache (synthetic: 41x41) — a smaller (ushort minutes) table is an option.
+  Students who walk home for a few minutes before a class can still be late (chained walks); acceptable for now.
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 
@@ -191,7 +199,7 @@ tools/.venv/Scripts/python tools/map_pipeline/build_map.py                    # 
 tools/.venv/Scripts/python -m pytest tools/map_pipeline                       # pipeline tests
 dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks            # population benchmark, real map (exit 1 = over budget)
 dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks -- --quick # gated run only
-#   options: --map synthetic (Spike A campus), --edit-every N, --pace-all [--pace-speed S], --traffic-png FILE
+#   options: --map synthetic (Spike A campus), --edit-every N, --pace-all [--pace-speed S], --traffic-png FILE, --desire-png FILE
 ```
 Always benchmark with `-c Release`. The gated run pins to 4 E-cores on hybrid Intel CPUs (conservative
 stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference only.
@@ -258,8 +266,13 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   maps). Housing zones have no field (routes = reversed). Map edits: `Simulation.ApplyTileEdits` (sim thread, between
   ticks) → background update into a spare buffer → swapped in exactly `pathing_rebuild_latency_ticks` later (the sim
   waits if not ready) → deterministic. Never read `FlowFieldSet.CostsTo/DirectionsTo` off the sim thread.
-- Foot-traffic route tracing runs as a thread-pool work item after each tick (overlapping idle time). Call
-  `Simulation.SyncFootTraffic()` before reading `TileGrid.FootTraffic` (`StateHash.Compute(sim, grid)` does it).
+- Foot-traffic route tracing runs as a thread-pool work item after each tick (overlapping idle time); at the 23:00
+  tick it also runs `TileGrid.UpdateWear` (today = FootTraffic - TrafficAtMidnight). Call `Simulation.SyncFootTraffic()`
+  before reading `FootTraffic`/`Wear` (`StateHash.Compute(sim, grid)` and SimRunner snapshots do it).
+- Walking model (1b): `TileType.Rough` = unpaved non-lawn (cost `rough_cost_multiplier`); lawn = `real_campus.json
+  lawn_land_states` (university only). Edge costs add half of `path_exit_penalty_m` on every path<->unpaved step (both
+  directions, so routes stay symmetric). Class/Teach walks leave before the hour (`Simulation.ProcessChunk`); free time
+  is rolled per `schedules.json student.free_block_hours` block, staggered by agent index.
 - Benchmark methodology: the gated run is back-to-back ticks with a path edit every 48 ticks (paced at 1x while a
   rebuild is pending); a reference run paces every tick at 1x, because idle cores start ticks slower (~+1 ms here).
 - Downloads: never put the user's email or other personal data in request headers/URLs (the pipeline's

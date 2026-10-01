@@ -73,7 +73,19 @@ public sealed class BalanceConfig
     {
         public float SpeedMPerMin { get; init; }
         public float GrassCostMultiplier { get; init; }
+        public float RoughCostMultiplier { get; init; }
+        public float PathExitPenaltyM { get; init; }
         public float CommutePenaltyPerMinute { get; init; }
+        public DesirePathSection DesirePaths { get; init; } = new();
+
+        public LoveAndHonor.Sim.Pathing.FlowFieldSet.WalkCosts Costs => new(GrassCostMultiplier, RoughCostMultiplier, PathExitPenaltyM);
+    }
+
+    public sealed class DesirePathSection
+    {
+        public int MinWalkersPerDay { get; init; }
+        public float DaysToWear { get; init; }
+        public float DaysToRegrow { get; init; }
     }
 }
 
@@ -106,6 +118,7 @@ public sealed class ScheduleConfig
         public Dictionary<string, float> WeekdayEvening { get; init; } = [];
         public Dictionary<string, float> Weekend { get; init; } = [];
         public int EveningStartHour { get; init; }
+        public int FreeBlockHours { get; init; } = 1;
     }
 
     public sealed class FacultySection

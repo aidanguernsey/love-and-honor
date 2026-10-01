@@ -61,11 +61,13 @@ public sealed class FlowFieldSet
     private const float Diagonal = 1.41421356f;
     private const int BucketCount = 256; // ring size for the bucket queue; must exceed the largest edge cost
 
+    private const int Types = 5; // TileType values
+
     private readonly Campus _campus;
-    private readonly float _grassCost;
+    private readonly WalkCosts _costs;
     private readonly int _threads;
     private readonly int _backgroundThreads;
-    private readonly int[] _edgeCost; // [(typeA * 4 + typeB) * 2 + diagonal]
+    private readonly int[] _edgeCost; // [(typeA * Types + typeB) * 2 + diagonal]
 
     private sealed class Buffer
     {
@@ -81,23 +83,39 @@ public sealed class FlowFieldSet
 
     public readonly record struct RouteBox(short MinX, short MinY, short MaxX, short MaxY);
 
+    /// <summary>
+    /// Walking costs (§12.4, balance.json "walking"): lawn and rough ground (fields, woods) cost more per metre than a
+    /// path, and every step between a path and an unpaved tile adds half of <paramref name="PathExitPenaltyM"/>, so
+    /// leaving a path and rejoining it costs the whole penalty: small corner cuts aren't worth it, long diagonals are.
+    /// The same both ways, so routes and distances stay symmetric.
+    /// </summary>
+    public readonly record struct WalkCosts(float Grass, float Rough, float PathExitPenaltyM);
+
     public FlowFieldSet(Campus campus, float grassCostMultiplier, int threads, int backgroundThreads = 1)
+        : this(campus, new WalkCosts(grassCostMultiplier, grassCostMultiplier, 0), threads, backgroundThreads) { }
+
+    public FlowFieldSet(Campus campus, WalkCosts costs, int threads, int backgroundThreads = 1)
     {
         _campus = campus;
-        _grassCost = grassCostMultiplier;
+        _costs = costs;
         _threads = Math.Max(1, threads);
         _backgroundThreads = Math.Max(1, backgroundThreads);
-        _edgeCost = new int[4 * 4 * 2];
-        for (int a = 0; a < 4; a++)
-            for (int b = 0; b < 4; b++)
+        int halfPenalty = (int)MathF.Round(0.5f * CostScale * costs.PathExitPenaltyM / campus.Grid.TileSizeM);
+        _edgeCost = new int[Types * Types * 2];
+        for (int a = 0; a < Types; a++)
+            for (int b = 0; b < Types; b++)
                 for (int diag = 0; diag < 2; diag++)
                 {
                     float avg = 0.5f * (TileCost((TileType)a) + TileCost((TileType)b));
                     int cost = (int)MathF.Round(CostScale * avg * (diag == 1 ? Diagonal : 1f));
-                    if (cost >= BucketCount) throw new ArgumentOutOfRangeException(nameof(grassCostMultiplier), "Grass cost too high for the bucket queue.");
-                    _edgeCost[(a * 4 + b) * 2 + diag] = cost;
+                    bool aPath = (TileType)a == TileType.Path, bPath = (TileType)b == TileType.Path;
+                    if (aPath != bPath && IsSurface((TileType)a) && IsSurface((TileType)b)) cost += halfPenalty;
+                    if (cost >= BucketCount) throw new ArgumentOutOfRangeException(nameof(costs), "Walking costs too high for the bucket queue.");
+                    _edgeCost[(a * Types + b) * 2 + diag] = cost;
                 }
     }
+
+    private static bool IsSurface(TileType t) => t is TileType.Grass or TileType.Rough or TileType.Path;
 
     /// <summary>The fields in use. Replaced as a whole on rebuild; safe to read from any thread.</summary>
     public FlowFieldData Current => _current ?? throw new InvalidOperationException("Flow fields not built yet.");
@@ -342,7 +360,7 @@ public sealed class FlowFieldSet
         }
     }
 
-    private float TileCost(TileType t) => t == TileType.Grass ? _grassCost : 1f;
+    private float TileCost(TileType t) => t switch { TileType.Grass => _costs.Grass, TileType.Rough => _costs.Rough, _ => 1f };
 
     private static bool Walkable(TileType t) => t is not (TileType.Building or TileType.Water);
 
@@ -357,7 +375,7 @@ public sealed class FlowFieldSet
         if (!Walkable(nType) || !Walkable(types[a])) return -1;
         int diag = d & 1;
         if (diag == 1 && (!Walkable(types[ay * w + nx]) || !Walkable(types[ny * w + ax]))) return -1;
-        return _edgeCost[((int)types[a] * 4 + (int)nType) * 2 + diag];
+        return _edgeCost[((int)types[a] * Types + (int)nType) * 2 + diag];
     }
 
     /// <summary>Full Dijkstra (Dial's algorithm) from the target entrance over the whole walkable map.</summary>
@@ -387,7 +405,7 @@ public sealed class FlowFieldSet
             if (cost[t] != current) continue; // stale entry (improved later)
 
             int ty = t / w, tx = t - ty * w;
-            int tRow = (int)types[t] * 4;
+            int tRow = (int)types[t] * Types;
             for (int d = 0; d < 8; d++)
             {
                 int nx = tx + dxs[d], ny = ty + dys[d];

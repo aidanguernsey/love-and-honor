@@ -8,6 +8,8 @@ public sealed class RealCampusConfig
     /// <summary>timeline.json kind → sim building kind (academic, residence, dining, library, recreation).
     /// Kinds not listed aren't destinations (they still block walking).</summary>
     public Dictionary<string, string> KindMap { get; init; } = [];
+    /// <summary>Unpaved tiles in these land states are lawn; other unpaved land is rough ground (fields, woods).</summary>
+    public string[] LawnLandStates { get; init; } = [];
     public int EntranceSearchRadiusTiles { get; init; }
     public int PreferPathWithinTiles { get; init; }
     public HousingSection Housing { get; init; } = new();
@@ -51,6 +53,13 @@ public static class RealCampusBuilder
         var grid = map.Grid;
         int w = grid.Width, h = grid.Height, tiles = w * h;
         var byOsm = features.ToDictionary(f => f.OsmId);
+
+        // Walking surface: lawn where the land is town/campus, rough ground (fields, pasture, woods) elsewhere.
+        var lawn = cfg.LawnLandStates.Select(s => Enum.Parse<LandState>(s, ignoreCase: true)).ToHashSet();
+        for (int t = 0; t < tiles; t++)
+            if (grid.Types[t] == TileType.Grass && !lawn.Contains(grid.LandState[t])) grid.Types[t] = TileType.Rough;
+        grid.MarkChanged();
+
         var component = MainComponent(grid);
 
         var buildings = new List<CampusBuilding>();

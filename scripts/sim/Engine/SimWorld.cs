@@ -56,7 +56,7 @@ public sealed class SimWorld
     {
         int t = threads ?? data.Balance.Performance.SimWorkerThreads;
         var sw = Stopwatch.StartNew();
-        var fields = new FlowFieldSet(campus, data.Balance.Walking.GrassCostMultiplier, t, data.Balance.Performance.PathingRebuildThreads);
+        var fields = new FlowFieldSet(campus, data.Balance.Walking.Costs, t, data.Balance.Performance.PathingRebuildThreads);
         fields.Build();
         double fieldsMs = sw.Elapsed.TotalMilliseconds;
 

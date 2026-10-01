@@ -65,10 +65,18 @@
     }
   },
   "walking": {
-    "_comment": "§12.4. All placeholders. Grass costs more than paved paths, so walkers use paths unless a shortcut saves enough distance (this is what creates desire paths). Commute need drops per minute walked.",
+    "_comment": "§12.4 (v0.4): students prefer paved paths and cut across grass only when it saves enough. Placeholders, tuned in Phase 1 1b: with grass 1.25x and a 15 m penalty for leaving a path (paid half on the way off, half on the way back), cutting diagonally across a lawn pays off from roughly 70 m sides (a big quad), not for small lawns or corner-trimming. Rough ground (fields, pasture, woods) costs 3x, so people keep to roads outside town. Commute need drops per minute walked.",
     "speed_m_per_min": 80,
-    "grass_cost_multiplier": 1.3,
-    "commute_penalty_per_minute": 0.6
+    "grass_cost_multiplier": 1.25,
+    "rough_cost_multiplier": 3.0,
+    "path_exit_penalty_m": 15,
+    "commute_penalty_per_minute": 0.6,
+    "desire_paths": {
+      "_comment": "A lawn/rough tile crossed by at least min_walkers_per_day people that day wears 1/days_to_wear; otherwise it grows back 1/days_to_regrow. Fully worn = a desire path (dirt). 'Grass wears to dirt over weeks' (§12.4).",
+      "min_walkers_per_day": 40,
+      "days_to_wear": 14,
+      "days_to_regrow": 30
+    }
   },
   "retention": {
     "_comment": "§32: R = base + happiness*H/100 + gpa*GPA/4 + belonging*B/100 - financial_stress*FS/100, clamped",

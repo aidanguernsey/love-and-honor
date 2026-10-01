@@ -42,7 +42,7 @@ public sealed class Simulation
     private readonly NeedsModel _needs;
     private readonly float _walkSpeed;
     private readonly float _commutePenalty;
-    private readonly float _lateAfterMinutes;
+    private readonly int _classChangeWindow;
     private readonly int _chunkSize;
     private readonly int _chunkCount;
     private readonly int _threads;
@@ -92,7 +92,7 @@ public sealed class Simulation
         _needs = new NeedsModel(data.Balance.Needs);
         _walkSpeed = data.Balance.Walking.SpeedMPerMin;
         _commutePenalty = data.Balance.Walking.CommutePenaltyPerMinute;
-        _lateAfterMinutes = data.Balance.Time.ClassChangeWindowMinutes;
+        _classChangeWindow = (int)MathF.Round(data.Balance.Time.ClassChangeWindowMinutes);
         _threads = Math.Max(1, threads ?? data.Balance.Performance.SimWorkerThreads);
         _chunkSize = chunkSize ?? data.Balance.Performance.AgentChunkSize;
         _chunkCount = (population.Count + _chunkSize - 1) / _chunkSize;
@@ -101,7 +101,8 @@ public sealed class Simulation
         Time = new SimTime(DateOnly.Parse(data.Spike.StartDate, System.Globalization.CultureInfo.InvariantCulture));
 
         _rebuildLatency = Math.Max(1, data.Balance.Performance.PathingRebuildLatencyTicks);
-        _traffic = new TrafficWork(campus.Grid.FootTraffic);
+        var wear = data.Balance.Walking.DesirePaths;
+        _traffic = new TrafficWork(campus.Grid, wear.MinWalkersPerDay, 1f / wear.DaysToWear, 1f / wear.DaysToRegrow);
         _fields.EnsureCurrent();
         UsePaths(_fields.Current);
         _chunkStats = new ChunkStats[_chunkCount];
@@ -125,9 +126,9 @@ public sealed class Simulation
         if (edits.IsEmpty) return;
         foreach (var e in edits)
         {
-            if (e.Type is not (TileType.Grass or TileType.Path))
-                throw new ArgumentException("Only Grass/Path edits are supported (buildings come with placement).");
-            if (_grid.Types[e.Tile] is not (TileType.Grass or TileType.Path) || _grid.Types[e.Tile] == e.Type) continue;
+            if (e.Type is not (TileType.Grass or TileType.Rough or TileType.Path))
+                throw new ArgumentException("Only walking-surface edits (Grass/Rough/Path) are supported (buildings come with placement).");
+            if (_grid.Types[e.Tile] is not (TileType.Grass or TileType.Rough or TileType.Path) || _grid.Types[e.Tile] == e.Type) continue;
             _grid.Types[e.Tile] = e.Type;
             _grid.MarkChanged();
             _changedTiles.Add(e.Tile);
@@ -237,16 +238,28 @@ public sealed class Simulation
                 {
                     int minutes = (int)MathF.Ceiling(distance[current * b + target] / _walkSpeed);
                     if (minutes < 1) minutes = 1;
+                    // Classes start on the hour (§12.4 v0.4): people leave early enough to be there on time. The only
+                    // limit is a class the hour before, which ends one class-change window before the hour, so only
+                    // back-to-back classes with a walk longer than the window make anyone late. Other activities
+                    // start when the hour starts.
+                    int depart = _tickStartMinute;
+                    bool scheduled = activity is Activity.Class or Activity.Teach;
+                    if (scheduled)
+                    {
+                        Activity previous = p.CurrentActivity[a];
+                        int earliest = previous is Activity.Class or Activity.Teach ? _tickStartMinute - _classChangeWindow : int.MinValue;
+                        depart = Math.Max(Math.Max(_tickStartMinute - minutes, earliest), p.WalkArriveMinute[a]);
+                    }
                     p.WalkFrom[a] = current;
                     p.WalkTo[a] = target;
-                    p.WalkDepartMinute[a] = _tickStartMinute;
-                    p.WalkArriveMinute[a] = _tickStartMinute + minutes;
+                    p.WalkDepartMinute[a] = depart;
+                    p.WalkArriveMinute[a] = depart + minutes;
                     p.CurrentBuilding[a] = target;
                     walkers[walkerCount++] = a;
                     p.Needs[a * PopulationStore.NeedCount + commute] -= minutes * _commutePenalty;
                     stats.Walks++;
                     stats.WalkMinutes += minutes;
-                    if ((activity == Activity.Class || activity == Activity.Teach) && minutes > _lateAfterMinutes)
+                    if (scheduled && depart + minutes > _tickStartMinute)
                         stats.Late++;
                 }
             }
@@ -298,16 +311,20 @@ public sealed class Simulation
                 if (totals[pair]++ == 0) touched[touchedCount++] = pair;
             }
         }
-        if (touchedCount == 0) return 0;
-        // Hand this tick's set to the work item and take the one it finished with.
+        bool endOfDay = _hour == 23;
+        if (touchedCount == 0 && !endOfDay) return 0;
+        // Hand this tick's set to the work item and take the one it finished with. At the end of the day the work
+        // item also updates desire-path wear (§12.4).
         _traffic.Wait();
-        (_pairTotals, _touchedPairs) = _traffic.Start(totals, touched, touchedCount, _paths.Routes);
+        (_pairTotals, _touchedPairs) = _traffic.Start(totals, touched, touchedCount, _paths.Routes, endOfDay);
         return touchedCount;
     }
 
-    /// <summary>Traces grouped walks into the foot-traffic grid on a thread-pool thread. No allocation per tick.</summary>
-    private sealed class TrafficWork(int[] traffic) : IThreadPoolWorkItem
+    /// <summary>Traces grouped walks into the foot-traffic grids on a thread-pool thread, and at midnight updates
+    /// desire-path wear. No allocation per tick.</summary>
+    private sealed class TrafficWork(TileGrid grid, int minWalkers, float wearPerDay, float regrowPerDay) : IThreadPoolWorkItem
     {
+        private bool _endOfDay;
         private readonly ManualResetEventSlim _idle = new(true);
         private int[] _totals = [], _pairs = [];
         private int _count;
@@ -324,10 +341,10 @@ public sealed class Simulation
         public void Wait() => _idle.Wait();
 
         /// <summary>Starts tracing the given set; returns the (cleared) set it used last time, for the sim to refill.</summary>
-        public (int[] totals, int[] pairs) Start(int[] totals, int[] pairs, int count, int[][] routes)
+        public (int[] totals, int[] pairs) Start(int[] totals, int[] pairs, int count, int[][] routes, bool endOfDay)
         {
             var spare = (_totals, _pairs);
-            (_totals, _pairs, _count, _routes) = (totals, pairs, count, routes);
+            (_totals, _pairs, _count, _routes, _endOfDay) = (totals, pairs, count, routes, endOfDay);
             _idle.Reset();
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
             return spare;
@@ -338,6 +355,7 @@ public sealed class Simulation
             long t0 = Stopwatch.GetTimestamp();
             int[] totals = _totals, pairs = _pairs;
             int[][] routes = _routes;
+            int[] traffic = grid.FootTraffic;
             for (int k = 0; k < _count; k++)
             {
                 int pair = pairs[k];
@@ -345,6 +363,7 @@ public sealed class Simulation
                 totals[pair] = 0;
                 foreach (int tile in routes[pair]) traffic[tile] += total;
             }
+            if (_endOfDay) grid.UpdateWear(minWalkers, wearPerDay, regrowPerDay);
             LastMsValue = (float)Stopwatch.GetElapsedTime(t0).TotalMilliseconds;
             _idle.Set();
         }

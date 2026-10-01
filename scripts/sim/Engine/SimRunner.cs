@@ -32,6 +32,8 @@ public sealed class SimSnapshot
     /// <summary>Copy of the foot-traffic grid, refreshed only when requested (it's 4 bytes × tiles). A snapshot
     /// may carry an older copy than one already seen: only use it when TrafficVersion increased.</summary>
     public readonly int[] Traffic;
+    /// <summary>Desire-path wear per tile (0..1), copied together with Traffic.</summary>
+    public readonly float[] Wear;
     public int TrafficVersion;
 
     public SimSnapshot(int agentCount, int tileCount)
@@ -41,6 +43,7 @@ public sealed class SimSnapshot
         WalkTo = new short[agentCount];
         WalkCategory = new byte[agentCount];
         Traffic = new int[tileCount];
+        Wear = new float[tileCount];
     }
 }
 
@@ -216,6 +219,7 @@ public sealed class SimRunner : IDisposable
         {
             _sim.SyncFootTraffic();
             Array.Copy(_grid.FootTraffic, s.Traffic, s.Traffic.Length);
+            Array.Copy(_grid.Wear, s.Wear, s.Wear.Length);
             s.TrafficVersion = ++_trafficVersion;
         }
         // Otherwise the buffer keeps an older copy; readers compare TrafficVersion and keep the newest they've seen.

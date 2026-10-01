@@ -43,7 +43,11 @@ public class RunnerAndCrowdTests
         {
             int a = s.WalkAgent[i];
             if (i > 0) Assert.True(a > s.WalkAgent[i - 1]);
-            Assert.Equal(8 * 60, p.WalkDepartMinute[a]);
+            // Walks to class leave before the hour (to arrive on time); everything else starts on the hour.
+            if (p.CurrentActivity[a] is Activity.Class or Activity.Teach)
+                Assert.InRange(p.WalkDepartMinute[a], 7 * 60, 8 * 60);
+            else
+                Assert.Equal(8 * 60, p.WalkDepartMinute[a]);
             Assert.Equal(p.WalkTo[a], s.WalkTo[i]);
             byte expected = p.Kind[a] == AgentKind.Faculty ? SimRunner.FacultyCategory : (byte)(p.Year[a] - 1);
             Assert.Equal(expected, s.WalkCategory[i]);

@@ -172,7 +172,6 @@
         "path",
         "building",
         "wear",
-        "wear_full_at_walkers",
         "heatmap_low",
         "heatmap_high",
         "refresh_seconds"
@@ -190,9 +189,6 @@
         },
         "wear": {
           "$ref": "#/$defs/color"
-        },
-        "wear_full_at_walkers": {
-          "$ref": "#/$defs/positive"
         },
         "heatmap_low": {
           "$ref": "#/$defs/color"

@@ -33,9 +33,11 @@
     },
     "student": {
       "type": "object",
-      "required": ["wake_hour", "bed_hour", "weekend_wake_hour", "lunch_hour", "dinner_hour", "sections", "sections_in_major_building", "study_at_library_probability", "weekday_free", "weekday_evening", "weekend", "evening_start_hour"],
+      "required": ["wake_hour", "bed_hour", "weekend_wake_hour", "lunch_hour", "dinner_hour", "sections", "sections_in_major_building", "study_at_library_probability", "weekday_free", "weekday_evening", "weekend", "evening_start_hour", "free_block_hours"],
       "additionalProperties": false,
+      "patternProperties": { "^_": {} },
       "properties": {
+        "free_block_hours": { "type": "integer", "minimum": 1, "maximum": 6 },
         "wake_hour": { "$ref": "#/$defs/range" },
         "bed_hour": { "$ref": "#/$defs/range" },
         "weekend_wake_hour": { "$ref": "#/$defs/range" },

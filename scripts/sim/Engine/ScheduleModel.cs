@@ -17,6 +17,7 @@ public sealed class ScheduleModel
     private readonly ulong _seed;
     private readonly int _studentLunch, _studentDinner, _eveningStart;
     private readonly int _facultyLunch;
+    private readonly int _freeBlock;
     // Cumulative thresholds in [0, 65536) over FreeChoices, one table per situation.
     private readonly int[] _weekdayFree, _weekdayEvening, _weekend;
 
@@ -27,6 +28,7 @@ public sealed class ScheduleModel
         _studentDinner = cfg.Student.DinnerHour;
         _eveningStart = cfg.Student.EveningStartHour;
         _facultyLunch = cfg.Faculty.LunchHour;
+        _freeBlock = Math.Max(1, cfg.Student.FreeBlockHours);
         _weekdayFree = Thresholds(cfg.Student.WeekdayFree);
         _weekdayEvening = Thresholds(cfg.Student.WeekdayEvening);
         _weekend = Thresholds(cfg.Student.Weekend);
@@ -60,7 +62,9 @@ public sealed class ScheduleModel
         }
 
         int[] table = weekend ? _weekend : hour >= _eveningStart ? _weekdayEvening : _weekdayFree;
-        int roll = StatelessRandom.Unit16(_seed, a, day, hour);
+        // One roll per block of free_block_hours, staggered per student, so free time doesn't change every hour.
+        int block = (hour + a % _freeBlock) / _freeBlock;
+        int roll = StatelessRandom.Unit16(_seed, a, day, block);
         activity = Activity.Leisure;
         for (int i = 0; i < table.Length; i++)
             if (roll < table[i]) { activity = FreeChoices[i]; break; }

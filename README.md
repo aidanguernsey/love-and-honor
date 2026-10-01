@@ -41,7 +41,7 @@ dotnet run --project tools/DataValidator
 Population benchmark (headless, no renderer; exits with code 1 if the tick budget is missed). Runs on the real
 Oxford map and lays/removes a path every 48 ticks to exercise background pathfinding updates. Options after `--`:
 `--quick` (gated run only), `--map synthetic` (Spike A campus), `--edit-every N`, `--pace-all` (pace every tick like the
-game at 1x), `--traffic-png FILE` (foot-traffic heatmap):
+game at 1x), `--traffic-png FILE` (foot-traffic heatmap), `--desire-png FILE` (desire paths worn into lawns):
 
 ```bash
 dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks

@@ -1,0 +1,82 @@
+=== Love & Honor — population benchmark (real Oxford map) ===
+LoveAndHonor.Sim 0.1.0-phase0 on .NET 10.0.12 | Microsoft Windows NT 10.0.26200.0 | GC server=False
+CPU: Intel(R) Core(TM) i9-14900HX | logical processors: 32
+Population: 30,000 students + 2,500 faculty = 32,500 agents
+Budget: p95 tick time <= 8 ms | 168 warm-up + 1000 measured ticks
+Map edits: a path tile toggled every 48 ticks; new flow fields swapped in 24 ticks later (2 background threads)
+Pacing: 83 ms per tick (1x) while a rebuild is pending, otherwise back-to-back (the 'paced' reference run paces every tick)
+
+--- 4 E-cores (gated) ---
+Pinned to: logical CPUs 16,17,18,19 (efficiency class 0)
+Setup: campus 283 ms, flow fields 912 ms (84 fields for 192 destinations), population 129 ms, population arrays ~3.8 MB
+Campus (2026): 84 Miami buildings (28 academic, 44 residence, 6 dining, 3 library, 3 recreation) + 108 off-campus housing zones (4,484 building tiles); skipped 11 without a footprint, 0 unreachable
+Tick time (ms): avg 3.262 | p50 2.968 | p95 6.101 | p99 7.408 | max 9.729
+  agent phase avg 3.108 ms (max 9.659) | foot-traffic phase avg 0.153 ms (max 3.053) + route tracing off the tick avg 0.781 ms (max 14.657)
+  worst tick: #428 (Thu 2026-09-10 20:00)
+Work: 12615 walks/tick avg (peak 30,944), 1842 distinct routes traced/tick, avg walk 10.2 min, 134,155 walks arrived late to class, avg happiness 52.9
+GC during measurement: 74109 KB allocated, collections gen0=0 gen1=0 gen2=0 (includes the rebuilt flow fields)
+Map edits: 20 path toggles -> 20 flow-field swaps | background rebuild avg 78 ms, max 120 ms; per edit 84 of 84 fields changed, 28,911 tile costs recomputed (all fields) | stalled (waited for the rebuild) at 0 of 20 swaps at 1x, max 0 ms | estimated stall at 8x: up to 0 ms per edit
+Budget (p95 <= 8 ms): PASS — p95 = 6.101 ms
+Walking surface: 98.6% of tile crossings on paths | desire paths after 48 days: 259 worn tiles (656 unpaved tiles crossed at all)
+Desire-path map written to C:\Users\aidan\Desktop\Love & Honor Game\docs\images\real-map-desire-paths.png
+Foot-traffic heatmap written to C:\Users\aidan\Desktop\Love & Honor Game\docs\images\real-map-foot-traffic.png
+
+--- 4 P-cores ---
+Pinned to: logical CPUs 0,2,4,6 (efficiency class 1)
+Setup: campus 88 ms, flow fields 362 ms (84 fields for 192 destinations), population 50 ms, population arrays ~3.8 MB
+Campus (2026): 84 Miami buildings (28 academic, 44 residence, 6 dining, 3 library, 3 recreation) + 108 off-campus housing zones (4,484 building tiles); skipped 11 without a footprint, 0 unreachable
+Tick time (ms): avg 1.870 | p50 1.662 | p95 3.853 | p99 4.808 | max 6.333
+  agent phase avg 1.760 ms (max 6.141) | foot-traffic phase avg 0.109 ms (max 1.450) + route tracing off the tick avg 0.550 ms (max 3.808)
+  worst tick: #951 (Fri 2026-10-02 15:00)
+Work: 12615 walks/tick avg (peak 30,944), 1842 distinct routes traced/tick, avg walk 10.2 min, 134,155 walks arrived late to class, avg happiness 52.9
+GC during measurement: 70700 KB allocated, collections gen0=0 gen1=0 gen2=0 (includes the rebuilt flow fields)
+Map edits: 20 path toggles -> 20 flow-field swaps | background rebuild avg 44 ms, max 72 ms; per edit 84 of 84 fields changed, 28,911 tile costs recomputed (all fields) | stalled (waited for the rebuild) at 0 of 20 swaps at 1x, max 0 ms | estimated stall at 8x: up to 0 ms per edit
+Budget (p95 <= 8 ms): PASS — p95 = 3.853 ms
+Walking surface: 98.6% of tile crossings on paths | desire paths after 48 days: 259 worn tiles (656 unpaved tiles crossed at all)
+
+--- 4 E-cores, every tick paced at 1x (reference) ---
+Pinned to: logical CPUs 16,17,18,19 (efficiency class 0)
+Setup: campus 105 ms, flow fields 1150 ms (84 fields for 192 destinations), population 56 ms, population arrays ~3.8 MB
+Campus (2026): 84 Miami buildings (28 academic, 44 residence, 6 dining, 3 library, 3 recreation) + 108 off-campus housing zones (4,484 building tiles); skipped 11 without a footprint, 0 unreachable
+Tick time (ms): avg 4.514 | p50 4.499 | p95 6.727 | p99 7.694 | max 12.983
+  agent phase avg 4.377 ms (max 12.843) | foot-traffic phase avg 0.135 ms (max 0.847) + route tracing off the tick avg 1.070 ms (max 43.763)
+  worst tick: #476 (Sat 2026-09-12 20:00)
+Work: 12615 walks/tick avg (peak 30,944), 1842 distinct routes traced/tick, avg walk 10.2 min, 134,155 walks arrived late to class, avg happiness 52.9
+GC during measurement: 71459 KB allocated, collections gen0=0 gen1=0 gen2=0 (includes the rebuilt flow fields)
+Map edits: 20 path toggles -> 20 flow-field swaps | background rebuild avg 81 ms, max 140 ms; per edit 84 of 84 fields changed, 28,911 tile costs recomputed (all fields) | stalled (waited for the rebuild) at 1 of 20 swaps at 1x, max 0 ms | estimated stall at 8x: up to 0 ms per edit
+Budget (p95 <= 8 ms): PASS — p95 = 6.727 ms
+Walking surface: 98.6% of tile crossings on paths | desire paths after 48 days: 259 worn tiles (656 unpaved tiles crossed at all)
+
+--- 1 P-core, 1 thread (reference) ---
+Pinned to: logical CPUs 0 (efficiency class 1)
+Setup: campus 34 ms, flow fields 1211 ms (84 fields for 192 destinations), population 12 ms, population arrays ~3.8 MB
+Campus (2026): 84 Miami buildings (28 academic, 44 residence, 6 dining, 3 library, 3 recreation) + 108 off-campus housing zones (4,484 building tiles); skipped 11 without a footprint, 0 unreachable
+Tick time (ms): avg 3.201 | p50 2.901 | p95 5.654 | p99 6.882 | max 52.541
+  agent phase avg 2.925 ms (max 52.539) | foot-traffic phase avg 0.275 ms (max 9.174) + route tracing off the tick avg 0.720 ms (max 7.725)
+  worst tick: #656 (Sun 2026-09-20 08:00)
+Work: 12615 walks/tick avg (peak 30,944), 1842 distinct routes traced/tick, avg walk 10.2 min, 134,155 walks arrived late to class, avg happiness 52.9
+GC during measurement: 68195 KB allocated, collections gen0=0 gen1=0 gen2=0 (includes the rebuilt flow fields)
+Map edits: 20 path toggles -> 20 flow-field swaps | background rebuild avg 68 ms, max 121 ms; per edit 84 of 84 fields changed, 28,911 tile costs recomputed (all fields) | stalled (waited for the rebuild) at 0 of 20 swaps at 1x, max 0 ms | estimated stall at 8x: up to 0 ms per edit
+Budget (p95 <= 8 ms): PASS — p95 = 5.654 ms
+Walking surface: 98.6% of tile crossings on paths | desire paths after 48 days: 259 worn tiles (656 unpaved tiles crossed at all)
+
+--- all cores, 32 threads (reference) ---
+Pinned to: all logical CPUs
+Setup: campus 36 ms, flow fields 109 ms (84 fields for 192 destinations), population 14 ms, population arrays ~3.8 MB
+Campus (2026): 84 Miami buildings (28 academic, 44 residence, 6 dining, 3 library, 3 recreation) + 108 off-campus housing zones (4,484 building tiles); skipped 11 without a footprint, 0 unreachable
+Tick time (ms): avg 1.000 | p50 0.912 | p95 1.865 | p99 2.183 | max 2.881
+  agent phase avg 0.875 ms (max 2.765) | foot-traffic phase avg 0.124 ms (max 1.261) + route tracing off the tick avg 0.559 ms (max 4.641)
+  worst tick: #859 (Mon 2026-09-28 19:00)
+Work: 12615 walks/tick avg (peak 30,944), 1842 distinct routes traced/tick, avg walk 10.2 min, 134,155 walks arrived late to class, avg happiness 52.9
+GC during measurement: 80135 KB allocated, collections gen0=0 gen1=0 gen2=0 (includes the rebuilt flow fields)
+Map edits: 20 path toggles -> 20 flow-field swaps | background rebuild avg 42 ms, max 68 ms; per edit 84 of 84 fields changed, 28,911 tile costs recomputed (all fields) | stalled (waited for the rebuild) at 0 of 20 swaps at 1x, max 0 ms | estimated stall at 8x: up to 0 ms per edit
+Budget (p95 <= 8 ms): PASS — p95 = 1.865 ms
+Walking surface: 98.6% of tile crossings on paths | desire paths after 48 days: 259 worn tiles (656 unpaved tiles crossed at all)
+
+=== Summary ===
+4 E-cores (gated)                        avg   3.262  p95   6.101  p99   7.408  max   9.729 ms  within budget
+4 P-cores                                avg   1.870  p95   3.853  p99   4.808  max   6.333 ms  within budget
+4 E-cores, every tick paced at 1x (reference) avg   4.514  p95   6.727  p99   7.694  max  12.983 ms  within budget
+1 P-core, 1 thread (reference)           avg   3.201  p95   5.654  p99   6.882  max  52.541 ms  within budget
+all cores, 32 threads (reference)        avg   1.000  p95   1.865  p99   2.183  max   2.881 ms  within budget
+RESULT: PASS

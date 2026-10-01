@@ -11,6 +11,58 @@ namespace LoveAndHonor.Sim.Benchmarks;
 /// </summary>
 internal static class TrafficImage
 {
+    /// <summary>Map of desire paths: worn lawn/rough tiles in brown (darker = more worn), paths grey, rough ground
+    /// in a darker green than lawn, Miami entrances white.</summary>
+    public static void WriteDesirePaths(string path, RealMap map, Campus campus, int scale = 2)
+    {
+        var grid = map.Grid;
+        int w = grid.Width * scale, h = grid.Height * scale;
+        var rgb = new byte[w * h * 3];
+        for (int ty = 0; ty < grid.Height; ty++)
+            for (int tx = 0; tx < grid.Width; tx++)
+            {
+                int t = grid.Index(tx, ty);
+                var (r, g, b) = Base(grid.Types[t]);
+                float wear = grid.Wear[t];
+                if (wear > 0)
+                {
+                    float a = wear >= TileGrid.DesirePathWear ? 1f : 0.25f + 0.5f * wear;
+                    r = (byte)(r * (1 - a) + 139 * a); g = (byte)(g * (1 - a) + 90 * a); b = (byte)(b * (1 - a) + 43 * a);
+                }
+                Fill(rgb, w, scale, tx, ty, r, g, b);
+            }
+        MarkEntrances(rgb, w, scale, grid, campus);
+        WritePng(path, w, h, rgb);
+    }
+
+    private static (byte r, byte g, byte b) Base(TileType type) => type switch
+    {
+        TileType.Building => ((byte)70, (byte)70, (byte)76),
+        TileType.Water => ((byte)90, (byte)130, (byte)170),
+        TileType.Path => ((byte)150, (byte)150, (byte)140),
+        TileType.Rough => ((byte)160, (byte)180, (byte)150),
+        _ => ((byte)200, (byte)215, (byte)185),
+    };
+
+    private static void Fill(byte[] rgb, int w, int scale, int tx, int ty, byte r, byte g, byte b)
+    {
+        for (int sy = 0; sy < scale; sy++)
+            for (int sx = 0; sx < scale; sx++)
+            {
+                int p = ((ty * scale + sy) * w + tx * scale + sx) * 3;
+                rgb[p] = r; rgb[p + 1] = g; rgb[p + 2] = b;
+            }
+    }
+
+    private static void MarkEntrances(byte[] rgb, int w, int scale, TileGrid grid, Campus campus)
+    {
+        foreach (var bld in campus.Buildings)
+        {
+            if (bld.Kind == BuildingKind.OffCampusHousing) continue;
+            Fill(rgb, w, scale, bld.EntranceTile % grid.Width, bld.EntranceTile / grid.Width, 255, 255, 255);
+        }
+    }
+
     public static void Write(string path, RealMap map, Campus campus, int scale = 2)
     {
         var grid = map.Grid;
@@ -24,13 +76,7 @@ internal static class TrafficImage
             for (int tx = 0; tx < grid.Width; tx++)
             {
                 int t = grid.Index(tx, ty);
-                (byte r, byte g, byte b) = grid.Types[t] switch
-                {
-                    TileType.Building => ((byte)70, (byte)70, (byte)76),
-                    TileType.Water => ((byte)90, (byte)130, (byte)170),
-                    TileType.Path => ((byte)150, (byte)150, (byte)140),
-                    _ => ((byte)200, (byte)210, (byte)190),
-                };
+                var (r, g, b) = Base(grid.Types[t]);
                 int traffic = grid.FootTraffic[t];
                 if (traffic > 0)
                 {
@@ -41,26 +87,9 @@ internal static class TrafficImage
                     g = (byte)(g * (1 - a) + hg * a);
                     b = (byte)(b * (1 - a) + hb * a);
                 }
-                for (int sy = 0; sy < scale; sy++)
-                    for (int sx = 0; sx < scale; sx++)
-                    {
-                        int p = ((ty * scale + sy) * w + tx * scale + sx) * 3;
-                        rgb[p] = r; rgb[p + 1] = g; rgb[p + 2] = b;
-                    }
+                Fill(rgb, w, scale, tx, ty, r, g, b);
             }
-
-        foreach (var bld in campus.Buildings)
-        {
-            if (bld.Kind == BuildingKind.OffCampusHousing) continue;
-            int cx = bld.EntranceTile % grid.Width * scale, cy = bld.EntranceTile / grid.Width * scale;
-            for (int dy = 0; dy < scale; dy++)
-                for (int dx = 0; dx < scale; dx++)
-                {
-                    int p = ((cy + dy) * w + cx + dx) * 3;
-                    rgb[p] = rgb[p + 1] = rgb[p + 2] = 255;
-                }
-        }
-
+        MarkEntrances(rgb, w, scale, grid, campus);
         WritePng(path, w, h, rgb);
     }
 

@@ -32,6 +32,7 @@ public partial class PopulationSpikeHost : Node3D
     private ImageTexture _groundTexture = null!;
     private byte[] _groundPixels = [];
     private int[] _latestTraffic = [];
+    private float[] _latestWear = [];
     private int _latestTrafficVersion;
     private double _trafficTimer;
     private bool _heatmap;
@@ -94,6 +95,7 @@ public partial class PopulationSpikeHost : Node3D
         if (_snapshot.TrafficVersion > _latestTrafficVersion)
         {
             Array.Copy(_snapshot.Traffic, _latestTraffic, _latestTraffic.Length);
+            Array.Copy(_snapshot.Wear, _latestWear, _latestWear.Length);
             _latestTrafficVersion = _snapshot.TrafficVersion;
             PaintGround();
         }
@@ -151,6 +153,7 @@ public partial class PopulationSpikeHost : Node3D
         var grid = _world.Campus.Grid;
         _groundPixels = new byte[grid.Width * grid.Height * 3];
         _latestTraffic = new int[grid.Width * grid.Height];
+        _latestWear = new float[grid.Width * grid.Height];
         _groundImage = Image.CreateFromData(grid.Width, grid.Height, false, Image.Format.Rgb8, _groundPixels);
         _groundTexture = ImageTexture.CreateFromImage(_groundImage);
         PaintGround();
@@ -189,7 +192,7 @@ public partial class PopulationSpikeHost : Node3D
             else if (_heatmap)
                 c = traffic == 0 ? Rgb.Lerp(grass, new Rgb(0, 0, 0), 0.6f) : Rgb.Lerp(low, high, MathF.Log(1 + traffic) / logMax);
             else if (grid.Types[i] == TileType.Path) c = path;
-            else c = Rgb.Lerp(grass, wear, Math.Min(1f, traffic / g.WearFullAtWalkers)); // desire-path wear
+            else c = Rgb.Lerp(grass, wear, _latestWear[i]); // desire-path wear (§12.4): regular shortcuts wear to dirt
             _groundPixels[i * 3] = (byte)(c.R * 255);
             _groundPixels[i * 3 + 1] = (byte)(c.G * 255);
             _groundPixels[i * 3 + 2] = (byte)(c.B * 255);

@@ -26,6 +26,7 @@ using LoveAndHonor.Sim.World;
 //                     which is reported separately as a stall.
 //   --pace-all        pace every tick at --pace-speed (as the game does at that speed), not only during rebuilds
 //   --traffic-png F   after the gated run, write a foot-traffic heatmap of the real map to F
+//   --desire-png F    after the gated run, write a map of desire paths (worn lawn) to F
 //   --data DIR        data folder (default: repo /data)
 //
 // Pass/fail: the gated run pins the process to N physical cores. On hybrid CPUs it uses the slower E-cores as a
@@ -102,7 +103,7 @@ var summaries = new List<string>();
 foreach (var run in runs)
 {
     SetAffinity(process, run.mask ?? allCpus);
-    var result = Bench(run.name, run.cores, run.threads, run.gated ? opts.TrafficPng : null, run.paceAll);
+    var result = Bench(run.name, run.cores, run.threads, run.gated ? opts.TrafficPng : null, run.gated ? opts.DesirePng : null, run.paceAll);
     if (run.gated) passed = result.pass;
     summaries.Add(result.summary);
 }
@@ -113,7 +114,7 @@ foreach (var line in summaries) Console.WriteLine(line);
 Console.WriteLine(passed ? "RESULT: PASS" : "RESULT: FAIL — tick budget missed");
 return passed ? 0 : 1;
 
-(bool pass, string summary) Bench(string name, string cores, int runThreads, string? trafficPng, bool paceAll)
+(bool pass, string summary) Bench(string name, string cores, int runThreads, string? trafficPng, string? desirePng, bool paceAll)
 {
     Console.WriteLine($"--- {name} ---");
     Console.WriteLine($"Pinned to: {cores}");
@@ -220,7 +221,7 @@ return passed ? 0 : 1;
                       $"+ route tracing off the tick avg {traceMs / ticks:F3} ms (max {traceMax:F3})");
     Console.WriteLine($"  worst tick: #{worstTickIndex + warmup} ({HourLabel(worstTickIndex + warmup)})");
     Console.WriteLine($"Work: {walks / (double)ticks:F0} walks/tick avg (peak {maxWalks:N0}), {routes / (double)ticks:F0} distinct routes traced/tick, " +
-                      $"avg walk {walkMinutes / (double)Math.Max(1, walks):F1} min, {late:N0} late-to-class walks (walk > class-change window), " +
+                      $"avg walk {walkMinutes / (double)Math.Max(1, walks):F1} min, {late:N0} walks arrived late to class, " +
                       $"avg happiness {sim.LastTick.AverageHappiness:F1}");
     Console.WriteLine($"GC during measurement: {allocated / 1024.0:F0} KB allocated, collections gen0={g0} gen1={g1} gen2={g2}" +
                       (swapWaits.Count > 0 ? " (includes the rebuilt flow fields)" : ""));
@@ -230,9 +231,24 @@ return passed ? 0 : 1;
                           $"stalled (waited for the rebuild) at {swapWaits.Count(x => x > 0.05)} of {swapWaits.Count} swaps at {paceSpeed}x, max {swapWaits.Max():F0} ms | " +
                           $"estimated stall at 8x: up to {Math.Max(0, rebuildMs.Max() - perf.PathingRebuildLatencyTicks * realTickMs(8)):F0} ms per edit");
     Console.WriteLine($"Budget ({perf.TickBudgetStatistic} <= {perf.TickBudgetMs} ms): {(pass ? "PASS" : "FAIL")} — {perf.TickBudgetStatistic} = {gatedValue:F3} ms");
+    sim.SyncFootTraffic();
+    var grid = world.Campus.Grid;
+    int crossedUnpaved = 0, worn = grid.CountDesirePaths();
+    long onPaths = 0, onUnpaved = 0;
+    for (int t = 0; t < grid.Types.Length; t++)
+    {
+        if (grid.Types[t] == TileType.Path) onPaths += grid.FootTraffic[t];
+        else if (grid.IsUnpaved(t)) { onUnpaved += grid.FootTraffic[t]; if (grid.FootTraffic[t] > 0) crossedUnpaved++; }
+    }
+    Console.WriteLine($"Walking surface: {100.0 * onPaths / Math.Max(1, onPaths + onUnpaved):F1}% of tile crossings on paths | " +
+                      $"desire paths after {(warmup + ticks) / 24} days: {worn:N0} worn tiles ({crossedUnpaved:N0} unpaved tiles crossed at all)");
+    if (desirePng is not null && world.Map is not null)
+    {
+        TrafficImage.WriteDesirePaths(desirePng, world.Map, world.Campus);
+        Console.WriteLine($"Desire-path map written to {Path.GetFullPath(desirePng)}");
+    }
     if (trafficPng is not null && world.Map is not null)
     {
-        sim.SyncFootTraffic();
         TrafficImage.Write(trafficPng, world.Map, world.Campus);
         Console.WriteLine($"Foot-traffic heatmap written to {Path.GetFullPath(trafficPng)}");
     }
@@ -309,7 +325,7 @@ static string FindRepoData()
 }
 
 internal sealed record Args(int? Ticks, int? Warmup, int? Threads, int? Students, int? Faculty, bool Quick, string? DataDir,
-    string Map, int? EditEvery, string? TrafficPng, double? PaceSpeed, bool PaceAll)
+    string Map, int? EditEvery, string? TrafficPng, double? PaceSpeed, bool PaceAll, string? DesirePng)
 {
     public static Args Parse(string[] a)
     {
@@ -317,6 +333,6 @@ internal sealed record Args(int? Ticks, int? Warmup, int? Threads, int? Students
         string? Str(string name) => Array.IndexOf(a, name) is var i and >= 0 && i + 1 < a.Length ? a[i + 1] : null;
         return new Args(Int("--ticks"), Int("--warmup"), Int("--threads"), Int("--students"), Int("--faculty"), a.Contains("--quick"),
             Str("--data"), Str("--map") ?? "real", Int("--edit-every"), Str("--traffic-png"),
-            Str("--pace-speed") is { } ps ? double.Parse(ps, CultureInfo.InvariantCulture) : null, a.Contains("--pace-all"));
+            Str("--pace-speed") is { } ps ? double.Parse(ps, CultureInfo.InvariantCulture) : null, a.Contains("--pace-all"), Str("--desire-png"));
     }
 }

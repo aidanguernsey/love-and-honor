@@ -28,7 +28,6 @@
     "path": "brick:2",
     "building": "slate",
     "wear": "#8B6B4A",
-    "wear_full_at_walkers": 20000,
     "heatmap_low": "#2B83BA",
     "heatmap_high": "#D7191C",
     "refresh_seconds": 0.5

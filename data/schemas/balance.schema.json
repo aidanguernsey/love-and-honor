@@ -310,9 +310,31 @@
       "required": [
         "speed_m_per_min",
         "grass_cost_multiplier",
-        "commute_penalty_per_minute"
+        "rough_cost_multiplier",
+        "path_exit_penalty_m",
+        "commute_penalty_per_minute",
+        "desire_paths"
       ],
       "properties": {
+        "rough_cost_multiplier": {
+          "type": "number",
+          "minimum": 1
+        },
+        "path_exit_penalty_m": {
+          "type": "number",
+          "minimum": 0
+        },
+        "desire_paths": {
+          "type": "object",
+          "required": ["min_walkers_per_day", "days_to_wear", "days_to_regrow"],
+          "additionalProperties": false,
+          "patternProperties": { "^_": {} },
+          "properties": {
+            "min_walkers_per_day": { "type": "integer", "minimum": 1 },
+            "days_to_wear": { "type": "number", "exclusiveMinimum": 0 },
+            "days_to_regrow": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
         "speed_m_per_min": {
           "type": "number",
           "exclusiveMinimum": 0

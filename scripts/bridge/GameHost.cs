@@ -16,8 +16,10 @@ namespace LoveAndHonor.Bridge;
 /// The game scene's host: the real Oxford map (<see cref="MapRenderer"/>), the simulation running on its own thread
 /// (<see cref="SimRunner"/>), walkers drawn on the terrain, and the sun, seasons and desire paths following the sim's
 /// clock (1c). Phase 1 1d adds scenarios (Chapter 1 starts in 1824), the live land layer with clearing and buying land,
-/// money, the ownership overlay, and a day/night switch. The HUD (GDScript) reads <see cref="GetHud"/> and calls the
-/// control methods; the sim world is built on a worker thread behind a loading message.
+/// money, the ownership overlay, and a day/night switch. 1e adds building: the era's catalogue and Heritage Projects,
+/// a ghost preview with the placement checks, rotation (Z/X), construction sites, cancelling, and the Heritage site
+/// layer. The HUD (GDScript) reads <see cref="GetHud"/> and calls the control methods; the sim world is built on a
+/// worker thread behind a loading message.
 /// </summary>
 [GlobalClass]
 public partial class GameHost : Node3D
@@ -51,11 +53,32 @@ public partial class GameHost : Node3D
     private bool _dayNight = true;
     private Vector2 _startFocus;
 
-    // Land tools.
-    private LandAction? _tool;
+    // Tools: land orders (drag a rectangle), building (ghost under the cursor), cancelling construction.
+    private enum Tool { None, Clear, Buy, Build, Cancel }
+    private Tool _tool;
     private int _dragStart = -1, _dragEnd = -1;
     private LandQuote? _quote;
     private readonly List<string> _messages = [];
+
+    // Building (1e).
+    private BuildingCatalog? _catalog;
+    private Dictionary<string, CatalogItem> _items = [];
+    private PlacementRenderer _placementRenderer = null!;
+    private CatalogItem? _buildItem;
+    private int _rotation;
+    private Pose? _pose;
+    private PlacementQuote? _buildQuote;
+    private int _quoteKeyLand = -1, _quoteKeyPlacement = -1;
+    private Pose? _quoteKeyPose;
+    private bool _showHeritage = true;
+    private double? _cashOverride;
+    private bool _demoBuild;
+    private int _demoStep, _demoVersion;
+    // Screenshot options: --build-item=<id> picks a building once it's on offer, --build-rotation=<deg> turns it, and
+    // --ghost-at=x,z (metres) pins the ghost there instead of following the mouse.
+    private string _pendingBuildItem = "";
+    private Vector2? _ghostAt;
+    private int _pendingRotation;
 
     public override void _Ready()
     {
@@ -68,19 +91,28 @@ public partial class GameHost : Node3D
         foreach (var arg in OS.GetCmdlineUserArgs())
             if (arg.StartsWith("--scenario=")) scenarioId = arg["--scenario=".Length..];
         _scenario = ScenarioConfig.Load(source, scenarioId);
+        foreach (var arg in OS.GetCmdlineUserArgs())
+            if (arg.StartsWith("--cash=") && double.TryParse(arg["--cash=".Length..], System.Globalization.CultureInfo.InvariantCulture, out var cash))
+                _cashOverride = cash;
+            else if (arg.StartsWith("--build-item=")) _pendingBuildItem = arg["--build-item=".Length..];
+            else if (arg.StartsWith("--build-rotation=")) _pendingRotation = int.Parse(arg["--build-rotation=".Length..], System.Globalization.CultureInfo.InvariantCulture);
+            else if (arg.StartsWith("--ghost-at=") && arg["--ghost-at=".Length..].Split(',') is [var gx, var gz])
+                _ghostAt = new Vector2(float.Parse(gx, System.Globalization.CultureInfo.InvariantCulture), float.Parse(gz, System.Globalization.CultureInfo.InvariantCulture));
 
         var map = RealMapLoader.Load(source);
         _map = new MapRenderer(this, source, map, GetNodeOrNull<DirectionalLight3D>(SunPath),
             GetNodeOrNull<WorldEnvironment>(EnvironmentPath)?.Environment);
         var start = _scenario.Start;
         _map.SetDate(_scenario.MapYear, Math.Min(365, start.DayOfYear));
+        _map.SetBuildingsYear(_scenario.MapYear); // later real buildings are the player's to build
+        _placementRenderer = new PlacementRenderer(this, map, _map.Render, new Palette(source.ReadText("branding.json")));
         _startFocus = FocusPoint(map);
         RenderingServer.ViewportSetMeasureRenderTime(GetViewport().GetViewportRid(), true);
 
         // The sim shares the map (it sets that year's land, surfaces and building tiles; the renderer keeps its own
         // copy of today's land states and roads). Built on a worker: flow fields + population take a moment.
         _loadStatus = $"{_scenario.Name}: building {start.Year} Oxford and its {_scenario.Students + _scenario.Faculty:N0} people…";
-        _loading = Task.Run(() => SimWorld.CreateScenario(_data, source, scenarioId, map: map));
+        _loading = Task.Run(() => SimWorld.CreateScenario(_data, source, scenarioId, map: map, startingCash: _cashOverride));
     }
 
     public override void _ExitTree() => _runner?.Dispose();
@@ -130,12 +162,31 @@ public partial class GameHost : Node3D
         }
 
         UpdateLandTool();
+        UpdateBuildTool();
+        _placementRenderer.SetSites(s.Placement, _items);
+        _placementRenderer.SetHeritageSites(AvailableHeritage(), _showHeritage || _tool == Tool.Build);
+        if (_demoBuild) DemoBuildStep();
+        if (_pendingBuildItem.Length > 0 && _catalog?.Find(_pendingBuildItem) is { } pending
+            && _catalog.AvailableOn(s.Date, s.Placement?.HeritageTaken ?? []).Contains(pending))
+        {
+            SetBuildItem(_pendingBuildItem);
+            _pendingBuildItem = "";
+            if (_pendingRotation != 0) RotateBuild(_pendingRotation / (_catalog.Config.RotationStepDeg));
+        }
         if (camera is not null) DrawWalkers(camera, (float)delta);
     }
 
     public override void _UnhandledInput(InputEvent e)
     {
-        if (_tool is null || _runner is null) return;
+        if (_tool == Tool.None || _runner is null) return;
+        if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } && _tool is Tool.Build or Tool.Cancel)
+        {
+            if (_tool == Tool.Build) PlaceBuilding();
+            else CancelHoveredSite();
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+        if (_tool is not (Tool.Clear or Tool.Buy)) return;
         if (e is InputEventMouseButton mb)
         {
             if (mb.ButtonIndex == MouseButton.Left && mb.Pressed && _map.HoverTile >= 0)
@@ -210,17 +261,90 @@ public partial class GameHost : Node3D
 
     public bool GetDayNight() => _dayNight;
 
-    /// <summary>Land tool: "clear", "buy" or "" (off). While a tool is on, ownership is shown.</summary>
-    public void SetLandTool(string tool)
+    /// <summary>Tool: "clear", "buy", "cancel" (cancel construction), "build" (needs <see cref="SetBuildItem"/>) or ""
+    /// (off). While a tool is on, ownership is shown.</summary>
+    public void SetTool(string tool)
     {
-        _tool = tool switch { "clear" => LandAction.Clear, "buy" => LandAction.Buy, _ => null };
+        _tool = tool switch { "clear" => Tool.Clear, "buy" => Tool.Buy, "cancel" => Tool.Cancel, "build" when _buildItem is not null => Tool.Build, _ => Tool.None };
+        if (_tool != Tool.Build) _buildItem = null;
         _dragStart = _dragEnd = -1;
         _quote = null;
+        _buildQuote = null;
+        _pose = null;
         _map.SetSelection(null, true);
         _map.SetOverlayMode(EffectiveOverlay);
+        _placementRenderer.SetGhost(null, default, -1, false);
     }
 
-    public string GetLandTool() => _tool switch { LandAction.Clear => "clear", LandAction.Buy => "buy", _ => "" };
+    public string GetTool() => _tool switch
+    {
+        Tool.Clear => "clear", Tool.Buy => "buy", Tool.Build => "build", Tool.Cancel => "cancel", _ => "",
+    };
+
+    /// <summary>Starts placing a catalogue item (id from <see cref="GetCatalog"/>); "" stops.</summary>
+    public void SetBuildItem(string id)
+    {
+        _buildItem = id.Length > 0 ? _catalog?.Find(id) : null;
+        if (_buildItem?.Site is { } site) _rotation = site.Pose.RotationDeg;
+        SetTool(_buildItem is null ? "" : "build");
+    }
+
+    public string GetBuildItem() => _buildItem?.Id ?? "";
+
+    /// <summary>Z / X: turn the building being placed by one rotation step (§12.1, 15°).</summary>
+    public void RotateBuild(int direction)
+    {
+        int step = _catalog?.Config.RotationStepDeg ?? 15;
+        _rotation = ((_rotation + direction * step) % 360 + 360) % 360;
+    }
+
+    public void SetShowHeritage(bool on) => _showHeritage = on;
+
+    public bool GetShowHeritage() => _showHeritage;
+
+    /// <summary>
+    /// What can be built now, for the build menu: id, name, group (HUD category), size, cost (this era's money),
+    /// months, heritage flag, whether the treasury covers it, and a description.
+    /// </summary>
+    public Godot.Collections.Array<Godot.Collections.Dictionary> GetCatalog()
+    {
+        var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        if (_catalog is null || _snapshot is null) return list;
+        var date = _snapshot.Date;
+        foreach (var item in _catalog.AvailableOn(date, _snapshot.Placement?.HeritageTaken ?? []))
+        {
+            long cents = _catalog.CostCents(item, date);
+            var def = item.Def;
+            string capacity = def.Capacity.Kind switch
+            {
+                "seats" => $"{def.Capacity.Value} seats", "beds" => $"{def.Capacity.Value} beds",
+                "diners_per_hour" => $"{def.Capacity.Value} diners an hour", "study_seats" => $"{def.Capacity.Value} study seats",
+                _ => "",
+            };
+            string desc = item.Site is { } site
+                ? $"Heritage Project: the real {site.Name} was built in {site.RealYear}. Build it anywhere; on its real site (outlined on the map) it earns a small Heritage bonus.{(item.HeritageVerified ? "" : " Cost and build time are placeholders.")}"
+                : $"{def.Name}{(capacity.Length > 0 ? " · " + capacity : "")}. Placeholder numbers until the art and economy passes.";
+            list.Add(new Godot.Collections.Dictionary
+            {
+                ["id"] = item.Id, ["name"] = item.Name, ["group"] = item.IsHeritage ? "Heritage Projects" : Group(item.Category),
+                ["size"] = $"{item.W}×{item.H}", ["cost"] = LandSystem.Money(cents), ["months"] = item.Months,
+                ["heritage"] = item.IsHeritage, ["affordable"] = _snapshot.CashCents >= cents, ["description"] = desc,
+            });
+        }
+        return list;
+    }
+
+    private static string Group(string category) => category switch
+    {
+        "academic" or "library" => "Academic",
+        "residence" => "Housing",
+        "dining" => "Dining",
+        "student_life" => "Student Life",
+        "athletics" => "Athletics",
+        "admin" or "utility" => "Admin / Utilities",
+        "landscape" => "Landscape",
+        _ => "Landmarks",
+    };
 
     public Godot.Collections.Dictionary GetHud()
     {
@@ -232,8 +356,10 @@ public partial class GameHost : Node3D
             ["overlay"] = OverlayName(_overlay),
             ["day_night"] = _dayNight,
             ["hover"] = HoverText(),
-            ["tool"] = GetLandTool(),
+            ["tool"] = GetTool(),
+            ["build_item"] = GetBuildItem(),
             ["tool_hint"] = ToolHint(),
+            ["show_heritage"] = _showHeritage,
             ["messages"] = string.Join("\n", _messages.AsEnumerable().Reverse()),
             ["gpu_ms"] = RenderingServer.ViewportGetMeasuredRenderTimeGpu(GetViewport().GetViewportRid()),
         };
@@ -253,6 +379,8 @@ public partial class GameHost : Node3D
         hud["happiness"] = s.AverageHappiness;
         hud["cash"] = LandSystem.Money(s.CashCents);
         hud["clearing_tiles"] = s.ClearingTiles;
+        hud["construction"] = ConstructionText(s);
+        hud["heritage_bonus"] = s.Placement?.HeritageBonus ?? 0;
         hud["walks_last_hour"] = s.WalksLastTick;
         hud["tick_ms_p95"] = s.P95TickMs;
         hud["dropped_ticks"] = s.DroppedTicks;
@@ -263,17 +391,17 @@ public partial class GameHost : Node3D
 
     // ---------------- land tools ----------------
 
-    private MapOverlay EffectiveOverlay => _tool is not null && _overlay == MapOverlay.None ? MapOverlay.Ownership : _overlay;
+    private MapOverlay EffectiveOverlay => _tool != Tool.None && _overlay == MapOverlay.None ? MapOverlay.Ownership : _overlay;
 
     private LandCommand Command()
     {
         int w = _map.Map.Grid.Width;
-        return new LandCommand(_tool!.Value, _dragStart % w, _dragStart / w, _dragEnd % w, _dragEnd / w);
+        return new LandCommand(_tool == Tool.Clear ? LandAction.Clear : LandAction.Buy, _dragStart % w, _dragStart / w, _dragEnd % w, _dragEnd / w);
     }
 
     private void UpdateLandTool()
     {
-        if (_tool is null || _dragStart < 0 || _snapshot is null) return;
+        if (_tool is not (Tool.Clear or Tool.Buy) || _dragStart < 0 || _snapshot is null) return;
         if (_map.HoverTile >= 0) _dragEnd = _map.HoverTile;
         var g = _map.Map.Grid;
         var c = Command();
@@ -286,15 +414,109 @@ public partial class GameHost : Node3D
 
     private string ToolHint()
     {
-        if (_tool is null) return "";
-        string what = _tool == LandAction.Clear ? "Clear forest: drag over university-owned woods" : "Buy land: drag over land next to the campus";
+        if (_tool == Tool.Build) return BuildHint();
+        if (_tool == Tool.Cancel)
+            return HoveredSite() is { Complete: false } hs
+                ? $"Cancel the {hs.Name} ({hs.Progress:P0} built)? Click to cancel: half of the unspent part is refunded (all of it on the day it was ordered)."
+                : "Cancel construction: click a building under construction (Esc to stop).";
+        if (_tool == Tool.None) return "";
+        string what = _tool == Tool.Clear ? "Clear forest: drag over university-owned woods" : "Buy land: drag over land next to the campus";
         if (_quote is not { } q || _snapshot is null) return what + " (right-click or Esc to stop).";
         if (!q.Ok) return q.Problem;
         string cost = LandSystem.Money(q.Cents);
         string afford = _snapshot.CashCents >= q.Cents ? "" : " (not enough money)";
-        return _tool == LandAction.Clear
+        return _tool == Tool.Clear
             ? $"Clear {q.Tiles} tiles: {cost}, about {Math.Ceiling(q.Days)} days{afford}. Release to order."
             : $"Buy {q.Tiles} tiles: {cost}{afford}. Release to buy.";
+    }
+
+    // ---------------- building ----------------
+
+    /// <summary>Heritage Projects on offer now (their real sites are drawn).</summary>
+    private List<CatalogItem> AvailableHeritage() =>
+        _catalog is null || _snapshot is null ? []
+            : _catalog.AvailableOn(_snapshot.Date, _snapshot.Placement?.HeritageTaken ?? []).Where(i => i.IsHeritage).ToList();
+
+    private PlacementMap SnapshotMap()
+    {
+        var s = _snapshot!;
+        var g = _map.Map.Grid;
+        return new PlacementMap(g.Width, g.Height, g.TileSizeM, s.Surfaces, s.LandStates, s.Owners, g.Protected, s.Clearing,
+            _map.Map.Heights, s.Placement?.SortedEntrances ?? []);
+    }
+
+    /// <summary>Follows the cursor with the ghost and re-checks the placement when the pose or the map changes.</summary>
+    private void UpdateBuildTool()
+    {
+        if (_tool != Tool.Build || _buildItem is not { } item || _snapshot is not { } s || _catalog is null) return;
+        if (!_catalog.AvailableOn(s.Date, s.Placement?.HeritageTaken ?? []).Contains(item)) { SetTool(""); return; }
+        if (_map.HoverTile < 0 && _ghostAt is null) { _placementRenderer.SetGhost(null, default, -1, false); _pose = null; return; }
+        float tile = _map.Map.Grid.TileSizeM;
+        var at = _ghostAt ?? new Vector2(_map.HoverPoint.X, _map.HoverPoint.Z);
+        float hx = at.X / tile, hz = at.Y / tile;
+        var pose = FootprintMath.Snap(hx, hz, item.W, item.H, _rotation);
+        // Heritage Projects snap onto their real site when the cursor is close to it.
+        if (item.Site is { } site)
+        {
+            float dx = (hx - site.Pose.Cx) * tile, dz = (hz - site.Pose.Cy) * tile;
+            if (dx * dx + dz * dz <= _catalog.Config.Heritage.SnapDistanceM * _catalog.Config.Heritage.SnapDistanceM) pose = site.Pose;
+        }
+        _pose = pose;
+        int placementVersion = s.Placement?.Version ?? -1;
+        if (_buildQuote is not null && _quoteKeyPose == pose && _quoteKeyLand == s.LandVersion && _quoteKeyPlacement == placementVersion) return;
+        _quoteKeyPose = pose;
+        _quoteKeyLand = s.LandVersion;
+        _quoteKeyPlacement = placementVersion;
+        _buildQuote = PlacementSystem.Check(_catalog, item, pose, SnapshotMap(), s.Date);
+        _placementRenderer.SetGhost(item, pose, _buildQuote.Entrance, _buildQuote.Ok && s.CashCents >= _buildQuote.Cents);
+    }
+
+    private void PlaceBuilding()
+    {
+        if (_buildItem is not { } item || _pose is not { } pose || _buildQuote is not { } q || _snapshot is null) return;
+        if (!q.Ok) { AddMessage($"{item.Name}: {q.Problem}"); return; }
+        if (_snapshot.CashCents < q.Cents) { AddMessage($"Not enough money for the {item.Name}: it costs {LandSystem.Money(q.Cents)}."); return; }
+        _runner!.Submit(PlacementCommand.Build(item.Id, pose));
+    }
+
+    private SiteView? HoveredSite()
+    {
+        if (_snapshot?.Placement is not { } view || _map.HoverTile < 0) return null;
+        float tile = _map.Map.Grid.TileSizeM;
+        float x = _map.HoverPoint.X / tile, y = _map.HoverPoint.Z / tile;
+        foreach (var site in view.Sites)
+        {
+            var (lx, ly) = FootprintMath.ToLocal(site.Pose, x, y);
+            if (Math.Abs(lx) <= site.W / 2f && Math.Abs(ly) <= site.H / 2f) return site;
+        }
+        return null;
+    }
+
+    private void CancelHoveredSite()
+    {
+        if (HoveredSite() is not { } site) { AddMessage("Click a building under construction to cancel it."); return; }
+        if (site.Complete) { AddMessage($"The {site.Name} is finished; demolition comes later."); return; }
+        _runner!.Submit(PlacementCommand.Cancel(site.Id));
+    }
+
+    private string BuildHint()
+    {
+        if (_buildItem is not { } item) return "";
+        string turn = "Z/X to turn, Esc to stop";
+        if (_buildQuote is not { } q || _snapshot is null) return $"{item.Name}: point at the map ({turn}).";
+        string head = $"{item.Name} · {LandSystem.Money(q.Cents)} · done about {q.EstimatedFinish:MMM d, yyyy}";
+        if (!q.Ok) return $"{head}\n{q.Problem}";
+        string afford = _snapshot.CashCents >= q.Cents ? "" : " Not enough money.";
+        string site = item.Site is null ? "" : q.OnHeritageSite ? " On the real site: Heritage bonus." : " Not on the real site (that's fine; no bonus).";
+        string warn = q.Warning.Length > 0 ? "\n" + q.Warning : "";
+        return $"{head}\nClick to build ({turn}).{site}{afford}{warn}";
+    }
+
+    private static string ConstructionText(SimSnapshot s)
+    {
+        if (s.Placement is not { } v) return "";
+        var lines = v.Sites.Where(x => !x.Complete).Select(x => $"Building {x.Name}: {x.Progress:P0}, done about {x.EstimatedFinish:MMM d, yyyy}.");
+        return string.Join("\n", lines);
     }
 
     private void AddMessage(string m)
@@ -346,7 +568,10 @@ public partial class GameHost : Node3D
         _runner = new SimRunner(_world.Simulation, _world.Campus.Grid, time.Speeds, time.RealSecondsPerGameDay, time.TicksPerGameDay);
         _runner.Start();
         _snapshot = _runner.AcquireLatest();
+        _catalog = _world.Placement?.Catalog;
+        _items = _catalog?.Items.ToDictionary(i => i.Id) ?? [];
         if (OS.GetCmdlineUserArgs().Contains("--demo-land")) DemoLand();
+        _demoBuild = OS.GetCmdlineUserArgs().Contains("--demo-build");
         var r = _world.CampusReport!;
         GD.Print($"Game ready ({_scenario.Name}): {r.CampusBuildings} Miami buildings + {r.HousingZones} housing zones, " +
                  $"{pop.Count:N0} agents, flow fields {_world.FlowFieldsMs:F0} ms, {SimInfo.Describe()}, optimized={SimInfo.IsOptimizedBuild}");
@@ -368,6 +593,57 @@ public partial class GameHost : Node3D
         _runner.Submit(new LandCommand(LandAction.Buy, maxX + 1, minY, maxX + 8, maxY));
         _overlay = MapOverlay.Ownership;
         _map.SetOverlayMode(EffectiveOverlay);
+    }
+
+    /// <summary>
+    /// Launch option --demo-build (testing without a mouse): orders a recitation hall and a boarding house near Old
+    /// Main straight away; then, once Elliott Hall is offered (1825), buys and clears its real site as needed and builds
+    /// it there (start with --cash=20000 to afford it).
+    /// </summary>
+    private void DemoBuildStep()
+    {
+        if (_catalog is null || _snapshot is not { } s || s.Placement is null) return;
+        var g = _map.Map.Grid;
+        Pose? Spot(CatalogItem item, int rot)
+        {
+            var oldMain = _map.Buildings.FirstOrDefault(b => b.Entry?.Id == "old_main");
+            if (oldMain is null) return null;
+            var (cx, cy) = oldMain.Footprint.Centroid();
+            var map = SnapshotMap();
+            for (int r = 4; r < 30; r++)
+                for (int dy = -r; dy <= r; dy++)
+                    for (int dx = -r; dx <= r; dx++)
+                    {
+                        if (Math.Max(Math.Abs(dx), Math.Abs(dy)) != r) continue;
+                        var pose = FootprintMath.Snap(cx + dx, cy + dy, item.W, item.H, rot);
+                        if (PlacementSystem.Check(_catalog, item, pose, map, s.Date).Ok) return pose;
+                    }
+            return null;
+        }
+        if (_demoStep == 0)
+        {
+            // One order per snapshot, so the second building sees the first one's site.
+            if (_catalog.Find("frame_recitation_hall") is { } hall && Spot(hall, 0) is { } p1) _runner!.Submit(PlacementCommand.Build(hall.Id, p1));
+            _demoStep = 1;
+            _demoVersion = s.Placement.Version;
+            return;
+        }
+        if (_demoStep == 1)
+        {
+            if (s.Placement.Version == _demoVersion) return;
+            if (_catalog.Find("boarding_house") is { } house && Spot(house, 90) is { } p2) _runner!.Submit(PlacementCommand.Build(house.Id, p2));
+            _demoStep = 2;
+            return;
+        }
+        if (_demoStep >= 5 || s.Tick % 24 != 1) return;
+        var elliott = _catalog.Find("heritage:elliott_hall");
+        if (elliott?.Site is not { } site || !_catalog.AvailableOn(s.Date, s.Placement.HeritageTaken).Contains(elliott)) return;
+        var q = PlacementSystem.Check(_catalog, elliott, site.Pose, SnapshotMap(), s.Date);
+        var tiles = site.Tiles.Append(q.Entrance).Where(t => t >= 0).ToArray();
+        int x0 = tiles.Min(t => t % g.Width), x1 = tiles.Max(t => t % g.Width), y0 = tiles.Min(t => t / g.Width), y1 = tiles.Max(t => t / g.Width);
+        if (q.Ok) { _runner!.Submit(PlacementCommand.Build(elliott.Id, site.Pose)); _demoStep = 5; }
+        else if (q.Problem.Contains("university land") && _demoStep == 2) { _runner!.Submit(new LandCommand(LandAction.Buy, x0, y0, x1, y1)); _demoStep = 3; }
+        else if (q.Problem.Contains("forest") && _demoStep <= 3) { _runner!.Submit(new LandCommand(LandAction.Clear, x0, y0, x1, y1)); _demoStep = 4; }
     }
 
     private void BuildWalkers()
@@ -452,6 +728,8 @@ public partial class GameHost : Node3D
 
     private string HoverText()
     {
+        if (HoveredSite() is { } site)
+            return site.Complete ? $"{site.Name} · built by you" : $"{site.Name} · under construction {site.Progress:P0}, done about {site.EstimatedFinish:MMM d, yyyy}";
         int b = _map.BuildingUnderHover();
         if (b < 0) return "";
         var hb = _map.Buildings[b];

@@ -9,7 +9,7 @@
   "upkeep_usd_per_year": 600000,
   "capacity": { "kind": "beds", "value": 250 },
   "style": "georgian_revival",
-  "unlock_era": "founding",
+  "unlock_era": "early20",
   "needs_served": ["sleep", "social"],
   "model": null,
   "design_ref": "§11.3"

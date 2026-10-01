@@ -21,7 +21,7 @@ public class DataValidationTests
             var file = Path.Combine(dir, "buildings", "small_classroom_hall.json");
             var text = File.ReadAllText(file)
                 .Replace("\"cost_usd\": 8000000", "\"cost_usd\": -1")
-                .Replace("\"unlock_era\": \"founding\"", "\"unlock_era\": \"stone_age\"");
+                .Replace("\"unlock_era\": \"early20\"", "\"unlock_era\": \"stone_age\"");
             File.WriteAllText(file, text);
 
             var issues = DataValidation.ValidateDirectory(dir);

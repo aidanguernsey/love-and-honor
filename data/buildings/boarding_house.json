@@ -1,0 +1,27 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "1820s catalogue (Phase 1 1e). Placeholder numbers, not history: cost in MODERN dollars (x 0.02 in the 1820s = $800), capacity and build time are guesses. A frame house where students room and board.",
+  "id": "boarding_house",
+  "name": "Boarding House",
+  "category": "residence",
+  "footprint": {
+    "w": 2,
+    "h": 3
+  },
+  "cost_usd": 40000,
+  "upkeep_usd_per_year": 1000,
+  "capacity": {
+    "kind": "beds",
+    "value": 16
+  },
+  "style": "none",
+  "unlock_era": "founding",
+  "retire_era": "early20",
+  "construction_months": 4,
+  "needs_served": [
+    "sleep",
+    "social"
+  ],
+  "model": null,
+  "design_ref": "§25.1"
+}

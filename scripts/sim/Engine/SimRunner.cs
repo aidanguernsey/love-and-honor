@@ -45,6 +45,9 @@ public sealed class SimSnapshot
     public long CashCents;
     public int ClearingTiles;
 
+    /// <summary>Construction sites, entrances and Heritage Projects taken (Phase 1 1e). Immutable; replaced when it changes.</summary>
+    public PlacementView? Placement;
+
     public SimSnapshot(int agentCount, int tileCount)
     {
         WalkAgent = new int[agentCount];
@@ -173,6 +176,15 @@ public sealed class SimRunner : IDisposable
         _signal.Set();
     }
 
+    /// <summary>Main thread: a build or cancel order. Applied like land orders (next tick boundary, or at once when paused).</summary>
+    public void Submit(PlacementCommand command)
+    {
+        if (_sim.Placement is null) return;
+        _sim.Placement.Enqueue(command);
+        Interlocked.Exchange(ref _commandsPending, 1);
+        _signal.Set();
+    }
+
     /// <summary>Main thread: the newest published snapshot. Valid until the next call.</summary>
     public SimSnapshot AcquireLatest()
     {
@@ -198,7 +210,7 @@ public sealed class SimRunner : IDisposable
             {
                 if (Interlocked.Exchange(ref _commandsPending, 0) == 1)
                 {
-                    _sim.ApplyLandCommands();
+                    _sim.ApplyPendingCommands();
                     Publish();
                 }
                 continue;
@@ -248,6 +260,11 @@ public sealed class SimRunner : IDisposable
                 s.LandVersion = land.Version + _grid.Version;
             }
             foreach (var m in land.TakeMessages()) _messages.Enqueue(m);
+        }
+        if (_sim.Placement is { } placement)
+        {
+            s.Placement = placement.View();
+            foreach (var m in placement.TakeMessages()) _messages.Enqueue(m);
         }
 
         s.TicksInWindow = _windowCount;

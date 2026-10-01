@@ -1,0 +1,26 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "1820s catalogue (Phase 1 1e). Placeholder numbers, not history: cost in MODERN dollars (x 0.02 in the 1820s = $600), capacity and build time are guesses. A small wooden classroom building.",
+  "id": "frame_recitation_hall",
+  "name": "Frame Recitation Hall",
+  "category": "academic",
+  "footprint": {
+    "w": 2,
+    "h": 3
+  },
+  "cost_usd": 30000,
+  "upkeep_usd_per_year": 1000,
+  "capacity": {
+    "kind": "seats",
+    "value": 40
+  },
+  "style": "none",
+  "unlock_era": "founding",
+  "retire_era": "gilded",
+  "construction_months": 4,
+  "needs_served": [
+    "study"
+  ],
+  "model": null,
+  "design_ref": "§25.1"
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Heritage Projects: real buildings the player may build (§5.1b, §5.4)",
+  "type": "object",
+  "required": ["projects"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": { "type": "string" },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "timeline_id", "building", "cost_usd", "construction_months", "verified"],
+        "additionalProperties": false,
+        "patternProperties": { "^_": {} },
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "timeline_id": { "type": "string", "description": "timeline.json entry: name, real dates and the site outline" },
+          "building": { "type": "string", "description": "building definition (category, capacity)" },
+          "cost_usd": { "type": "number", "minimum": 0, "description": "modern dollars, x the era's price_multiplier" },
+          "construction_months": { "type": "number", "exclusiveMinimum": 0 },
+          "verified": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

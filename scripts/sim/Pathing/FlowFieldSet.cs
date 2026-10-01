@@ -238,11 +238,18 @@ public sealed class FlowFieldSet
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
         int b = input.Entrances.Length, w = input.Width, tiles = w * input.Height;
-        bool incremental = baseline is { } bl && changed is not null && bl.Data.BuildingCount == b
-                           && bl.Data.Entrances.AsSpan().SequenceEqual(input.Entrances)
-                           && bl.Data.HasField.AsSpan().SequenceEqual(input.WantsField);
+        // Incremental: the baseline's buildings are still the first ones (buildings are only ever added at the end,
+        // 1e). Their fields are updated; new buildings get fields built from scratch.
+        bool incremental = baseline is { } bl && changed is not null && bl.Data.BuildingCount <= b
+                           && bl.Data.Entrances.AsSpan().SequenceEqual(input.Entrances.AsSpan(0, bl.Data.BuildingCount))
+                           && bl.Data.HasField.AsSpan().SequenceEqual(input.WantsField.AsSpan(0, bl.Data.BuildingCount));
+        int oldB = incremental ? baseline!.Value.Data.BuildingCount : 0;
 
-        if (target.Cost.Length != b) { target.Cost = new ushort[]?[b]; target.Dir = new byte[]?[b]; }
+        if (target.Cost.Length != b)
+        {
+            Array.Resize(ref target.Cost, b);
+            Array.Resize(ref target.Dir, b);
+        }
         // 0 = no field, 1 = built from scratch, 2 = updated (changed), 3 = updated (no change)
         var outcome = new byte[b];
         var recomputed = new long[b];
@@ -255,7 +262,7 @@ public sealed class FlowFieldSet
             {
                 var cost = target.Cost[k] ??= new ushort[tiles];
                 var dir = target.Dir[k] ??= new byte[tiles];
-                if (incremental)
+                if (k < oldB)
                 {
                     Array.Copy(baseline!.Value.Buf.Cost[k]!, cost, tiles);
                     Array.Copy(baseline.Value.Buf.Dir[k]!, dir, tiles);
@@ -286,18 +293,19 @@ public sealed class FlowFieldSet
                 for (int to = 0; to < b; to++)
                 {
                     int pair = from * b + to;
-                    int[]? old = oldData?.Routes[pair];
+                    int oldPair = from < oldB && to < oldB ? from * oldB + to : -1;
+                    int[]? old = oldPair >= 0 ? oldData!.Routes[oldPair] : null;
                     int[] route;
                     if (input.WantsField[to])
-                        route = oldData is not null && outcome[to] == 3 ? old!
+                        route = old is not null && outcome[to] == 3 ? old
                             : TraceInto(input, target.Dir[to]!, input.Entrances[from], input.Entrances[to], scratch, old, reverse: false);
                     else if (input.WantsField[from])
-                        route = oldData is not null && outcome[from] == 3 ? old!
+                        route = old is not null && outcome[from] == 3 ? old
                             : TraceInto(input, target.Dir[from]!, input.Entrances[to], input.Entrances[from], scratch, old, reverse: true);
                     else
                         route = from == to ? old ?? [input.Entrances[from]] : []; // nobody walks between two housing zones
                     routes[pair] = route;
-                    distance[pair] = oldData is not null && ReferenceEquals(route, old) ? oldData.DistanceM[pair] : RouteLength(route, w, input.TileSizeM, from == to);
+                    distance[pair] = old is not null && ReferenceEquals(route, old) ? oldData!.DistanceM[oldPair] : RouteLength(route, w, input.TileSizeM, from == to);
                 }
                 return scratch;
             },

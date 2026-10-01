@@ -9,7 +9,7 @@
   "upkeep_usd_per_year": 800000,
   "capacity": { "kind": "diners_per_hour", "value": 1500 },
   "style": "georgian_revival",
-  "unlock_era": "founding",
+  "unlock_era": "early20",
   "needs_served": ["food", "social"],
   "model": null,
   "design_ref": "§11.4"

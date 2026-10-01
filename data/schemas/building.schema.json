@@ -113,6 +113,15 @@
     "unlock_era": {
       "type": "string"
     },
+    "retire_era": {
+      "type": "string",
+      "description": "first era in which it is no longer offered (era-specific buildings, e.g. 1820s frame halls); omit = never retired"
+    },
+    "construction_months": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "overrides the size-class construction time in placement.json"
+    },
     "needs_served": {
       "type": "array",
       "items": {

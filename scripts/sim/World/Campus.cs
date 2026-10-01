@@ -40,8 +40,18 @@ public sealed class CampusBuilding
 
 public sealed class Campus(TileGrid grid, IReadOnlyList<CampusBuilding> buildings)
 {
+    private readonly List<CampusBuilding> _buildings = [.. buildings];
+
     public TileGrid Grid { get; } = grid;
-    public IReadOnlyList<CampusBuilding> Buildings { get; } = buildings;
+    public IReadOnlyList<CampusBuilding> Buildings => _buildings;
+
+    /// <summary>Adds a finished building (Phase 1 1e) at index <see cref="Buildings"/>.Count. Sim thread only; the flow
+    /// fields pick it up on their next rebuild.</summary>
+    public void Add(CampusBuilding building)
+    {
+        if (building.Index != _buildings.Count) throw new ArgumentException("building index must be the next free index");
+        _buildings.Add(building);
+    }
 
     public IEnumerable<CampusBuilding> OfKind(BuildingKind kind) => Buildings.Where(b => b.Kind == kind);
 }

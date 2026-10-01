@@ -1,0 +1,26 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "1820s catalogue (Phase 1 1e). Placeholder numbers, not history: cost in MODERN dollars (x 0.02 in the 1820s = $3,000), capacity and build time are guesses. Two-storey brick hall with recitation rooms.",
+  "id": "brick_classroom_hall",
+  "name": "Brick Classroom Hall",
+  "category": "academic",
+  "footprint": {
+    "w": 3,
+    "h": 4
+  },
+  "cost_usd": 150000,
+  "upkeep_usd_per_year": 4000,
+  "capacity": {
+    "kind": "seats",
+    "value": 120
+  },
+  "style": "georgian_revival",
+  "unlock_era": "founding",
+  "retire_era": "early20",
+  "construction_months": 12,
+  "needs_served": [
+    "study"
+  ],
+  "model": null,
+  "design_ref": "§25.1"
+}

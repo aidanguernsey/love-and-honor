@@ -9,7 +9,7 @@
   "upkeep_usd_per_year": 1200000,
   "capacity": { "kind": "study_seats", "value": 2000 },
   "style": "georgian_revival",
-  "unlock_era": "founding",
+  "unlock_era": "early20",
   "needs_served": ["study"],
   "model": null,
   "design_ref": "§11.2"

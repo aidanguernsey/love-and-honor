@@ -70,6 +70,18 @@
     "town_color": "#C9BFA8",
     "approximate_site_color": "#D9A08E"
   },
+  "placement": {
+    "_comment": "Building placement (Phase 1 1e): the ghost preview, construction sites, and Heritage Project sites. Placed buildings are plain boxes until the kit assembler (1f). Wooden (style none) buildings are drawn lower than the extrusion kind heights.",
+    "ghost_ok_color": "#5CE07A",
+    "ghost_bad_color": "#FF5544",
+    "ghost_opacity": 0.45,
+    "entrance_color": "#FFD34D",
+    "construction_color": "#C8A878",
+    "heritage_site_color": "#F4F1EA",
+    "heritage_site_opacity": 0.3,
+    "heritage_site_height_m": 12,
+    "wooden_height_m": 7
+  },
   "sun": {
     "_comment": "Sun position from SolarPosition for the map centre; standard time (no daylight saving).",
     "utc_offset_hours": -5,

@@ -50,6 +50,12 @@ public sealed class Treasury(long startingCents)
         Cents -= cents;
         Ledger.Add((date, -cents, reason));
     }
+
+    public void Receive(DateOnly date, long cents, string reason)
+    {
+        Cents += cents;
+        Ledger.Add((date, cents, reason));
+    }
 }
 
 public enum LandAction : byte { Clear, Buy }
@@ -117,6 +123,13 @@ public sealed class LandSystem
     {
         var current = g.Types[t];
         if (current is TileType.Water or TileType.Building) return current;
+        return GroundSurface(g, pathOn, t);
+    }
+
+    /// <summary>The walking surface a tile has without any building on it (for cancelled construction sites).</summary>
+    public static TileType GroundSurface(TileGrid g, bool[] pathOn, int t)
+    {
+        if (g.Types[t] == TileType.Water) return TileType.Water;
         if (pathOn[t]) return TileType.Path;
         bool lawn = g.Ownership[t] == Ownership.University && g.LandState[t] is not (LandState.Forest or LandState.Protected or LandState.Water);
         return lawn ? TileType.Grass : TileType.Rough;

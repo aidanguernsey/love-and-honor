@@ -83,11 +83,15 @@ stood then), or **Preview — 2026 campus** for the modern campus with everyone 
 
 Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F tilt · Space pause/resume · 1–4 speed
 (1×/2×/4×/8×) · O overlays (ownership, foot traffic) · C clear forest · L buy land (drag a rectangle; the cost shows
-before you let go) · N day/night cycle on/off (remembered) · G build grid · Esc stop the tool / main menu. Hover a
-building for its name. Desire paths wear into the campus lawns over a few in-game weeks. Launch options (after `--`):
-`--scenario=chapter1_the_hill|preview_2026`, `--speed=N`, `--camera=x,z,distance,pitch,yaw`, `--day-night=on|off`,
-`--demo-land` (place a sample clearing order and purchase), `--game-smoke[=seconds]` (print stats and quit),
-`--screenshot=FILE` (with `--game-smoke`).
+before you let go) · B build menu (or the category buttons; pick a building, then click the map: the ghost is green
+when it can be built, red with the reason when not) · Z/X turn the building 15° · Del cancel construction · H Heritage
+Project sites on/off · N day/night cycle on/off (both remembered) · G build grid · Esc stop the tool / main menu. Hover a
+building for its name or construction progress. Desire paths wear into the campus lawns over a few in-game weeks.
+Launch options (after `--`): `--scenario=chapter1_the_hill|preview_2026`, `--speed=N`, `--camera=x,z,distance,pitch,yaw`,
+`--day-night=on|off`, `--cash=N` (starting cash), `--demo-land` (a sample clearing order and purchase), `--demo-build`
+(two buildings near Old Main, then Elliott Hall on its real site once it's offered in 1825; add `--cash=20000`),
+`--build-item=ID`, `--build-rotation=DEG`, `--ghost-at=x,z` (screenshots of the ghost), `--game-smoke[=seconds]`
+(print stats and quit), `--screenshot=FILE` (with `--game-smoke`).
 
 Spike B terrain (real Oxford, 1 m lidar + OSM): click **Spike B** on the boot screen, or run it directly:
 

@@ -1,0 +1,33 @@
+{
+  "$schema": "./schemas/placement.schema.json",
+  "_comment": "Building placement and construction (§12.1, §5.1b Heritage Projects), Phase 1 checkpoint 1e. All numbers are [TWEAK] placeholders.",
+  "rotation_step_deg": 15,
+  "max_slope_m": 4.0,
+  "_max_slope_comment": "Largest ground-height difference allowed under a footprint (corners and tile centres). Placeholder; §12.1 gives no number.",
+  "path_access": {
+    "_comment": "§12.1: a building's entrance must be next to a path. Players can't lay paths until checkpoint 1g, so for now a missing path is only a warning (people walk across the lawn or rough ground to the door). Set required to true once paths exist.",
+    "required": false
+  },
+  "construction": {
+    "_comment": "§12.1: small 3 months, medium 9 months, large 18-24 months (21 used), summer x1.5, winter x0.7. A building may set its own construction_months. Size class by footprint area in tiles. Paid in full when ordered (financing comes with the budget, 1i).",
+    "days_per_month": 30.44,
+    "size_classes": [
+      { "id": "small", "max_tiles": 16, "months": 3 },
+      { "id": "medium", "max_tiles": 36, "months": 9 },
+      { "id": "large", "max_tiles": null, "months": 21 }
+    ],
+    "summer_months": [6, 7, 8],
+    "summer_speed": 1.5,
+    "winter_months": [12, 1, 2],
+    "winter_speed": 0.7,
+    "cancel_refund_fraction": 0.5,
+    "_cancel_comment": "Cancelling a site refunds this share of the unspent part (cost x work left); same-day cancels refund everything."
+  },
+  "heritage": {
+    "_comment": "Heritage Projects (§5.1b, §5.4): real buildings offered from a few years before their real build year. Building one on its real site (enough of the footprint overlapping the real outline) earns a small Heritage bonus, recorded until the Heritage score exists.",
+    "available_years_before_real": 3,
+    "on_site_min_overlap": 0.6,
+    "snap_distance_m": 20,
+    "on_site_bonus": 5
+  }
+}

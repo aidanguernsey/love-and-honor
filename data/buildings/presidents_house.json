@@ -1,0 +1,23 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "1820s catalogue (Phase 1 1e). Placeholder numbers, not history: cost in MODERN dollars (x 0.02 in the 1820s = $1,500), capacity and build time are guesses. Home of the president.",
+  "id": "presidents_house",
+  "name": "President's House",
+  "category": "admin",
+  "footprint": {
+    "w": 2,
+    "h": 2
+  },
+  "cost_usd": 75000,
+  "upkeep_usd_per_year": 1500,
+  "capacity": {
+    "kind": "none",
+    "value": 0
+  },
+  "style": "georgian_revival",
+  "unlock_era": "founding",
+  "construction_months": 6,
+  "needs_served": [],
+  "model": null,
+  "design_ref": "§25.1"
+}

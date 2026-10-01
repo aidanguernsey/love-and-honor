@@ -1,0 +1,31 @@
+{
+  "$schema": "./schemas/heritage_projects.schema.json",
+  "_comment": "Heritage Projects (§5.1b, §5.4): real Miami buildings the player may build from roughly their real dates, anywhere; each shows its real site as an optional ghost outline (footprint from the timeline's OSM outline). Phase 1 1e covers Chapter 1's three. Costs are in MODERN dollars (x the era's price_multiplier, 0.02 in the 1820s) and, like the construction times, are placeholders: the real costs are unverified.",
+  "projects": [
+    {
+      "id": "old_main",
+      "timeline_id": "old_main",
+      "building": "college_building",
+      "cost_usd": 400000,
+      "construction_months": 30,
+      "verified": false,
+      "_comment": "Already standing when Chapter 1 starts (1824); offered in an earlier start (the 1809 'Empty Hill' sandbox)."
+    },
+    {
+      "id": "elliott_hall",
+      "timeline_id": "elliott_hall",
+      "building": "historic_hall",
+      "cost_usd": 250000,
+      "construction_months": 12,
+      "verified": false
+    },
+    {
+      "id": "stoddard_hall",
+      "timeline_id": "stoddard_hall",
+      "building": "historic_hall",
+      "cost_usd": 275000,
+      "construction_months": 12,
+      "verified": false
+    }
+  ]
+}

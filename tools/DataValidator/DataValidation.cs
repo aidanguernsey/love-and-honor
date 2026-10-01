@@ -93,6 +93,7 @@ public static class DataValidation
     {
         // Eras: unique ids, ordered, contiguous, only the last may be open-ended.
         var eraIds = new HashSet<string>();
+        var eraOrder = new List<string>();
         if (docs.TryGetValue("eras.json", out var eras) && eras["eras"] is JsonArray eraArr)
         {
             int? prevEnd = null;
@@ -101,6 +102,7 @@ public static class DataValidation
                 var e = eraArr[i]!;
                 var id = Str(e, "id");
                 if (!eraIds.Add(id)) issues.Add(new("eras.json", $"/eras/{i}", $"duplicate era id '{id}'"));
+                eraOrder.Add(id);
                 int start = Int(e, "start_year") ?? 0;
                 int? end = Int(e, "end_year");
                 if (end is { } en && en < start) issues.Add(new("eras.json", $"/eras/{i}", "end_year before start_year"));
@@ -120,6 +122,29 @@ public static class DataValidation
             if (!buildingIds.Add(id)) issues.Add(new(rel, "/id", $"duplicate building id '{id}'"));
             var era = Str(node, "unlock_era");
             if (eraIds.Count > 0 && !eraIds.Contains(era)) issues.Add(new(rel, "/unlock_era", $"unknown era '{era}'"));
+            if (node["retire_era"] is not null)
+            {
+                var retire = Str(node, "retire_era");
+                if (eraIds.Count > 0 && !eraIds.Contains(retire)) issues.Add(new(rel, "/retire_era", $"unknown era '{retire}'"));
+                else if (eraOrder.IndexOf(retire) <= eraOrder.IndexOf(era)) issues.Add(new(rel, "/retire_era", "retire_era must come after unlock_era"));
+            }
+        }
+
+        // Heritage Projects: unique ids, timeline entry and building definition exist.
+        if (docs.TryGetValue("heritage_projects.json", out var heritage) && heritage["projects"] is JsonArray projects)
+        {
+            var timelineIds = (docs.GetValueOrDefault("timeline.json")?["entries"] as JsonArray)?.Select(e => Str(e!, "id")).ToHashSet() ?? [];
+            var ids = new HashSet<string>();
+            for (int i = 0; i < projects.Count; i++)
+            {
+                var p = projects[i]!;
+                var loc = $"/projects/{i}";
+                if (!ids.Add(Str(p, "id"))) issues.Add(new("heritage_projects.json", loc, $"duplicate id '{Str(p, "id")}'"));
+                if (timelineIds.Count > 0 && !timelineIds.Contains(Str(p, "timeline_id")))
+                    issues.Add(new("heritage_projects.json", loc, $"unknown timeline_id '{Str(p, "timeline_id")}'"));
+                if (!buildingIds.Contains(Str(p, "building")))
+                    issues.Add(new("heritage_projects.json", loc, $"unknown building '{Str(p, "building")}'"));
+            }
         }
 
         // Timeline: unique ids, building_def exists, demolished after built.

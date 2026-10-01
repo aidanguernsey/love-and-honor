@@ -32,6 +32,19 @@ university forest (cost, crews, slower in winter), buy land touching the campus 
 penalty recorded), monthly town growth; orders via `SimRunner.Submit`, applied at tick boundaries (or at once when
 paused). HUD: cash, land tools (C/L, drag with cost preview), ownership overlay, notifications, day/night switch (N,
 remembered). Next: **1e** (placement).
+**1e done (2026-10-01), awaiting the user's review:** building placement (`World/Placement.cs`): era-gated catalogue
+(`BuildingCatalog`: buildings offered from `unlock_era` until `retire_era`; 1820s placeholders = frame recitation hall,
+brick classroom hall, boarding house, steward's hall, president's house; modern generic buildings now unlock `early20`),
+Heritage Projects (`data/heritage_projects.json`: Old Main, Elliott, Stoddard; offered from 3 years before their real
+year, real site = rectangle fitted to the OSM outline, built on-site (>= 60% overlap) = Heritage +5 recorded), placement
+checks (university land, not forest/water/road/building/protected/being cleared, no other building's door, slope
+<= 4 m, entrance tile free; path at the door only a warning until 1g), 15° rotation (Z/X), construction time by size
+class or per building, summer x1.5 / winter x0.7, paid up front, cancel (Del) refunds half the unspent part (all of it
+the same day). Sites block walking at once; finished buildings join the campus with their own flow field (incremental
+rebuild grows the field set, tested equal to a full rebuild); nobody uses them until 1h. Ghost preview, construction
+boxes, Heritage site outlines + labels (H) in `bridge/PlacementRenderer.cs`; the game freezes the real buildings drawn at
+the scenario's map year (`MapRenderer.SetBuildingsYear`), so Elliott no longer pops up by itself in 1828. Rules in
+`data/placement.json`. Next: **1f** (buildings v1).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -94,6 +107,12 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
   speed, the modern academic calendar applied to 1824 (Miami's early terms differed), clearing doesn't yet cost
   Sustainability/Beauty (those scores don't exist) and replanting isn't in. land_history clearing spread changed 60 → 30
   m/yr so the Hill is still wooded in 1824 (today's map unaffected).
+- 1e placeholders/flags: all 1820s building and Heritage Project costs, sizes, capacities and build times are guesses;
+  §12.1's construction times are modern (an 1820s brick hall took longer); the modern generic buildings' unlock era
+  (`early20`) is a placeholder (§11 says "Start"); path access is a warning only until players can lay paths (1g); the
+  Heritage bonus is only recorded (no Heritage score yet); demolishing finished buildings isn't in; the starting campus is
+  mostly forest (151 lawn tiles), so the first job in Chapter 1 is clearing. Real footprints fitted to tiles: Elliott 2x3,
+  Old Main 5x2.
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 
@@ -253,6 +272,14 @@ stand-in for a 4-core min-spec); P-core / 1-thread / all-core runs are reference
   `WriteInstances(..., heights)`), and exposes `GetHud()`/controls to `game_hud.gd`. Calendar: `AcademicCalendar`
   (Core) from `data/calendar.json` (month-day phases, `verified:false`); `Simulation` passes `classes` to
   `ScheduleModel.Resolve`. Students still live on campus in breaks/summer (presence comes with enrollment, 1h).
+- Placement (1e): `BuildingCatalog` (immutable, shared by sim and UI) + `PlacementSystem` (sim thread: queued
+  `PlacementCommand`s via `SimRunner.Submit`, daily progress at hour 0, `Finish` → `Simulation` adds a `CampusBuilding`
+  with the next index and starts a flow-field rebuild). `PlacementSystem.Check` is pure: the UI calls it on snapshot copies
+  (`PlacementMap`), the sim re-checks on its live arrays. `Pose` = centre in half tiles + rotation (clockwise, entrance on
+  the south side at 0°); `FootprintMath` (tiles whose centre is inside, entrance, snapping, rectangle fit). Snapshots carry
+  an immutable `PlacementView` (sites, sorted entrances, Heritage taken). `ApplyTileEdits` now accepts Building tiles.
+  `FlowFieldSet` updates the baseline's fields incrementally and builds new buildings' fields from scratch (buildings are
+  only ever appended).
 - Scenarios & land (1d): `SimWorld.CreateScenario(data, source, id, map:)` loads `data/scenarios/<id>.json`; a
   scenario with `campus` is a past-year start: `HistoricMap.Apply` rewrites the grid for `map_year` (LandHistory is built
   from today's grid FIRST), `RealCampusBuilder.Build(..., historic: true)` takes housing zones from town land. Walking

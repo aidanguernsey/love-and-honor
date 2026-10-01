@@ -10,7 +10,8 @@
     "terrain",
     "extrusion",
     "sun",
-    "camera"
+    "camera",
+    "placement"
   ],
   "additionalProperties": false,
   "patternProperties": {
@@ -507,6 +508,57 @@
         "day_ambient_energy": {
           "type": "number",
           "minimum": 0
+        }
+      }
+    },
+    "placement": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^_": {}
+      },
+      "required": [
+        "ghost_ok_color",
+        "ghost_bad_color",
+        "ghost_opacity",
+        "entrance_color",
+        "construction_color",
+        "heritage_site_color",
+        "heritage_site_opacity",
+        "heritage_site_height_m",
+        "wooden_height_m"
+      ],
+      "properties": {
+        "ghost_ok_color": {
+          "$ref": "#/$defs/color"
+        },
+        "ghost_bad_color": {
+          "$ref": "#/$defs/color"
+        },
+        "ghost_opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "entrance_color": {
+          "$ref": "#/$defs/color"
+        },
+        "construction_color": {
+          "$ref": "#/$defs/color"
+        },
+        "heritage_site_color": {
+          "$ref": "#/$defs/color"
+        },
+        "heritage_site_opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "heritage_site_height_m": {
+          "$ref": "#/$defs/positive"
+        },
+        "wooden_height_m": {
+          "$ref": "#/$defs/positive"
         }
       }
     }

@@ -36,6 +36,10 @@ public sealed class MapRenderer
     public float SunElevation { get; private set; }
     public float SunAzimuth { get; private set; }
     public bool ShowUndated { get; private set; }
+    /// <summary>The game draws the real buildings of its start year only (later ones are the player's to build, 1e);
+    /// null = buildings follow <see cref="Year"/> (the Spike B timeline).</summary>
+    public int? BuildingsYear { get; private set; }
+    private int ShownBuildingsYear => BuildingsYear ?? Year;
     public bool GridVisible { get; private set; } = true;
     public MapOverlay Overlay { get; private set; }
 
@@ -160,6 +164,13 @@ public sealed class MapRenderer
         UpdateSun();
     }
 
+    /// <summary>Freezes the drawn real buildings at a year (null = follow the date).</summary>
+    public void SetBuildingsYear(int? year)
+    {
+        BuildingsYear = year;
+        ApplyBuildings();
+    }
+
     public void SetShowUndated(bool show)
     {
         ShowUndated = show;
@@ -234,15 +245,15 @@ public sealed class MapRenderer
     public int BuildingUnderHover()
     {
         if (HoverTile < 0) return -1;
-        if (HoverTile == _hoverKeyTile && Year == _hoverKeyYear) return _hoverBuilding;
+        if (HoverTile == _hoverKeyTile && ShownBuildingsYear == _hoverKeyYear) return _hoverBuilding;
         _hoverKeyTile = HoverTile;
-        _hoverKeyYear = Year;
+        _hoverKeyYear = ShownBuildingsYear;
         _hoverBuilding = -1;
         float tx = HoverPoint.X / Map.Grid.TileSizeM, ty = HoverPoint.Z / Map.Grid.TileSizeM;
         for (int i = 0; i < _buildings.Count; i++)
         {
             if (tx < _bounds[i * 4] || ty < _bounds[i * 4 + 1] || tx > _bounds[i * 4 + 2] || ty > _bounds[i * 4 + 3]) continue;
-            if (!_buildings[i].StandsIn(Year, ShowUndated) || !_buildings[i].Footprint.Contains(tx, ty)) continue;
+            if (!_buildings[i].StandsIn(ShownBuildingsYear, ShowUndated) || !_buildings[i].Footprint.Contains(tx, ty)) continue;
             _hoverBuilding = i;
             break;
         }
@@ -293,7 +304,7 @@ public sealed class MapRenderer
 
     private void ApplyBuildings()
     {
-        _buildingMaterial.SetShaderParameter("current_year", (float)Year);
+        _buildingMaterial.SetShaderParameter("current_year", (float)ShownBuildingsYear);
         _buildingMaterial.SetShaderParameter("show_undated_always", ShowUndated);
     }
 

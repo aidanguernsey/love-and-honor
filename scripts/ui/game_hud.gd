@@ -1,12 +1,14 @@
 extends CanvasLayer
-## Main HUD (§27.1), Phase 1 checkpoints 1c–1d. Systems that don't exist yet show "—" with a tooltip saying which
+## Main HUD (§27.1), Phase 1 checkpoints 1c–1e. Systems that don't exist yet show "—" with a tooltip saying which
 ## checkpoint brings them. Keys (§27.5): Space pause/resume · 1–4 speed (1×/2×/4×/8×) · 5 skip to next event (reserved)
-## · O overlays · G build grid · C clear forest · L buy land · N day/night cycle · Esc stop tool / main menu.
-## The day/night setting is remembered in user://settings.cfg (`--day-night=on|off` overrides it for one run).
+## · O overlays · G build grid · C clear forest · L buy land · B build menu · Z/X turn the building · Del cancel
+## construction · H Heritage sites · N day/night cycle · Esc stop tool / close menu / main menu.
+## The day/night and Heritage-site settings are remembered in user://settings.cfg (`--day-night=on|off` overrides
+## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs).
 ## Launch options (after `--`; start from the boot scene with `--play`): `--speed=N` (0–4), `--camera=...` (see camera_rig.gd), `--game-smoke[=seconds]`
 ## (print GAME_SMOKE stats once the sim has run that long, then quit), `--screenshot=<file.png>` (with --game-smoke).
 
-const BUILD_CATEGORIES := ["Academic", "Housing", "Dining", "Student Life", "Athletics", "Admin / Utilities", "Landscape", "Landmarks"]
+const BUILD_CATEGORIES := ["Heritage Projects", "Academic", "Housing", "Dining", "Student Life", "Athletics", "Admin / Utilities", "Landscape", "Landmarks"]
 const SPEED_LABELS := ["Pause", "1×", "2×", "4×", "8×"]
 const SETTINGS_PATH := "user://settings.cfg"
 
@@ -28,6 +30,13 @@ var _scenario_label: Label
 var _tool_buttons := {}
 var _tool_hint: Label
 var _day_night_button: CheckButton
+var _heritage_button: CheckButton
+var _category_buttons := {}
+var _build_popup: PanelContainer
+var _build_list: VBoxContainer
+var _build_title: Label
+var _build_category := ""
+var _build_refresh := 0.0
 var _settings := ConfigFile.new()
 var _start_speed := 1
 var _smoke_seconds := -1.0
@@ -68,6 +77,9 @@ func _ready() -> void:
 	elif "--day-night=on" in OS.get_cmdline_user_args(): day_night = true
 	_day_night_button.set_pressed_no_signal(day_night)
 	_host.SetDayNight(day_night)
+	var heritage: bool = _settings.get_value("view", "heritage_sites", true)
+	_heritage_button.set_pressed_no_signal(heritage)
+	_host.SetShowHeritage(heritage)
 
 
 func _process(delta: float) -> void:
@@ -100,10 +112,14 @@ func _process(delta: float) -> void:
 		_tool_buttons[key].set_pressed_no_signal(key == tool)
 	_tool_hint.text = hud["tool_hint"]
 	_tool_hint.visible = tool != ""
+	if _build_popup.visible:
+		_build_refresh -= delta
+		if _build_refresh <= 0.0: _fill_build_list()
 
 	var notes := PackedStringArray()
 	if _notice_timer > 0.0: notes.append(_notice_text)
 	if hud["clearing_tiles"] > 0: notes.append("Clearing in progress: %d tiles left." % hud["clearing_tiles"])
+	if hud["construction"] != "": notes.append(hud["construction"])
 	if hud["messages"] != "": notes.append(hud["messages"])
 	_notice_label.text = "\n".join(notes) if notes.size() > 0 else "No notifications yet."
 
@@ -142,12 +158,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_5: _notify("Skip to next event comes with events (checkpoint 1j).")
 		KEY_O: _cycle_overlay()
 		KEY_G: _host.ToggleGrid()
-		KEY_B: _notify("Building comes in checkpoint 1e.")
+		KEY_B: _open_build_list("")
 		KEY_C: _toggle_tool("clear")
 		KEY_L: _toggle_tool("buy")
+		KEY_DELETE, KEY_BACKSPACE: _toggle_tool("cancel")
+		KEY_Z: _host.RotateBuild(-1)
+		KEY_X: _host.RotateBuild(1)
+		KEY_H: _heritage_button.button_pressed = not _heritage_button.button_pressed
 		KEY_N: _day_night_button.button_pressed = not _day_night_button.button_pressed
 		KEY_ESCAPE:
-			if _host.GetLandTool() != "": _host.SetLandTool("")
+			if _build_popup.visible: _build_popup.visible = false
+			elif _host.GetTool() != "": _host.SetTool("")
 			else: get_tree().change_scene_to_file("res://scenes/boot.tscn")
 
 
@@ -221,15 +242,38 @@ func _build_build_menu() -> void:
 		t.pressed.connect(func(): _toggle_tool(key))
 		col.add_child(t)
 		_tool_buttons[key] = t
-	col.add_child(_label(14, "Build"))
+	col.add_child(_label(14, "Build (B)"))
 	for category in BUILD_CATEGORIES:
 		var b := Button.new()
 		b.text = category
-		b.disabled = true
 		b.focus_mode = Control.FOCUS_NONE
-		b.tooltip_text = "Building comes in checkpoint 1e (key B)."
 		b.custom_minimum_size = Vector2(150, 30)
+		var c: String = category
+		b.pressed.connect(func(): _open_build_list(c))
 		col.add_child(b)
+		_category_buttons[category] = b
+	var cancel := Button.new()
+	cancel.text = "Cancel construction (Del)"
+	cancel.tooltip_text = "Click a building under construction to cancel it. Half of the unspent part is refunded (all of it on the day it was ordered)."
+	cancel.toggle_mode = true
+	cancel.focus_mode = Control.FOCUS_NONE
+	cancel.custom_minimum_size = Vector2(150, 30)
+	cancel.pressed.connect(func(): _toggle_tool("cancel"))
+	col.add_child(cancel)
+	_tool_buttons["cancel"] = cancel
+
+	# The list of buildings in a category, beside the menu.
+	_build_popup = _panel()
+	_anchor(_build_popup, 0, 0.5, 0, 0.5, 190, 0, 190, 0)
+	_build_popup.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_build_popup.visible = false
+	var list_col := VBoxContainer.new()
+	list_col.custom_minimum_size = Vector2(300, 0)
+	_build_popup.add_child(list_col)
+	_build_title = _label(14)
+	list_col.add_child(_build_title)
+	_build_list = VBoxContainer.new()
+	list_col.add_child(_build_list)
 
 
 func _build_right_panel() -> void:
@@ -253,8 +297,15 @@ func _build_right_panel() -> void:
 	_day_night_button.tooltip_text = "Off: always early afternoon light. The clock and the simulation keep running."
 	_day_night_button.toggled.connect(_set_day_night)
 	col.add_child(_day_night_button)
+	_heritage_button = CheckButton.new()
+	_heritage_button.text = "Heritage sites (H)"
+	_heritage_button.button_pressed = true
+	_heritage_button.focus_mode = Control.FOCUS_NONE
+	_heritage_button.tooltip_text = "Outlines where real Miami buildings on offer as Heritage Projects stood. Always shown while building."
+	_heritage_button.toggled.connect(_set_heritage)
+	col.add_child(_heritage_button)
 	col.add_child(_label(14, "Demand"))
-	var demand := _label(12, "Demand bars come with building (1e).")
+	var demand := _label(12, "Demand bars come with enrollment (1h).")
 	demand.modulate = Color(1, 1, 1, 0.6)
 	col.add_child(demand)
 	col.add_child(_label(14, "Notifications"))
@@ -305,7 +356,60 @@ func _notify(text: String) -> void:
 
 
 func _toggle_tool(tool: String) -> void:
-	_host.SetLandTool("" if _host.GetLandTool() == tool else tool)
+	_build_popup.visible = false
+	_host.SetTool("" if _host.GetTool() == tool else tool)
+
+
+## Shows the buildings on offer now in one category ("" = all), or hides the list if it's already showing that.
+func _open_build_list(category: String) -> void:
+	if _build_popup.visible and _build_category == category:
+		_build_popup.visible = false
+		return
+	_build_category = category
+	_build_popup.visible = true
+	_fill_build_list()
+
+
+func _fill_build_list() -> void:
+	_build_refresh = 1.0
+	for child in _build_list.get_children():
+		child.queue_free()
+	var items: Array = _host.GetCatalog()
+	var shown := 0
+	var current: String = _host.GetBuildItem()
+	for item in items:
+		if _build_category != "" and item["group"] != _build_category:
+			continue
+		var b := Button.new()
+		b.text = "%s\n%s · %s tiles · %d months" % [item["name"], item["cost"], item["size"], roundi(item["months"])]
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.tooltip_text = item["description"]
+		b.focus_mode = Control.FOCUS_NONE
+		b.toggle_mode = true
+		b.set_pressed_no_signal(item["id"] == current)
+		if not item["affordable"]:
+			b.modulate = Color(1, 0.75, 0.7)
+			b.tooltip_text += "\nNot enough money yet."
+		var id: String = item["id"]
+		b.pressed.connect(func(): _pick_building(id))
+		_build_list.add_child(b)
+		shown += 1
+	_build_title.text = (_build_category if _build_category != "" else "Buildings") + " · %d on offer" % shown
+	if shown == 0:
+		var none := _label(12, "Nothing in this category in this era yet.")
+		none.modulate = Color(1, 1, 1, 0.6)
+		_build_list.add_child(none)
+
+
+func _pick_building(id: String) -> void:
+	_build_popup.visible = false
+	_host.SetBuildItem(id)
+
+
+func _set_heritage(on: bool) -> void:
+	_host.SetShowHeritage(on)
+	_settings.set_value("view", "heritage_sites", on)
+	_settings.save(SETTINGS_PATH)
 
 
 func _set_day_night(on: bool) -> void:

@@ -12,6 +12,7 @@ public sealed class RenderingConfig
     public GroundSection Ground { get; init; } = new();
     public TerrainSection Terrain { get; init; } = new();
     public ExtrusionSection Extrusion { get; init; } = new();
+    public PlacementSection Placement { get; init; } = new();
     public SunSection Sun { get; init; } = new();
 
     public sealed class CrowdSection
@@ -83,6 +84,19 @@ public sealed class RenderingConfig
         public string UndatedCampusColor { get; init; } = "";
         public string TownColor { get; init; } = "";
         public string ApproximateSiteColor { get; init; } = "";
+    }
+
+    public sealed class PlacementSection
+    {
+        public string GhostOkColor { get; init; } = "";
+        public string GhostBadColor { get; init; } = "";
+        public float GhostOpacity { get; init; }
+        public string EntranceColor { get; init; } = "";
+        public string ConstructionColor { get; init; } = "";
+        public string HeritageSiteColor { get; init; } = "";
+        public float HeritageSiteOpacity { get; init; }
+        public float HeritageSiteHeightM { get; init; }
+        public float WoodenHeightM { get; init; }
     }
 
     public sealed class SunSection

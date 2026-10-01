@@ -140,7 +140,15 @@ public sealed class BuildingDef
     public string Name { get; init; } = "";
     public string Category { get; init; } = "";
     public FootprintSize Footprint { get; init; } = new();
+    /// <summary>Modern dollars (× the era's price multiplier); null = can't be built new (landmark / Heritage Project only).</summary>
+    public double? CostUsd { get; init; }
     public CapacityInfo Capacity { get; init; } = new();
+    public string Style { get; init; } = "";
+    public string UnlockEra { get; init; } = "";
+    /// <summary>First era in which it's no longer offered (era-specific buildings), or null.</summary>
+    public string? RetireEra { get; init; }
+    /// <summary>Overrides the size-class construction time (placement.json).</summary>
+    public double? ConstructionMonths { get; init; }
     public string[] NeedsServed { get; init; } = [];
 
     public sealed class FootprintSize

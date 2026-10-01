@@ -64,6 +64,11 @@ public sealed class EraTable
         Eras.FirstOrDefault(e => year >= e.StartYear && (e.EndYear is null || year <= e.EndYear))
         ?? (year < Eras[0].StartYear ? Eras[0] : Eras[^1]);
 
+    /// <summary>Position of an era in the table (eras are in time order), or -1.</summary>
+    public int IndexOf(string id) => Array.FindIndex(Eras, e => e.Id == id);
+
+    public int IndexAt(int year) => Array.IndexOf(Eras, At(year));
+
     public static EraTable Load(IDataSource source) => SimJson.Parse<EraTable>(source.ReadText("eras.json"), "eras.json");
 }
 

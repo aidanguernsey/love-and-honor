@@ -1,0 +1,24 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "1820s catalogue (Phase 1 1e). Placeholder numbers. Old Main-style main building. Built only as a Heritage Project (cost null); footprint here is nominal, the project uses the real outline.",
+  "id": "college_building",
+  "name": "College Building",
+  "category": "academic",
+  "footprint": {
+    "w": 4,
+    "h": 6
+  },
+  "cost_usd": null,
+  "upkeep_usd_per_year": 8000,
+  "capacity": {
+    "kind": "seats",
+    "value": 200
+  },
+  "style": "georgian_revival",
+  "unlock_era": "founding",
+  "needs_served": [
+    "study"
+  ],
+  "model": null,
+  "design_ref": "§25.1"
+}

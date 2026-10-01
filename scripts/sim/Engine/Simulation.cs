@@ -20,7 +20,7 @@ public readonly record struct TickStats(
     bool FieldsSwapped,
     double FieldSwapWaitMs);
 
-/// <summary>A change to one tile's walking surface (paths laid or removed). Buildings come with placement (1e).</summary>
+/// <summary>A change to one tile: walking surface (paths laid or removed, land cleared) or a building's footprint (1e).</summary>
 public readonly record struct TileEdit(int Tile, TileType Type);
 
 /// <summary>
@@ -86,11 +86,17 @@ public sealed class Simulation
 
     /// <summary>The land layer and money (Phase 1 1d), or null for worlds without land actions (benchmarks, Spike A).</summary>
     public LandSystem? Land { get; }
+    /// <summary>Building placement and construction (Phase 1 1e), or null.</summary>
+    public PlacementSystem? Placement { get; }
+    private readonly Campus _campus;
 
     public Simulation(SimData data, Campus campus, FlowFieldSet fields, PopulationStore population, RngStreams rng,
-        int? threads = null, int? chunkSize = null, DateOnly? startDate = null, LandSystem? land = null)
+        int? threads = null, int? chunkSize = null, DateOnly? startDate = null, LandSystem? land = null,
+        PlacementSystem? placement = null)
     {
         Land = land;
+        Placement = placement;
+        _campus = campus;
         _pop = population;
         _fields = fields;
         _grid = campus.Grid;
@@ -124,25 +130,50 @@ public sealed class Simulation
     public int RebuildApplyTick => _rebuildApplyTick;
 
     /// <summary>
-    /// Changes walking surfaces (Grass ↔ Path) on the sim thread, between ticks. Walkers keep using the current flow
-    /// fields; the rebuilt ones (computed in the background) are swapped in exactly pathing_rebuild_latency_ticks
-    /// later, waiting if needed, so the outcome never depends on timing.
+    /// Changes tiles on the sim thread, between ticks: walking surfaces (Grass/Rough/Path) and building footprints
+    /// (construction sites, 1e). Water never changes. Walkers keep using the current flow fields; the rebuilt ones
+    /// (computed in the background) are swapped in exactly pathing_rebuild_latency_ticks later, waiting if needed, so
+    /// the outcome never depends on timing.
     /// </summary>
     public void ApplyTileEdits(ReadOnlySpan<TileEdit> edits)
     {
         if (edits.IsEmpty) return;
+        bool any = false;
         foreach (var e in edits)
         {
-            if (e.Type is not (TileType.Grass or TileType.Rough or TileType.Path))
-                throw new ArgumentException("Only walking-surface edits (Grass/Rough/Path) are supported (buildings come with placement).");
-            if (_grid.Types[e.Tile] is not (TileType.Grass or TileType.Rough or TileType.Path) || _grid.Types[e.Tile] == e.Type) continue;
+            if (e.Type == TileType.Water) throw new ArgumentException("Tiles can't be turned into water.");
+            if (_grid.Types[e.Tile] == TileType.Water || _grid.Types[e.Tile] == e.Type) continue;
             _grid.Types[e.Tile] = e.Type;
             _grid.MarkChanged();
             _changedTiles.Add(e.Tile);
+            any = true;
         }
-        if (_changedTiles.Count == 0) return;
+        if (any) StartRebuild();
+    }
+
+    /// <summary>Recomputes flow fields in the background for the map and buildings as they are now; swapped in at a fixed tick.</summary>
+    private void StartRebuild()
+    {
         _fields.BeginRebuild(_changedTiles);
         _rebuildApplyTick = Time.Tick + _rebuildLatency;
+    }
+
+    /// <summary>
+    /// A finished construction site joins the campus (1e): the next building index, its footprint tiles, and its own
+    /// flow field (built in the background like any map edit). Nobody is assigned to it until enrollment and
+    /// schedules use new buildings (1h).
+    /// </summary>
+    private void AddFinishedBuilding(ConstructionSite site)
+    {
+        var w = _grid.Width;
+        var index = (short)_campus.Buildings.Count;
+        int minX = site.Tiles.Min(t => t % w), maxX = site.Tiles.Max(t => t % w), minY = site.Tiles.Min(t => t / w), maxY = site.Tiles.Max(t => t / w);
+        _campus.Add(new CampusBuilding
+        {
+            Index = index, DefId = site.Item.Def.Id, Kind = CampusBuilding.KindForCategory(site.Item.Category),
+            X = minX, Y = minY, W = maxX - minX + 1, H = maxY - minY + 1, EntranceTile = site.Entrance,
+        });
+        Placement!.Finish(site, index, Time.Date);
     }
 
     private void UsePaths(FlowFieldData data)
@@ -178,16 +209,37 @@ public sealed class Simulation
         if (edits.Count > 0) ApplyTileEdits(edits.ToArray());
     }
 
+    /// <summary>Applies queued build / cancel orders now (sim thread, between ticks; also used while paused).</summary>
+    public void ApplyPlacementCommands()
+    {
+        if (Placement is null || !Placement.HasPendingCommands) return;
+        var edits = Placement.ApplyCommands(Time.Date);
+        if (edits.Count > 0) ApplyTileEdits(edits.ToArray());
+    }
+
+    /// <summary>Land orders first, then building orders (a building may go on land cleared or bought just before).</summary>
+    public void ApplyPendingCommands()
+    {
+        ApplyLandCommands();
+        ApplyPlacementCommands();
+    }
+
     public void Tick()
     {
         long t0 = Stopwatch.GetTimestamp();
-        if (Land is not null)
+        ApplyPendingCommands();
+        if (Time.HourOfDay == 0)
         {
-            ApplyLandCommands();
-            if (Time.HourOfDay == 0)
+            if (Land is not null)
             {
                 var edits = Land.DailyUpdate(Time.Date, Time.Day);
                 if (edits.Count > 0) ApplyTileEdits(edits.ToArray());
+            }
+            if (Placement is not null)
+            {
+                var finished = Placement.DailyUpdate(Time.Date);
+                foreach (var site in finished) AddFinishedBuilding(site);
+                if (finished.Count > 0) StartRebuild();
             }
         }
         bool swapped = false;

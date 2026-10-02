@@ -1,6 +1,7 @@
 # Open questions for Aidan
 
-Collected while working through the Phase 1 checkpoints back-to-back (from 2026-10-02). Each question lists the
+Collected while working through the Phase 1 checkpoints back-to-back (from 2026-10-02). **All of 1e–1k are done**
+(see CLAUDE.md "Current phase" and the screenshots in `docs/images/`). Each question lists the
 **default I went with** so work could continue; every default is easy to change. Answer in any order: a short
 "yes / no / use X instead" per item is enough.
 
@@ -139,3 +140,16 @@ OK?
 
 **Q35 — after the chapter.** Winning shows a banner; "Keep playing" continues the same campus open-ended (Chapter 2
 doesn't exist yet). *Default:* as described.
+
+## 1k — Saves and time-lapse
+
+**Q36 — what counts as "a residence hall" for Chapter 1.** Right now any residence building does, including a
+$800 frame boarding house. §4.1 says "first residence hall (Elliott-style)". *Default:* any residence. Should only a
+brick hall (Elliott, or a future brick-hall type) count?
+
+**Q37 — autosaves.** One rolling autosave, overwritten at every move-in and spring term start, plus a quicksave and as
+many manual slots as you like. *Default:* as described. Keep a few older autosaves too?
+
+**Q38 — what the time-lapse shows.** Land (forest, cleared, town), ownership, roads and paths, and your buildings
+rising and finished, one frame per month. Not walkers or desire paths. GIF/MP4 export was cut to Phase 3 (approved).
+*Default:* as described.

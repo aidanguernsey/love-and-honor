@@ -19,5 +19,8 @@ public sealed class SimTime(DateOnly startDate)
 
     public void Advance() => Tick++;
 
+    /// <summary>Sets the clock when a save is loaded (§31).</summary>
+    public void Restore(int tick) => Tick = tick;
+
     public override string ToString() => $"{Date:yyyy-MM-dd} ({Date.DayOfWeek}) {HourOfDay:00}:00";
 }

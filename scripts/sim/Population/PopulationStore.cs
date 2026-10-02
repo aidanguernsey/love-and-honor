@@ -127,6 +127,46 @@ public sealed class PopulationStore
 
     public bool IsWalking(int agent, int gameMinute) => WalkArriveMinute[agent] > gameMinute;
 
+    // ---------------- saves (§31) ----------------
+
+    public void WriteState(BinaryWriter w)
+    {
+        w.Write(Count); w.Write(StudentCount); w.Write(_nextId);
+        int n = Count;
+        Engine.SaveIO.WriteArray(w, Id, n); Engine.SaveIO.WriteArray(w, Kind, n); Engine.SaveIO.WriteArray(w, Age, n);
+        Engine.SaveIO.WriteArray(w, Year, n); Engine.SaveIO.WriteArray(w, Department, n); Engine.SaveIO.WriteArray(w, Rank, n);
+        Engine.SaveIO.WriteArray(w, TeachingScore, n); Engine.SaveIO.WriteArray(w, ResearchScore, n); Engine.SaveIO.WriteArray(w, Housing, n);
+        Engine.SaveIO.WriteArray(w, Home, n); Engine.SaveIO.WriteArray(w, Dining, n); Engine.SaveIO.WriteArray(w, StudySpot, n);
+        Engine.SaveIO.WriteArray(w, SocialSpot, n); Engine.SaveIO.WriteArray(w, ExerciseSpot, n); Engine.SaveIO.WriteArray(w, Office, n);
+        Engine.SaveIO.WriteArray(w, WakeHour, n); Engine.SaveIO.WriteArray(w, BedHour, n); Engine.SaveIO.WriteArray(w, WeekendWakeHour, n);
+        Engine.SaveIO.WriteArray(w, ArriveHour, n); Engine.SaveIO.WriteArray(w, LeaveHour, n); Engine.SaveIO.WriteArray(w, SectionCount, n);
+        Engine.SaveIO.WriteArray(w, SectionBuilding, n * MaxSections); Engine.SaveIO.WriteArray(w, SectionDays, n * MaxSections);
+        Engine.SaveIO.WriteArray(w, SectionHour, n * MaxSections); Engine.SaveIO.WriteArray(w, Needs, n * NeedCount);
+        Engine.SaveIO.WriteArray(w, Happiness, n); Engine.SaveIO.WriteArray(w, CurrentBuilding, n); Engine.SaveIO.WriteArray(w, CurrentActivity, n);
+        Engine.SaveIO.WriteArray(w, WalkFrom, n); Engine.SaveIO.WriteArray(w, WalkTo, n);
+        Engine.SaveIO.WriteArray(w, WalkDepartMinute, n); Engine.SaveIO.WriteArray(w, WalkArriveMinute, n);
+    }
+
+    public void ReadState(BinaryReader r)
+    {
+        int count = r.ReadInt32();
+        if (count > Capacity) throw new InvalidDataException($"The save has {count:N0} people; this world has room for {Capacity:N0}.");
+        for (int a = count; a < Capacity; a++) Clear(a);
+        Count = count; StudentCount = r.ReadInt32(); _nextId = r.ReadInt32();
+        Engine.SaveIO.ReadArrayInto(r, Id); Engine.SaveIO.ReadArrayInto(r, Kind); Engine.SaveIO.ReadArrayInto(r, Age);
+        Engine.SaveIO.ReadArrayInto(r, Year); Engine.SaveIO.ReadArrayInto(r, Department); Engine.SaveIO.ReadArrayInto(r, Rank);
+        Engine.SaveIO.ReadArrayInto(r, TeachingScore); Engine.SaveIO.ReadArrayInto(r, ResearchScore); Engine.SaveIO.ReadArrayInto(r, Housing);
+        Engine.SaveIO.ReadArrayInto(r, Home); Engine.SaveIO.ReadArrayInto(r, Dining); Engine.SaveIO.ReadArrayInto(r, StudySpot);
+        Engine.SaveIO.ReadArrayInto(r, SocialSpot); Engine.SaveIO.ReadArrayInto(r, ExerciseSpot); Engine.SaveIO.ReadArrayInto(r, Office);
+        Engine.SaveIO.ReadArrayInto(r, WakeHour); Engine.SaveIO.ReadArrayInto(r, BedHour); Engine.SaveIO.ReadArrayInto(r, WeekendWakeHour);
+        Engine.SaveIO.ReadArrayInto(r, ArriveHour); Engine.SaveIO.ReadArrayInto(r, LeaveHour); Engine.SaveIO.ReadArrayInto(r, SectionCount);
+        Engine.SaveIO.ReadArrayInto(r, SectionBuilding); Engine.SaveIO.ReadArrayInto(r, SectionDays);
+        Engine.SaveIO.ReadArrayInto(r, SectionHour); Engine.SaveIO.ReadArrayInto(r, Needs);
+        Engine.SaveIO.ReadArrayInto(r, Happiness); Engine.SaveIO.ReadArrayInto(r, CurrentBuilding); Engine.SaveIO.ReadArrayInto(r, CurrentActivity);
+        Engine.SaveIO.ReadArrayInto(r, WalkFrom); Engine.SaveIO.ReadArrayInto(r, WalkTo);
+        Engine.SaveIO.ReadArrayInto(r, WalkDepartMinute); Engine.SaveIO.ReadArrayInto(r, WalkArriveMinute);
+    }
+
     /// <summary>Adds an agent at index Count with cleared fields (the caller fills in the rest). Returns its index.</summary>
     public int Add(AgentKind kind)
     {

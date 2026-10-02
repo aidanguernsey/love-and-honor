@@ -98,6 +98,18 @@ timeline, Wikipedia, Miami Archives (ArchivesSpace), Special Collections, The Mi
 County history (1882); everything `verified: false`. The 1824 start (20 students, 2 faculty + Bishop) matches the
 sources. HUD: event cards (pause; `--cards-no-pause` for tests), History Book (K; `--codex[=id]`), goals panel, ticker,
 chapter-end banner. Next: **1k** (save/load + time-lapse).
+**1k done (2026-10-02) — Phase 1 checkpoints 1a–1k all done; awaiting the user's review of 1e–1k and
+`docs/OPEN_QUESTIONS.md`.** Saves (§31, `Engine/SaveGame.cs`): "LHSV" + JSON header (name, scenario, in-game date,
+students, cash, UTC save time, exact flag; no personal data) + Deflate payload of marked sections; every system has
+`WriteState`/`ReadState` (grid layers, buildings added in play, population [0,Count), land + ledger, construction,
+enrollment, budget, campaign, time-lapse, RNG states). Restore = fresh `CreateScenario` of the header's scenario +
+state, then `Simulation.AfterRestore` (full flow-field build). Exact when no flow-field update is pending (saves wait for
+that at tick boundaries via `SimRunner.RunAtBoundary`; paused saves may be inexact): tested — a loaded game continues
+bit-identically. `StateHash` now hashes live agents only. Files in `user://saves/` (Windows: %APPDATA%\Godot\app_userdata\
+<project>\saves): quicksave (F5/F9), new slots (F6 panel), rolling autosave at move-in and spring term, PNG thumbnails;
+boot screen Continue / Load. Time-lapse (`Engine/Timelapse.cs`): keyframe + monthly tile deltas (land state, owner,
+surface, path surface, path class), replayed with a slider (T) via `MapRenderer.SetLiveLand`, `PathRenderer.Update(arrays)`
+and `SiteView.AsOf(date)`. GIF/MP4 export deferred (approved cut). ~170 KB per save in 1825.
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -184,6 +196,8 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
 - 1j: no History Book entry on the Miami people or the university's name yet: §20 limits that to university-published
   language until the Myaamia Center reviews it. Event effects and the generic events are invented (only the dated
   facts are sourced).
+- 1k: one rolling autosave slot; the time-lapse shows land, paths and the player's buildings (not walkers or desire
+  paths); a boarding house counts as the Chapter 1 "residence hall" (any residence building).
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 

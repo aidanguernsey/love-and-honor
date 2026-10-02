@@ -59,6 +59,21 @@ public sealed class Treasury(long startingCents)
         Cents += cents;
         Ledger.Add(new LedgerEntry(date, cents, reason, category));
     }
+
+    public void WriteState(BinaryWriter w)
+    {
+        w.Write(Cents);
+        w.Write(Ledger.Count);
+        foreach (var e in Ledger) { Engine.SaveIO.Write(w, e.Date); w.Write(e.Cents); w.Write(e.Reason); w.Write(e.Category); }
+    }
+
+    public void ReadState(BinaryReader r)
+    {
+        Cents = r.ReadInt64();
+        Ledger.Clear();
+        int n = r.ReadInt32();
+        for (int i = 0; i < n; i++) Ledger.Add(new LedgerEntry(Engine.SaveIO.ReadDate(r), r.ReadInt64(), r.ReadString(), r.ReadString()));
+    }
 }
 
 /// <summary>Land orders. Clear/Buy/RemovePath take a rectangle; Path a route from (X0, Y0) to (X1, Y1); PaveDesire the
@@ -155,6 +170,43 @@ public sealed class LandSystem
     /// <summary>The live map as path planning sees it (sim thread; call after foot traffic is synced).</summary>
     public PathMap LivePathMap() => new(_grid.Width, _grid.Height, _grid.TileSizeM, _grid.Types, _grid.LandState, _grid.Ownership,
         _grid.Protected, _clearing, _grid.Wear, _grid.PathType);
+
+    // ---------------- saves (§31) ----------------
+
+    public void WriteState(BinaryWriter w)
+    {
+        Engine.SaveIO.WriteArray(w, _clearing);
+        w.Write(_jobs.Count);
+        foreach (var j in _jobs) { Engine.SaveIO.WriteArray(w, j.Tiles.ToArray()); w.Write(j.Next); w.Write(j.Progress); }
+        w.Write(_lastGrowthDay);
+        Engine.SaveIO.WriteArray(w, _pathOn);
+        Engine.SaveIO.WriteArray(w, _pathSurface);
+        w.Write(TownRelationsPenalty);
+        w.Write(HeritageBonus);
+        Engine.SaveIO.WriteArray(w, SlantWalk.ToArray());
+        w.Write(Version);
+        Treasury.WriteState(w);
+    }
+
+    public void ReadState(BinaryReader r)
+    {
+        Engine.SaveIO.ReadArrayInto(r, _clearing);
+        _jobs.Clear();
+        int n = r.ReadInt32();
+        for (int i = 0; i < n; i++)
+        {
+            var job = new ClearingJob([.. Engine.SaveIO.ReadArray<int>(r)]) { Next = r.ReadInt32(), Progress = r.ReadDouble() };
+            _jobs.Add(job);
+        }
+        _lastGrowthDay = r.ReadInt32();
+        Engine.SaveIO.ReadArrayInto(r, _pathOn);
+        Engine.SaveIO.ReadArrayInto(r, _pathSurface);
+        TownRelationsPenalty = r.ReadDouble();
+        HeritageBonus = r.ReadDouble();
+        SlantWalk = Engine.SaveIO.ReadArray<int>(r);
+        Version = r.ReadInt32();
+        Treasury.ReadState(r);
+    }
 
     // ---------------- commands (any thread enqueues, sim thread applies) ----------------
 

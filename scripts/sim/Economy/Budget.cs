@@ -126,6 +126,36 @@ public sealed class BudgetSystem
         _fallEnrollment = _previousFallEnrollment = pop.StudentCount;
     }
 
+    public void WriteState(BinaryWriter w)
+    {
+        w.Write(Confidence); w.Write(TuitionLevel); w.Write(Dismissed); w.Write(Version);
+        Engine.SaveIO.Write(w, _fiscalStart); w.Write(_fallEnrollment); w.Write(_previousFallEnrollment);
+        w.Write(_lastYear is not null);
+        if (_lastYear is { } y)
+        {
+            w.Write(y.Title); Engine.SaveIO.Write(w, y.From); Engine.SaveIO.Write(w, y.To);
+            w.Write(y.Revenue); w.Write(y.Operating); w.Write(y.Capital); w.Write(y.Net);
+            w.Write(y.Lines.Length);
+            foreach (var l in y.Lines) { w.Write(l.Category); w.Write(l.Name); w.Write(l.Cents); }
+        }
+    }
+
+    public void ReadState(BinaryReader r)
+    {
+        Confidence = r.ReadDouble(); TuitionLevel = r.ReadDouble(); Dismissed = r.ReadBoolean(); Version = r.ReadInt32();
+        _fiscalStart = Engine.SaveIO.ReadDate(r); _fallEnrollment = r.ReadInt32(); _previousFallEnrollment = r.ReadInt32();
+        _lastYear = null;
+        if (r.ReadBoolean())
+        {
+            string title = r.ReadString(); var from = Engine.SaveIO.ReadDate(r); var to = Engine.SaveIO.ReadDate(r);
+            long revenue = r.ReadInt64(), operating = r.ReadInt64(), capital = r.ReadInt64(), net = r.ReadInt64();
+            var lines = new BudgetLine[r.ReadInt32()];
+            for (int i = 0; i < lines.Length; i++) lines[i] = new BudgetLine(r.ReadString(), r.ReadString(), r.ReadInt64());
+            _lastYear = new BudgetReport(title, from, to, lines, revenue, operating, capital, net);
+        }
+        _view = null;
+    }
+
     /// <summary>Applicants scale with price (§8.4): 1 − elasticity × (level − 1), at least 0.1.</summary>
     public double ApplicantFactor => Math.Max(0.1, 1 - _cfg.Tuition.Elasticity * (TuitionLevel - 1));
 

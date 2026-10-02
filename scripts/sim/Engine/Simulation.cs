@@ -94,6 +94,8 @@ public sealed class Simulation
     public Economy.BudgetSystem? Budget { get; }
     /// <summary>Events, History Book, advisors and goals (Phase 1 1j), or null.</summary>
     public CampaignSystem? Campaign { get; }
+    /// <summary>Monthly map recording for the time-lapse (Phase 1 1k), or null for worlds without land.</summary>
+    public TimelapseRecorder? Timelapse { get; }
     private readonly string _moveIn;
     private readonly bool _awayEnabled;
     private readonly Campus _campus;
@@ -104,6 +106,7 @@ public sealed class Simulation
         string moveInMonthDay = "08-19", CampaignSystem? campaign = null)
     {
         Campaign = campaign;
+        if (land is not null) Timelapse = new TimelapseRecorder(startDate ?? DateOnly.Parse(data.Spike.StartDate, System.Globalization.CultureInfo.InvariantCulture), campus.Grid, land.PathSurface);
         Budget = budget;
         _moveIn = moveInMonthDay;
         Land = land;
@@ -167,6 +170,20 @@ public sealed class Simulation
             any = true;
         }
         if (any) StartRebuild();
+    }
+
+    /// <summary>
+    /// After a save is restored (§31, 1k): flow fields rebuilt in full for the restored map and buildings (identical to
+    /// incrementally updated ones), any pending map change applied at once, the population's chunk count updated.
+    /// </summary>
+    public void AfterRestore()
+    {
+        SyncFootTraffic();
+        _fields.Build();
+        _changedTiles.Clear();
+        _rebuildApplyTick = -1;
+        UsePaths(_fields.Current);
+        _chunkCount = (_pop.Count + _chunkSize - 1) / _chunkSize;
     }
 
     /// <summary>Recomputes flow fields in the background for the map and buildings as they are now; swapped in at a fixed tick.</summary>
@@ -272,6 +289,7 @@ public sealed class Simulation
                 Campaign.DailyUpdate(Time.Date, review);
             }
             _chunkCount = (_pop.Count + _chunkSize - 1) / _chunkSize; // enrollment and events change the population
+            if (Time.Date.Day == 1 && Timelapse is not null && Land is not null) Timelapse.Record(Time.Date, _grid, Land.PathSurface);
         }
         bool swapped = false;
         double swapWait = 0;

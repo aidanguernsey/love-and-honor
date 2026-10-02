@@ -107,6 +107,24 @@ public sealed class SimRunner : IDisposable
     private int _trafficRequested;
     private int _commandsPending;
     private readonly System.Collections.Concurrent.ConcurrentQueue<string> _messages = new();
+    private readonly System.Collections.Concurrent.ConcurrentQueue<Func<bool, bool>> _boundaryActions = new();
+
+    /// <summary>
+    /// Main thread: runs <paramref name="action"/> on the sim thread between ticks (saves, §31). It gets "paused" (no ticks
+    /// pending) and returns false to be tried again at the next boundary (e.g. to wait for an exact save point).
+    /// </summary>
+    public void RunAtBoundary(Func<bool, bool> action)
+    {
+        _boundaryActions.Enqueue(action);
+        _signal.Set();
+    }
+
+    private void RunBoundaryActions(bool paused)
+    {
+        int n = _boundaryActions.Count;
+        for (int i = 0; i < n && _boundaryActions.TryDequeue(out var action); i++)
+            if (!action(paused)) _boundaryActions.Enqueue(action);
+    }
 
     /// <summary>Main thread: the next message for the player (land orders and their results), if any. Not part of the
     /// snapshot, so none are lost when the renderer skips snapshots.</summary>
@@ -233,6 +251,7 @@ public sealed class SimRunner : IDisposable
             int n = Interlocked.Exchange(ref _pendingTicks, 0);
             if (n == 0)
             {
+                RunBoundaryActions(paused: true);
                 if (Interlocked.Exchange(ref _commandsPending, 0) == 1)
                 {
                     _sim.ApplyPendingCommands();
@@ -241,7 +260,11 @@ public sealed class SimRunner : IDisposable
                 continue;
             }
             Interlocked.Exchange(ref _commandsPending, 0); // ticks apply queued commands themselves
-            for (int i = 0; i < n && !_stop; i++) TickOnce();
+            for (int i = 0; i < n && !_stop; i++)
+            {
+                TickOnce();
+                if (!_boundaryActions.IsEmpty) RunBoundaryActions(paused: false);
+            }
             Publish();
         }
     }

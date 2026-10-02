@@ -183,6 +183,40 @@ public sealed class CampaignSystem
         foreach (var e in content.Events) if (e.FixedDate is { } d && d < start) _fired.Add(e.Id);
     }
 
+    public void WriteState(BinaryWriter w)
+    {
+        w.WriteStrings(_fired.Order(StringComparer.Ordinal));
+        w.WriteStrings(_unlocked.Order(StringComparer.Ordinal));
+        w.Write(_named.Count);
+        foreach (var (k, v) in _named.OrderBy(kv => kv.Key, StringComparer.Ordinal)) { w.Write(k); w.Write(v); }
+        w.Write(_advisorLast.Count);
+        foreach (var (k, v) in _advisorLast.OrderBy(kv => kv.Key, StringComparer.Ordinal)) { w.Write(k); w.Write(v); }
+        w.Write(_cards.Count);
+        foreach (var c in _cards) { w.Write(c.Seq); w.Write(c.Id); w.Write(c.Title); w.Write(c.Text); w.Write(c.Date); w.Write(c.DatePrecision); w.Write(c.Historical); }
+        w.Write(_seq); w.Write(_badReviews); w.Write((byte)Outcome); w.Write(_outcomeText); w.Write(Version);
+        var (a, b, c2, d) = _random.State;
+        w.Write(a); w.Write(b); w.Write(c2); w.Write(d);
+    }
+
+    public void ReadState(BinaryReader r)
+    {
+        _fired.Clear(); foreach (var s in r.ReadStrings()) _fired.Add(s);
+        _unlocked.Clear(); foreach (var s in r.ReadStrings()) _unlocked.Add(s);
+        _named.Clear(); for (int i = r.ReadInt32(); i > 0; i--) _named[r.ReadString()] = r.ReadInt32();
+        _advisorLast.Clear(); for (int i = r.ReadInt32(); i > 0; i--) _advisorLast[r.ReadString()] = r.ReadDate();
+        _cards.Clear();
+        for (int i = r.ReadInt32(); i > 0; i--)
+        {
+            int seq = r.ReadInt32(); string id = r.ReadString(), title = r.ReadString(), text = r.ReadString();
+            var date = r.ReadDate(); string precision = r.ReadString(); bool historical = r.ReadBoolean();
+            var def = _content.Events.FirstOrDefault(e => e.Id == id);
+            _cards.Add(new EventCard(seq, id, title, text, date, precision, historical, def?.Codex ?? [], def?.Sources ?? []));
+        }
+        _seq = r.ReadInt32(); _badReviews = r.ReadInt32(); Outcome = (CampaignOutcome)r.ReadByte(); _outcomeText = r.ReadString(); Version = r.ReadInt32();
+        _random.State = (r.ReadUInt64(), r.ReadUInt64(), r.ReadUInt64(), r.ReadUInt64());
+        _view = null;
+    }
+
     public List<string> TakeMessages()
     {
         var m = new List<string>(_messages);

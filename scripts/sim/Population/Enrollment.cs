@@ -109,6 +109,22 @@ public sealed class EnrollmentSystem
 
     public EnrollmentConfig Config => _cfg;
 
+    public void WriteState(BinaryWriter w)
+    {
+        w.Write(Alumni); w.Write(Scholarship); w.Write(Version); w.Write(ApplicantBoost); w.Write(TownBoardingMultiplier);
+        w.Write(_lastApplicants); w.Write(_lastAdmitted); w.Write(_lastIntake); w.Write(_lastGraduates); w.Write(_lastLeavers);
+        var (a, b, c, d) = _random.State;
+        w.Write(a); w.Write(b); w.Write(c); w.Write(d);
+    }
+
+    public void ReadState(BinaryReader r)
+    {
+        Alumni = r.ReadInt32(); Scholarship = r.ReadDouble(); Version = r.ReadInt32(); ApplicantBoost = r.ReadDouble(); TownBoardingMultiplier = r.ReadDouble();
+        _lastApplicants = r.ReadInt32(); _lastAdmitted = r.ReadInt32(); _lastIntake = r.ReadInt32(); _lastGraduates = r.ReadInt32(); _lastLeavers = r.ReadInt32();
+        _random.State = (r.ReadUInt64(), r.ReadUInt64(), r.ReadUInt64(), r.ReadUInt64());
+        _view = null;
+    }
+
     public List<string> TakeMessages()
     {
         var m = new List<string>(_messages);

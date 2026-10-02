@@ -11,4 +11,7 @@ namespace LoveAndHonor.Bridge;
 public partial class SimBridge : Node
 {
     public string GetSimDescription() => SimInfo.Describe();
+
+    /// <summary>Saved games for the boot screen (§31), newest first.</summary>
+    public Godot.Collections.Array<Godot.Collections.Dictionary> ListSaves() => GameHost.ListSaves();
 }

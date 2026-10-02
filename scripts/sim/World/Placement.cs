@@ -348,7 +348,18 @@ public sealed class ConstructionSite
 
 /// <summary>Read-only view of one site for the UI (snapshot).</summary>
 public sealed record SiteView(int Id, string ItemId, string Name, string Category, Pose Pose, int W, int H, int Entrance,
-    float Progress, bool Complete, bool OnHeritageSite, DateOnly EstimatedFinish);
+    float Progress, bool Complete, bool OnHeritageSite, DateOnly EstimatedFinish, DateOnly Ordered)
+{
+    /// <summary>The site as it was on <paramref name="date"/> (time-lapse, 1k), or null if not yet ordered.</summary>
+    public SiteView? AsOf(DateOnly date)
+    {
+        if (date < Ordered) return null;
+        if (date >= EstimatedFinish && Complete) return this;
+        if (date >= EstimatedFinish) return this with { Progress = Math.Min(Progress, 0.99f) };
+        float span = Math.Max(1, EstimatedFinish.DayNumber - Ordered.DayNumber);
+        return this with { Complete = false, Progress = Math.Clamp((date.DayNumber - Ordered.DayNumber) / span, 0f, 0.99f) };
+    }
+}
 
 /// <summary>Everything the UI needs about placement, immutable (published in snapshots when it changes).</summary>
 public sealed record PlacementView(int Version, SiteView[] Sites, int[] SortedEntrances, string[] HeritageTaken, double HeritageBonus);
@@ -405,6 +416,48 @@ public sealed class PlacementSystem
         return m;
     }
 
+    // ---------------- saves (§31) ----------------
+
+    public void WriteState(BinaryWriter w)
+    {
+        w.Write(_sites.Count);
+        foreach (var s in _sites)
+        {
+            w.Write(s.Id); w.Write(s.Item.Id);
+            w.Write(s.Pose.CxHalf); w.Write(s.Pose.CyHalf); w.Write(s.Pose.RotationDeg);
+            Engine.SaveIO.WriteArray(w, s.Tiles);
+            w.Write(s.Entrance); w.Write(s.CostCents); w.Write(s.WorkDays); Engine.SaveIO.Write(w, s.Ordered); w.Write(s.OnHeritageSite);
+            w.Write(s.DoneDays); w.Write(s.CampusIndex); w.Write(s.Finished.HasValue); if (s.Finished is { } f) Engine.SaveIO.Write(w, f);
+        }
+        Engine.SaveIO.WriteStrings(w, _heritageTaken.Order(StringComparer.Ordinal));
+        w.Write(_nextSiteId); w.Write(HeritageBonus); w.Write(Version); Engine.SaveIO.Write(w, _today);
+    }
+
+    public void ReadState(BinaryReader r)
+    {
+        _sites.Clear();
+        int n = r.ReadInt32();
+        for (int i = 0; i < n; i++)
+        {
+            int id = r.ReadInt32(); string item = r.ReadString();
+            var pose = new Pose(r.ReadInt32(), r.ReadInt32(), r.ReadInt32());
+            var site = new ConstructionSite
+            {
+                Id = id, Item = Catalog.Find(item) ?? throw new InvalidDataException($"Save names unknown building '{item}'."), Pose = pose,
+                Tiles = Engine.SaveIO.ReadArray<int>(r), Entrance = r.ReadInt32(), CostCents = r.ReadInt64(), WorkDays = r.ReadDouble(),
+                Ordered = Engine.SaveIO.ReadDate(r), OnHeritageSite = r.ReadBoolean(),
+            };
+            site.DoneDays = r.ReadDouble();
+            site.CampusIndex = r.ReadInt16();
+            if (r.ReadBoolean()) site.Finished = Engine.SaveIO.ReadDate(r);
+            _sites.Add(site);
+        }
+        _heritageTaken.Clear();
+        foreach (var h in Engine.SaveIO.ReadStrings(r)) _heritageTaken.Add(h);
+        _nextSiteId = r.ReadInt32(); HeritageBonus = r.ReadDouble(); Version = r.ReadInt32(); _today = Engine.SaveIO.ReadDate(r);
+        _view = null;
+    }
+
     /// <summary>The live map as a placement check sees it (sim thread).</summary>
     public PlacementMap LiveMap() => new(_grid.Width, _grid.Height, _grid.TileSizeM, _grid.Types, _grid.LandState, _grid.Ownership,
         _grid.Protected, _land.Clearing, _heights, Entrances());
@@ -421,7 +474,7 @@ public sealed class PlacementSystem
         if (_view is { } v && v.Version == Version) return v;
         var cfg = Catalog.Config;
         var sites = _sites.Select(s => new SiteView(s.Id, s.Item.Id, s.Item.Name, s.Item.Category, s.Pose, s.Item.W, s.Item.H, s.Entrance,
-            s.Progress, s.Complete, s.OnHeritageSite, s.Finished ?? EstimateFinish(cfg, _today, s.WorkDays - s.DoneDays))).ToArray();
+            s.Progress, s.Complete, s.OnHeritageSite, s.Finished ?? EstimateFinish(cfg, _today, s.WorkDays - s.DoneDays), s.Ordered)).ToArray();
         return _view = new PlacementView(Version, sites, Entrances(), [.. _heritageTaken.Order(StringComparer.Ordinal)], HeritageBonus);
     }
 

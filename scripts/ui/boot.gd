@@ -35,6 +35,7 @@ func _ready() -> void:
 	_spike_a.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/spikes/population_spike.tscn"))
 	_spike_b.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/spikes/terrain_spike.tscn"))
 	_art_test.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/spikes/art_import_test.tscn"))
+	_add_save_buttons()
 	_kit_test.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/spikes/building_kit_test.tscn"))
 
 	if "--smoke-test" in OS.get_cmdline_user_args():
@@ -44,6 +45,45 @@ func _ready() -> void:
 	elif "--play" in OS.get_cmdline_user_args():
 		# Straight into the game (exported release builds can't take a scene path on the command line).
 		_start_game.call_deferred("chapter1_the_hill")
+
+
+## Saved games (§31): "Continue" loads the newest; "Load a saved game" lists them all.
+func _add_save_buttons() -> void:
+	var saves: Array = _bridge.ListSaves()
+	if saves.is_empty():
+		return
+	var box := _play.get_parent()
+	var latest: Dictionary = saves[0]
+	var cont := Button.new()
+	cont.text = "Continue — %s, %s (%s)" % [latest["name"], latest["date"], latest["scenario"]]
+	cont.custom_minimum_size = Vector2(320, 48)
+	cont.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	cont.pressed.connect(func(): _load(latest["path"]))
+	box.add_child(cont)
+	box.move_child(cont, _play.get_index())
+	var load := Button.new()
+	load.text = "Load a saved game…"
+	load.custom_minimum_size = Vector2(320, 40)
+	load.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	box.add_child(load)
+	box.move_child(load, _play.get_index())
+	var list := VBoxContainer.new()
+	list.visible = false
+	box.add_child(list)
+	box.move_child(list, _play.get_index())
+	load.pressed.connect(func(): list.visible = not list.visible)
+	for s in saves:
+		var b := Button.new()
+		b.text = "%s — %s · %d students · %s · saved %s" % [s["name"], s["date"], s["students"], s["cash"], s["saved_at"]]
+		b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		var path: String = s["path"]
+		b.pressed.connect(func(): _load(path))
+		list.add_child(b)
+
+
+func _load(path: String) -> void:
+	get_tree().root.set_meta("load_save", path)
+	get_tree().change_scene_to_file("res://scenes/game/game.tscn")
 
 
 ## Scenario ids are data/scenarios/<id>.json; the game scene reads the choice from the root's "scenario" meta

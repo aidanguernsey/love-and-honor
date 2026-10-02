@@ -2,10 +2,12 @@ extends CanvasLayer
 ## Main HUD (§27.1), Phase 1 checkpoints 1c–1e. Systems that don't exist yet show "—" with a tooltip saying which
 ## checkpoint brings them. Keys (§27.5): Space pause/resume · 1–4 speed (1×/2×/4×/8×) · 5 skip to next event (reserved)
 ## · O overlays · G build grid · C clear forest · L buy land · P lay path · Shift+P remove path · V pave a desire path
+## · F5 quicksave · F6 save/load · F9 quickload · T time-lapse
 ## · B build menu · Z/X turn the building · Del cancel
 ## construction · H Heritage sites · N day/night cycle · Esc stop tool / close menu / main menu.
 ## The day/night and Heritage-site settings are remembered in user://settings.cfg (`--day-night=on|off` overrides
-## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs), `--build-menu` (open the build list), `--budget` (open the budget), `--codex` (open the History Book).
+## the first for one run). Testing: `--save-after=S` (quicksave after S s), `--timelapse-after=S` (play the time-lapse),
+## `--load=user://saves/<file>.lhsave` (GameHost). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs), `--build-menu` (open the build list), `--budget` (open the budget), `--codex` (open the History Book).
 ## Launch options (after `--`; start from the boot scene with `--play`): `--speed=N` (0–4), `--camera=...` (see camera_rig.gd), `--game-smoke[=seconds]`
 ## (print GAME_SMOKE stats once the sim has run that long, then quit), `--screenshot=<file.png>` (with --game-smoke).
 
@@ -51,6 +53,16 @@ var _codex_list: VBoxContainer
 var _codex_text: Label
 var _outcome_shown := false
 var _codex_refresh := 0.0
+var _saves_panel: PanelContainer
+var _saves_list: VBoxContainer
+var _timelapse_bar: PanelContainer
+var _timelapse_slider: HSlider
+var _timelapse_label: Label
+var _timelapse_play: Button
+var _timelapse_playing := false
+var _timelapse_clock := 0.0
+var _test_clock := 0.0  # --save-after / --timelapse-after (testing, screenshots)
+var _test_done := {}
 var _codex_selected := ""
 var _outcome_buttons: HBoxContainer
 var _category_buttons := {}
@@ -80,6 +92,7 @@ func _ready() -> void:
 	_build_ticker()
 	_build_budget_panel()
 	_build_card_and_codex()
+	_build_saves_and_timelapse()
 	_loading_label = _label(22, "Loading…")
 	_anchor(_loading_label, 0.5, 0.5, 0.5, 0.5)
 	_loading_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -117,6 +130,7 @@ func _process(delta: float) -> void:
 	if not _started:
 		_started = true
 		_host.SetSpeedIndex(_start_speed)
+		_card_seq = hud["card_seq"]  # cards from before a loaded save aren't shown again
 		if "--build-menu" in OS.get_cmdline_user_args(): _open_build_list("")  # screenshots
 		if "--budget" in OS.get_cmdline_user_args(): _toggle_budget()  # screenshots
 		for arg in OS.get_cmdline_user_args():  # screenshots: --codex or --codex=<entry id>
@@ -139,6 +153,22 @@ func _process(delta: float) -> void:
 	if _budget_panel.visible:
 		_budget_label.text = hud["budget"]
 		_tuition_label.text = hud["tuition"]
+	_test_clock += delta
+	for arg in OS.get_cmdline_user_args():
+		for key in ["--save-after=", "--timelapse-after="]:
+			if arg.begins_with(key) and not _test_done.has(key) and _test_clock >= float(arg.trim_prefix(key)):
+				_test_done[key] = true
+				if key == "--save-after=": _host.SaveToSlot("quicksave")
+				else:
+					_toggle_timelapse()
+					_timelapse_slider.value = 0
+					_set_timelapse_playing(true)
+	if _timelapse_playing:
+		_timelapse_clock -= delta
+		if _timelapse_clock <= 0.0:
+			_timelapse_clock = 0.12
+			if _timelapse_slider.value >= _timelapse_slider.max_value: _set_timelapse_playing(false)
+			else: _timelapse_slider.value += 1
 	if _codex_panel.visible:
 		_codex_refresh -= delta
 		if _codex_refresh <= 0.0: _fill_codex()
@@ -220,9 +250,15 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_H: _heritage_button.button_pressed = not _heritage_button.button_pressed
 		KEY_Y: _toggle_budget()
 		KEY_K: _toggle_codex()
+		KEY_F5: _host.SaveToSlot("quicksave")
+		KEY_F6: _toggle_saves()
+		KEY_F9: _host.Quickload()
+		KEY_T: _toggle_timelapse()
 		KEY_N: _day_night_button.button_pressed = not _day_night_button.button_pressed
 		KEY_ESCAPE:
-			if _card_panel.visible: _close_card()
+			if _host.GetTimelapse(): _toggle_timelapse()
+			elif _saves_panel.visible: _saves_panel.visible = false
+			elif _card_panel.visible: _close_card()
 			elif _codex_panel.visible: _codex_panel.visible = false
 			elif _budget_panel.visible: _budget_panel.visible = false
 			elif _build_popup.visible: _build_popup.visible = false
@@ -511,6 +547,107 @@ func _build_card_and_codex() -> void:
 func _opaque(panel: PanelContainer) -> void:
 	var style: StyleBoxFlat = panel.get_theme_stylebox("panel")
 	style.bg_color.a = 0.97
+
+
+func _build_saves_and_timelapse() -> void:
+	# Save / load (§31).
+	_saves_panel = _panel()
+	_anchor(_saves_panel, 0.5, 0.5, 0.5, 0.5)
+	_saves_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_saves_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_saves_panel.visible = false
+	_opaque(_saves_panel)
+	var col := VBoxContainer.new()
+	col.custom_minimum_size = Vector2(560, 0)
+	_saves_panel.add_child(col)
+	col.add_child(_label(18, "Save / load (F6)"))
+	var row := HBoxContainer.new()
+	for spec in [["Save in a new slot", ""], ["Quicksave (F5)", "quicksave"]]:
+		var b := Button.new()
+		b.text = spec[0]
+		b.focus_mode = Control.FOCUS_NONE
+		var slot: String = spec[1]
+		b.pressed.connect(func():
+			_host.SaveToSlot(slot)
+			_saves_panel.visible = false)
+		row.add_child(b)
+	col.add_child(row)
+	col.add_child(_label(13, "Load:"))
+	_saves_list = VBoxContainer.new()
+	col.add_child(_saves_list)
+	var close := Button.new()
+	close.text = "Close (F6 / Esc)"
+	close.focus_mode = Control.FOCUS_NONE
+	close.pressed.connect(_toggle_saves)
+	col.add_child(close)
+
+	# Time-lapse (§5.1b): scrub or play the campus month by month.
+	_timelapse_bar = _panel()
+	_anchor(_timelapse_bar, 0.2, 1, 0.8, 1, 0, -60, 0, -60)
+	_timelapse_bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_timelapse_bar.visible = false
+	var trow := HBoxContainer.new()
+	trow.add_theme_constant_override("separation", 10)
+	_timelapse_bar.add_child(trow)
+	_timelapse_play = Button.new()
+	_timelapse_play.text = "Play"
+	_timelapse_play.focus_mode = Control.FOCUS_NONE
+	_timelapse_play.pressed.connect(func(): _set_timelapse_playing(not _timelapse_playing))
+	trow.add_child(_timelapse_play)
+	_timelapse_slider = HSlider.new()
+	_timelapse_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_timelapse_slider.focus_mode = Control.FOCUS_NONE
+	_timelapse_slider.step = 1
+	_timelapse_slider.value_changed.connect(func(v):
+		_host.SetTimelapseFrame(int(v))
+		_timelapse_label.text = _host.GetTimelapseLabel())
+	trow.add_child(_timelapse_slider)
+	_timelapse_label = _label(14)
+	_timelapse_label.custom_minimum_size = Vector2(330, 0)
+	trow.add_child(_timelapse_label)
+	var back := Button.new()
+	back.text = "Back to today (T)"
+	back.focus_mode = Control.FOCUS_NONE
+	back.pressed.connect(_toggle_timelapse)
+	trow.add_child(back)
+
+
+func _toggle_saves() -> void:
+	_saves_panel.visible = not _saves_panel.visible
+	if not _saves_panel.visible:
+		return
+	for child in _saves_list.get_children():
+		child.queue_free()
+	var saves: Array = _host.GetSaves()
+	if saves.is_empty():
+		_saves_list.add_child(_label(12, "No saved games yet."))
+	for s in saves:
+		var b := Button.new()
+		b.text = "%s — %s · %d students · %s · saved %s" % [s["name"], s["date"], s["students"], s["cash"], s["saved_at"]]
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.focus_mode = Control.FOCUS_NONE
+		var path: String = s["path"]
+		b.pressed.connect(func(): _host.LoadSave(path))
+		_saves_list.add_child(b)
+
+
+func _toggle_timelapse() -> void:
+	var on: bool = not _host.GetTimelapse()
+	_host.SetTimelapse(on)
+	_timelapse_bar.visible = _host.GetTimelapse()
+	if _timelapse_bar.visible:
+		_timelapse_slider.max_value = _host.GetTimelapseFrames()
+		_timelapse_slider.set_value_no_signal(_host.GetTimelapseFrames())
+		_timelapse_label.text = _host.GetTimelapseLabel()
+	else:
+		_set_timelapse_playing(false)
+
+
+func _set_timelapse_playing(on: bool) -> void:
+	_timelapse_playing = on
+	_timelapse_play.text = "Pause" if on else "Play"
+	if on and _timelapse_slider.value >= _timelapse_slider.max_value:
+		_timelapse_slider.value = 0
 
 
 func _show_card(hud: Dictionary) -> void:

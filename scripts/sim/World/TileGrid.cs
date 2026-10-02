@@ -112,6 +112,32 @@ public sealed class TileGrid
         return n;
     }
 
+    /// <summary>Saves the layers that change in play (§31). Protected areas come from the map and don't change.</summary>
+    public void WriteState(BinaryWriter w)
+    {
+        Engine.SaveIO.WriteArray(w, Types);
+        Engine.SaveIO.WriteArray(w, BuildingAt);
+        Engine.SaveIO.WriteArray(w, FootTraffic);
+        Engine.SaveIO.WriteArray(w, TrafficAtMidnight);
+        Engine.SaveIO.WriteArray(w, Wear);
+        Engine.SaveIO.WriteArray(w, LandState);
+        Engine.SaveIO.WriteArray(w, Ownership);
+        Engine.SaveIO.WriteArray(w, PathType);
+    }
+
+    public void ReadState(BinaryReader r)
+    {
+        Engine.SaveIO.ReadArrayInto(r, Types);
+        Engine.SaveIO.ReadArrayInto(r, BuildingAt);
+        Engine.SaveIO.ReadArrayInto(r, FootTraffic);
+        Engine.SaveIO.ReadArrayInto(r, TrafficAtMidnight);
+        Engine.SaveIO.ReadArrayInto(r, Wear);
+        Engine.SaveIO.ReadArrayInto(r, LandState);
+        Engine.SaveIO.ReadArrayInto(r, Ownership);
+        Engine.SaveIO.ReadArrayInto(r, PathType);
+        MarkChanged();
+    }
+
     /// <summary>Call after writing <see cref="Types"/> directly, so cached flow fields know they're stale.</summary>
     public void MarkChanged() => Version++;
 

@@ -20,6 +20,13 @@ public sealed class DeterministicRng
         _s3 = SplitMix64(ref x);
     }
 
+    /// <summary>The generator's state, for saves (§31).</summary>
+    public (ulong, ulong, ulong, ulong) State
+    {
+        get => (_s0, _s1, _s2, _s3);
+        set => (_s0, _s1, _s2, _s3) = value;
+    }
+
     public ulong NextUInt64()
     {
         ulong result = RotateLeft(_s1 * 5, 7) * 9;

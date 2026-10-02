@@ -81,9 +81,9 @@ public sealed class PlacementRenderer
     /// Updates the player's buildings when the placement view changed: each site is assembled from the kit (1f) and
     /// rebuilt only when its construction stage (5% steps) changes; without a kit, plain boxes.
     /// </summary>
-    public void SetSites(PlacementView? view, IReadOnlyDictionary<string, CatalogItem> items)
+    public void SetSites(PlacementView? view, IReadOnlyDictionary<string, CatalogItem> items, bool force = false)
     {
-        if (view is null || ReferenceEquals(view, _shownView)) return;
+        if (view is null || (!force && ReferenceEquals(view, _shownView))) return;
         _shownView = view;
         var seen = new HashSet<int>();
         foreach (var s in view.Sites)

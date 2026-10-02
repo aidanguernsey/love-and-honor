@@ -34,6 +34,8 @@ public sealed class SimWorld
     public CampaignSystem? Campaign { get; init; }
     public CampaignContent? Content { get; init; }
     public ScenarioConfig? Scenario { get; init; }
+    /// <summary>Campus buildings when the world was created (buildings finished in play come after; saves, 1k).</summary>
+    public int InitialBuildingCount { get; init; }
     public double CampusMs { get; init; }
     public double FlowFieldsMs { get; init; }
     public double PopulationMs { get; init; }
@@ -165,7 +167,7 @@ public sealed class SimWorld
             Simulation = new Simulation(data, campus, fields, pop, rng, t, chunkSize, startDate, land, placement, enrollmentSystem,
                 budgetSystem, budget?.MoveIn ?? "08-19", campaign),
             Map = map, CampusReport = report, Land = land, Placement = placement, Enrollment = enrollmentSystem, Budget = budgetSystem,
-            Campaign = campaign, Content = budget?.Content,
+            Campaign = campaign, Content = budget?.Content, InitialBuildingCount = campus.Buildings.Count,
             Scenario = scenario,
             CampusMs = campusMs, FlowFieldsMs = fieldsMs, PopulationMs = popMs,
         };

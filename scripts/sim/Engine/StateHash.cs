@@ -19,24 +19,26 @@ public static class StateHash
 
     public static ulong Compute(PopulationStore p, TileGrid grid)
     {
+        // Live agents only: slots past Count are spare capacity (enrollment, 1h).
+        int n = p.Count;
         ulong h = 14695981039346656037UL;
-        h = Mix(h, p.Needs);
-        h = Mix(h, p.Happiness);
-        h = Mix(h, p.CurrentBuilding);
-        h = Mix(h, p.CurrentActivity);
-        h = Mix(h, p.WalkFrom);
-        h = Mix(h, p.WalkTo);
-        h = Mix(h, p.WalkDepartMinute);
-        h = Mix(h, p.WalkArriveMinute);
-        h = Mix(h, grid.FootTraffic);
-        h = Mix(h, grid.TrafficAtMidnight);
-        h = Mix(h, grid.Wear);
+        h = Mix(h, p.Needs.AsSpan(0, n * PopulationStore.NeedCount));
+        h = Mix(h, p.Happiness.AsSpan(0, n));
+        h = Mix(h, p.CurrentBuilding.AsSpan(0, n));
+        h = Mix(h, p.CurrentActivity.AsSpan(0, n));
+        h = Mix(h, p.WalkFrom.AsSpan(0, n));
+        h = Mix(h, p.WalkTo.AsSpan(0, n));
+        h = Mix(h, p.WalkDepartMinute.AsSpan(0, n));
+        h = Mix(h, p.WalkArriveMinute.AsSpan(0, n));
+        h = Mix(h, grid.FootTraffic.AsSpan());
+        h = Mix(h, grid.TrafficAtMidnight.AsSpan());
+        h = Mix(h, grid.Wear.AsSpan());
         return h;
     }
 
-    private static ulong Mix<T>(ulong h, T[] array) where T : unmanaged
+    private static ulong Mix<T>(ulong h, Span<T> values) where T : unmanaged
     {
-        foreach (byte b in MemoryMarshal.AsBytes(array.AsSpan()))
+        foreach (byte b in MemoryMarshal.AsBytes(values))
         {
             h ^= b;
             h *= 1099511628211UL;

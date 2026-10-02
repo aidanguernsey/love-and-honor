@@ -71,6 +71,18 @@ public partial class GameHost : Node3D
     private List<int> _pathTiles = [];
     private (int A, int B, int Land) _pathKey = (-1, -1, -1);
     private bool _demoPave, _demoPaved;
+    // Saves (§31, 1k) and the time-lapse.
+    public const string SavesDir = "user://saves";
+    private const string GameVersion = "0.1.0-phase1";
+    private readonly System.Collections.Concurrent.ConcurrentQueue<string> _saveMessages = new();
+    private DateOnly _lastAutosaveCheck;
+    private bool _timelapse;
+    private int _timelapseFrame, _speedBeforeTimelapse = 1;
+    private LandState[] _tlStates = [];
+    private Ownership[] _tlOwners = [];
+    private TileType[] _tlTypes = [];
+    private byte[] _tlSurfaces = [], _tlClearing = [];
+    private PathType[] _tlClasses = [];
     private Dictionary<string, CatalogItem> _items = [];
     private PlacementRenderer _placementRenderer = null!;
     private CatalogItem? _buildItem;
@@ -99,6 +111,17 @@ public partial class GameHost : Node3D
         if (GetTree().Root.HasMeta("scenario")) scenarioId = GetTree().Root.GetMeta("scenario").AsString();
         foreach (var arg in OS.GetCmdlineUserArgs())
             if (arg.StartsWith("--scenario=")) scenarioId = arg["--scenario=".Length..];
+        // Loading a save (§31): the root's "load_save" meta names the file; the save says which scenario it belongs to.
+        string? loadPath = null;
+        if (GetTree().Root.HasMeta("load_save"))
+        {
+            loadPath = GetTree().Root.GetMeta("load_save").AsString();
+            GetTree().Root.RemoveMeta("load_save");
+            using var hf = System.IO.File.OpenRead(loadPath);
+            scenarioId = SaveGame.ReadHeader(hf).Scenario;
+        }
+        foreach (var arg in OS.GetCmdlineUserArgs())
+            if (arg.StartsWith("--load=")) { loadPath = ProjectSettings.GlobalizePath(arg["--load=".Length..]); using var hf = System.IO.File.OpenRead(loadPath); scenarioId = SaveGame.ReadHeader(hf).Scenario; }
         _scenario = ScenarioConfig.Load(source, scenarioId);
         foreach (var arg in OS.GetCmdlineUserArgs())
             if (arg.StartsWith("--cash=") && double.TryParse(arg["--cash=".Length..], System.Globalization.CultureInfo.InvariantCulture, out var cash))
@@ -130,7 +153,18 @@ public partial class GameHost : Node3D
         // The sim shares the map (it sets that year's land, surfaces and building tiles; the renderer keeps its own
         // copy of today's land states and roads). Built on a worker: flow fields + population take a moment.
         _loadStatus = $"{_scenario.Name}: building {start.Year} Oxford and its {_scenario.Students + _scenario.Faculty:N0} people…";
-        _loading = Task.Run(() => SimWorld.CreateScenario(_data, source, scenarioId, map: map, startingCash: _cashOverride));
+        if (loadPath is not null) _loadStatus = $"Loading your saved game ({_scenario.Name})…";
+        _loading = Task.Run(() =>
+        {
+            var world = SimWorld.CreateScenario(_data, source, scenarioId, map: map, startingCash: loadPath is null ? _cashOverride : null);
+            if (loadPath is not null)
+            {
+                using var f = System.IO.File.OpenRead(loadPath);
+                var h = SaveGame.Restore(f, world);
+                _saveMessages.Enqueue($"Loaded \"{h.Name}\" ({h.Date})." + (h.Exact ? "" : " (Saved during a route update: walking routes were updated on load.)"));
+            }
+            return world;
+        });
     }
 
     public override void _ExitTree() => _runner?.Dispose();
@@ -149,6 +183,13 @@ public partial class GameHost : Node3D
         _runner.AdvanceRealTime(delta);
         _snapshot = _runner.AcquireLatest();
         var s = _snapshot;
+        while (_saveMessages.TryDequeue(out var sm)) AddMessage(sm);
+        Autosave(s);
+        if (_timelapse)
+        {
+            _walkerMesh!.VisibleInstanceCount = 0;
+            return;
+        }
         while (_runner.TryTakeMessage(out var m))
         {
             _messages.Add(m);
@@ -688,6 +729,157 @@ public partial class GameHost : Node3D
         if (s.Campaign is not { StudentsGoal: > 0 } c) return "";
         string hall = c.HallGoal ? (c.HasHall ? "✓ a residence hall" : "✗ a residence hall (none yet)") : "";
         return $"{(c.Students >= c.StudentsGoal ? "✓" : "•")} {c.Students} of {c.StudentsGoal} students\n{hall}\nby {c.Deadline:MMMM d, yyyy}";
+    }
+
+    // ---------------- saves (§31) ----------------
+
+    private static string SavesPath()
+    {
+        string dir = ProjectSettings.GlobalizePath(SavesDir);
+        System.IO.Directory.CreateDirectory(dir);
+        return dir;
+    }
+
+    /// <summary>Saves the game: "quicksave", "autosave", or "" for a new slot. Written on the sim thread at the next
+    /// exact point (paused: right away); a thumbnail of the current view is saved next to it.</summary>
+    public void SaveToSlot(string slot)
+    {
+        if (_runner is null || _world is null) return;
+        var world = _world;
+        string name = slot.Length > 0 ? slot : $"save_{DateTime.Now:yyyyMMdd_HHmmss}";
+        string path = System.IO.Path.Combine(SavesPath(), name + ".lhsave");
+        var image = GetViewport().GetTexture().GetImage();
+        image.Resize(320, 180, Image.Interpolation.Bilinear);
+        image.SavePng(System.IO.Path.ChangeExtension(path, ".png"));
+        string label = slot switch { "quicksave" => "Quicksave", "autosave" => "Autosave", _ => "Saved game" };
+        _runner.RunAtBoundary(paused =>
+        {
+            if (!paused && !SaveGame.CanSaveExactly(world)) return false; // wait for a route update to finish
+            string tmp = path + ".tmp";
+            using (var f = System.IO.File.Create(tmp))
+                SaveGame.Write(f, world, label, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture), GameVersion);
+            System.IO.File.Move(tmp, path, overwrite: true);
+            _saveMessages.Enqueue($"{label} saved ({world.Simulation.Time.Date:MMM d, yyyy}).");
+            return true;
+        });
+    }
+
+    /// <summary>Saved games, newest first: path, name, scenario, in-game date, students, cash, when it was saved.</summary>
+    public static Godot.Collections.Array<Godot.Collections.Dictionary> ListSaves()
+    {
+        var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        foreach (var path in System.IO.Directory.GetFiles(SavesPath(), "*.lhsave").OrderByDescending(System.IO.File.GetLastWriteTimeUtc))
+        {
+            try
+            {
+                using var f = System.IO.File.OpenRead(path);
+                var h = SaveGame.ReadHeader(f);
+                string thumb = System.IO.Path.ChangeExtension(path, ".png");
+                list.Add(new Godot.Collections.Dictionary
+                {
+                    ["path"] = path, ["name"] = h.Name, ["scenario"] = h.ScenarioName, ["date"] = h.Date, ["students"] = h.Students,
+                    ["cash"] = LandSystem.Money(h.CashCents), ["saved_at"] = System.IO.File.GetLastWriteTime(path).ToString("MMM d, HH:mm"),
+                    ["thumbnail"] = System.IO.File.Exists(thumb) ? thumb : "",
+                });
+            }
+            catch (Exception) { /* unreadable or newer save: not listed */ }
+        }
+        return list;
+    }
+
+    /// <summary>GDScript can't call static methods: the save list for the HUD.</summary>
+    public Godot.Collections.Array<Godot.Collections.Dictionary> GetSaves() => ListSaves();
+
+    /// <summary>Loads a save by restarting the game scene with it.</summary>
+    public void LoadSave(string path)
+    {
+        if (!System.IO.File.Exists(path)) { AddMessage("No such save."); return; }
+        GetTree().Root.SetMeta("load_save", path);
+        GetTree().ChangeSceneToFile("res://scenes/game/game.tscn");
+    }
+
+    public void Quickload()
+    {
+        string path = System.IO.Path.Combine(SavesPath(), "quicksave.lhsave");
+        if (System.IO.File.Exists(path)) LoadSave(path); else AddMessage("No quicksave yet (F5 saves one).");
+    }
+
+    /// <summary>§31: autosave every semester (at move-in and the spring term).</summary>
+    private void Autosave(SimSnapshot s)
+    {
+        if (s.Date == _lastAutosaveCheck) return;
+        bool first = _lastAutosaveCheck == default;
+        _lastAutosaveCheck = s.Date;
+        if (first || _world?.Enrollment is not { } e || _world.Budget is not { } b) return;
+        bool moveIn = s.Date == e.IntakeDateIn(s.Date.Year);
+        var spring = b.Config.SpringTermStart;
+        bool springStart = s.Date.Month == int.Parse(spring[..2]) && s.Date.Day == int.Parse(spring[3..]);
+        if (moveIn || springStart) SaveToSlot("autosave");
+    }
+
+    // ---------------- time-lapse (§5.1b, 1k) ----------------
+
+    public int GetTimelapseFrames() => _world?.Simulation.Timelapse?.Frames.Count ?? 0;
+
+    public bool GetTimelapse() => _timelapse;
+
+    /// <summary>T: replay the campus month by month (the sim pauses); off: back to the present.</summary>
+    public void SetTimelapse(bool on)
+    {
+        if (_runner is null || _world?.Simulation.Timelapse is null || on == _timelapse) return;
+        _timelapse = on;
+        if (on)
+        {
+            _speedBeforeTimelapse = Math.Max(1, _runner.SpeedIndex);
+            SetSpeedIndex(0);
+            SetTool("");
+            int n = _map.Map.Grid.Width * _map.Map.Grid.Height;
+            if (_tlStates.Length != n)
+            {
+                _tlStates = new LandState[n]; _tlOwners = new Ownership[n]; _tlTypes = new TileType[n];
+                _tlSurfaces = new byte[n]; _tlClearing = new byte[n]; _tlClasses = new PathType[n];
+            }
+            SetTimelapseFrame(GetTimelapseFrames());
+        }
+        else
+        {
+            // Back to the present: everything is redrawn from the live snapshot.
+            _landVersion = -1;
+            if (_snapshot is { } s)
+            {
+                _pathRenderer.Update(s);
+                _placementRenderer.SetSites(s.Placement, _items, force: true);
+            }
+            SetSpeedIndex(_speedBeforeTimelapse);
+        }
+    }
+
+    /// <summary>Shows the campus as it was after <paramref name="frame"/> recorded months (0 = the start).</summary>
+    public void SetTimelapseFrame(int frame)
+    {
+        var rec = _world?.Simulation.Timelapse;
+        if (!_timelapse || rec is null) return;
+        var frames = rec.Frames;
+        _timelapseFrame = Math.Clamp(frame, 0, frames.Count);
+        var date = _timelapseFrame == 0 ? rec.Start : frames[_timelapseFrame - 1].Date;
+        rec.Reconstruct(_timelapseFrame, _tlStates, _tlOwners, _tlTypes, _tlSurfaces, _tlClasses);
+        _map.SetDate(date.Year, Math.Min(365, date.DayOfYear), async: true);
+        _map.SetHour(FixedDaylightHour);
+        _map.SetLiveLand(_tlStates, _tlTypes, _tlOwners, _tlClearing);
+        _pathRenderer.Update(date, _tlTypes, _tlClasses, _tlSurfaces);
+        if (_snapshot?.Placement is { } live)
+        {
+            var sites = live.Sites.Select(x => x.AsOf(date)).Where(x => x is not null).Select(x => x!).ToArray();
+            _placementRenderer.SetSites(live with { Sites = sites, Version = -_timelapseFrame - 1 }, _items, force: true);
+        }
+    }
+
+    public string GetTimelapseLabel()
+    {
+        var rec = _world?.Simulation.Timelapse;
+        if (rec is null) return "";
+        var date = _timelapseFrame == 0 ? rec.Start : rec.Frames[Math.Min(_timelapseFrame, rec.Frames.Count) - 1].Date;
+        return $"Time-lapse: {date:MMMM yyyy}  ({_timelapseFrame} of {rec.Frames.Count} months recorded)";
     }
 
     /// <summary>Y / Budget panel: − or + one tuition step.</summary>

@@ -90,14 +90,16 @@ public sealed class PathRenderer
     }
 
     /// <summary>Rebuilds the chunks whose paths changed in this snapshot's land layer (call when LandVersion changes).</summary>
-    public void Update(SimSnapshot s)
+    public void Update(SimSnapshot s) => Update(s.Date, s.Surfaces, s.PathTypes, s.PathSurfaces);
+
+    /// <summary>Rebuilds the chunks whose paths changed, from map layers (live, or reconstructed for the time-lapse).</summary>
+    public void Update(DateOnly date, TileType[] surfaces, PathType[] types, byte[] player)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
         var g = _map.Grid;
-        string roadType = _eras.At(s.Date.Year).RoadType;
+        string roadType = _eras.At(date.Year).RoadType;
         bool all = roadType != _roadType;
         _roadType = roadType;
-        var surfaces = s.Surfaces; var types = s.PathTypes; var player = s.PathSurfaces;
         bool modern = roadType == "asphalt";
         var eraRoad = _roadColors.GetValueOrDefault(roadType, _roadColors["dirt"]);
         var footway = roadType is "brick" or "asphalt" ? _classColors[(int)PathType.Footway] : _roadColors["dirt"];

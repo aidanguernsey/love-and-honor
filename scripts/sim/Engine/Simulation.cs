@@ -208,6 +208,7 @@ public sealed class Simulation
     public void ApplyLandCommands()
     {
         if (Land is null || !Land.HasPendingCommands) return;
+        SyncFootTraffic(); // paving desire paths reads the wear the traffic work item writes
         var edits = Land.ApplyCommands(Time.Date);
         if (edits.Count > 0) ApplyTileEdits(edits.ToArray());
     }

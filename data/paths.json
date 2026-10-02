@@ -1,0 +1,22 @@
+{
+  "$schema": "./schemas/paths.schema.json",
+  "_comment": "Player-built paths (§11.8, §12.4), Phase 1 checkpoint 1g. All numbers are [TWEAK] placeholders. Costs are MODERN dollars per 10 m tile, multiplied by the era's price_multiplier (eras.json). Surfaces are listed in order of preference: new paths and paved desire paths use the last one unlocked in the current era (brick over concrete, §11.8; choosing a surface comes later).",
+  "surfaces": [
+    { "id": "dirt", "name": "Dirt path", "unlock_era": "founding", "cost_per_tile": 20, "color": "#9C8061", "width_m": 2.5 },
+    { "id": "gravel", "name": "Gravel path", "unlock_era": "gilded", "cost_per_tile": 60, "color": "#B3AA9C", "width_m": 3.0 },
+    { "id": "concrete", "name": "Concrete path", "unlock_era": "postwar", "cost_per_tile": 120, "color": "#BDB9B0", "width_m": 3.0 },
+    { "id": "brick", "name": "Brick path", "unlock_era": "early20", "cost_per_tile": 200, "color": "brick:2", "width_m": 3.0 }
+  ],
+  "route": {
+    "_comment": "Dragging from A to B lays the cheapest route over buildable tiles (8-connected, no cutting corners past obstacles). Existing paths cost existing_path_cost per step, so routes join and follow them.",
+    "existing_path_cost": 0.3,
+    "search_margin_tiles": 15,
+    "max_tiles": 300
+  },
+  "slant_walk": {
+    "_comment": "§12.4: the first paved desire path that runs diagonally across campus and is long enough becomes the Slant Walk landmark (Heritage bonus recorded until the Heritage score exists).",
+    "min_length_m": 100,
+    "max_angle_from_diagonal_deg": 25,
+    "heritage_bonus": 10
+  }
+}

@@ -14,7 +14,10 @@ public class PlacementTests
     private static SimWorld Chapter1(int threads = 2, double? cash = null) =>
         SimWorld.CreateScenario(Data, Source, "chapter1_the_hill", threads: threads, chunkSize: 256, startingCash: cash);
 
-    /// <summary>The first pose (scanning outward from Old Main) where the item can be built, on the live map.</summary>
+    /// <summary>
+    /// The first pose (scanning outward from Old Main) where the item can be built on the live map. A spot whose only
+    /// problem is the missing path at the door gets one: a path tile is laid at the entrance (as a player would).
+    /// </summary>
     private static Pose FindSpot(SimWorld w, CatalogItem item, int rotation = 0)
     {
         var g = w.Campus.Grid;
@@ -27,9 +30,24 @@ public class PlacementTests
                 {
                     if (Math.Max(Math.Abs(dx), Math.Abs(dy)) != r) continue;
                     var pose = FootprintMath.Snap(oldMain.X + dx + 0.5f, oldMain.Y + dy + 0.5f, item.W, item.H, rotation);
-                    if (PlacementSystem.Check(p.Catalog, item, pose, map, w.Simulation.Time.Date).Ok) return pose;
+                    var q = PlacementSystem.Check(p.Catalog, item, pose, map, w.Simulation.Time.Date);
+                    if (q.Ok) return pose;
+                    if (q.Problem.StartsWith("The entrance needs a path"))
+                    {
+                        LayPath(w, q.Entrance, q.Entrance);
+                        Assert.True(PlacementSystem.Check(p.Catalog, item, pose, p.LiveMap(), w.Simulation.Time.Date).Ok);
+                        return pose;
+                    }
                 }
         throw new InvalidOperationException($"no spot for {item.Id} near Old Main");
+    }
+
+    private static void LayPath(SimWorld w, int from, int to)
+    {
+        int gw = w.Campus.Grid.Width;
+        w.Land!.Enqueue(new LandCommand(LandAction.Path, from % gw, from / gw, to % gw, to / gw));
+        w.Simulation.ApplyPendingCommands();
+        w.Land.TakeMessages();
     }
 
     private static void RunUntil(SimWorld w, DateOnly date)
@@ -178,12 +196,13 @@ public class PlacementTests
         var sim = w.Simulation;
         var item = p.Catalog.Find("frame_recitation_hall")!;
         var pose = FindSpot(w, item);
+        long cash = w.Land!.Treasury.Cents; // after the path at the door
         int buildingsBefore = w.Campus.Buildings.Count;
 
         p.Enqueue(PlacementCommand.Build(item.Id, pose));
         sim.ApplyPendingCommands();
         Assert.Contains(p.TakeMessages(), m => m.StartsWith("Construction started: Frame Recitation Hall"));
-        Assert.Equal(3000_00 - 600_00, w.Land!.Treasury.Cents);
+        Assert.Equal(cash - 600_00, w.Land!.Treasury.Cents);
         var site = Assert.Single(p.Sites);
         Assert.All(site.Tiles, t => Assert.Equal(TileType.Building, g.Types[t])); // a construction site blocks walking at once
         Assert.True(sim.RebuildApplyTick >= 0);
@@ -240,6 +259,7 @@ public class PlacementTests
         var p = w.Placement!;
         var item = p.Catalog.Find("boarding_house")!;
         var pose = FindSpot(w, item);
+        long cash = w.Land!.Treasury.Cents;
         var before = FootprintMath.Tiles(pose, item.W, item.H, g.Width, g.Height).Select(t => g.Types[t]).ToArray();
 
         p.Enqueue(PlacementCommand.Build(item.Id, pose));
@@ -247,7 +267,7 @@ public class PlacementTests
         var site = p.Sites[0];
         p.Enqueue(PlacementCommand.Cancel(site.Id));
         w.Simulation.ApplyPendingCommands();     // same day: full refund
-        Assert.Equal(3000_00, w.Land!.Treasury.Cents);
+        Assert.Equal(cash, w.Land!.Treasury.Cents);
         Assert.Empty(p.Sites);
         Assert.Equal(before, site.Tiles.Select(t => g.Types[t]).ToArray());
 
@@ -257,7 +277,7 @@ public class PlacementTests
         var second = p.Sites[0];
         p.Enqueue(PlacementCommand.Cancel(second.Id));
         w.Simulation.ApplyPendingCommands();     // later: half of the unspent part
-        long expected = 3000_00 - 800_00 + (long)Math.Round(800_00 * (1 - second.Progress) * 0.5);
+        long expected = cash - 800_00 + (long)Math.Round(800_00 * (1 - second.Progress) * 0.5);
         Assert.Equal(expected, w.Land.Treasury.Cents);
     }
 
@@ -276,6 +296,8 @@ public class PlacementTests
             if (g.LandState[t] == LandState.Forest) g.LandState[t] = LandState.Pasture;
         }
         RunUntil(w, new DateOnly(1825, 1, 2)); // offered from 1825
+        int door = FootprintMath.Entrance(site.Pose, site.W, site.H, g.Width, g.Height, site.Tiles.ToHashSet());
+        LayPath(w, door, door);
 
         var q = PlacementSystem.Check(p.Catalog, elliott, site.Pose, p.LiveMap(), w.Simulation.Time.Date);
         Assert.True(q.Ok, q.Problem);

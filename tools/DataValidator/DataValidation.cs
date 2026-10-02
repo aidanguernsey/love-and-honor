@@ -155,6 +155,18 @@ public static class DataValidation
                     issues.Add(new(rel, "/recipe", $"unknown recipe '{Str(node, "recipe")}'"));
         }
 
+        // Paths: surface ids unique, unlock eras exist.
+        if (docs.TryGetValue("paths.json", out var pathsDoc) && pathsDoc["surfaces"] is JsonArray surfaces)
+        {
+            var ids = new HashSet<string>();
+            for (int i = 0; i < surfaces.Count; i++)
+            {
+                var s = surfaces[i]!;
+                if (!ids.Add(Str(s, "id"))) issues.Add(new("paths.json", $"/surfaces/{i}", $"duplicate id '{Str(s, "id")}'"));
+                if (eraIds.Count > 0 && !eraIds.Contains(Str(s, "unlock_era"))) issues.Add(new("paths.json", $"/surfaces/{i}/unlock_era", $"unknown era '{Str(s, "unlock_era")}'"));
+            }
+        }
+
         // Heritage Projects: unique ids, timeline entry and building definition exist.
         if (docs.TryGetValue("heritage_projects.json", out var heritage) && heritage["projects"] is JsonArray projects)
         {

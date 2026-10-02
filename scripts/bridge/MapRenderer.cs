@@ -39,6 +39,9 @@ public sealed class MapRenderer
     /// <summary>The game draws the real buildings of its start year only (later ones are the player's to build, 1e);
     /// null = buildings follow <see cref="Year"/> (the Spike B timeline).</summary>
     public int? BuildingsYear { get; private set; }
+    /// <summary>Paths and roads are drawn as meshes by someone else (the game's PathRenderer, 1g): the tile colours
+    /// show the ground under them.</summary>
+    public bool PathsAsMeshes { get; set; }
     private int ShownBuildingsYear => BuildingsYear ?? Year;
     public bool GridVisible { get; private set; } = true;
     public MapOverlay Overlay { get; private set; }
@@ -285,7 +288,7 @@ public sealed class MapRenderer
     {
         var sw = Stopwatch.StartNew();
         var states = _liveStates; var surfaces = _liveSurfaces; var owners = _liveOwners; var clearing = _liveClearing;
-        if (states is not null && surfaces is not null) _colorizer.PaintLive(states, surfaces, Year, DayOfYear);
+        if (states is not null && surfaces is not null) _colorizer.PaintLive(states, surfaces, Year, DayOfYear, paintPaths: !PathsAsMeshes);
         else _colorizer.Paint(Year, DayOfYear);
         var g = Render.Ground;
         if (Overlay == MapOverlay.FootTraffic && _traffic.Length > 0)

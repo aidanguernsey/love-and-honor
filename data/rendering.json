@@ -70,6 +70,13 @@
     "town_color": "#C9BFA8",
     "approximate_site_color": "#D9A08E"
   },
+  "path_meshes": {
+    "_comment": "Paths and roads drawn as their own meshes (Phase 1 1g), at their real width instead of whole 10 m tiles. Widths by OSM class; player paths use their surface's width (paths.json). Colours come from terrain.road_surface_colors / path_colors as before.",
+    "widths_m": { "footway": 2.5, "cycleway": 2.5, "service": 4, "residential": 6.5, "tertiary": 8, "secondary": 9, "primary": 10, "railway": 3 },
+    "lift_m": 0.08,
+    "segments": 2,
+    "visible_to_m": 1800
+  },
   "placement": {
     "_comment": "Building placement (Phase 1 1e): the ghost preview, construction sites, and Heritage Project sites. Placed buildings are plain boxes until the kit assembler (1f). Wooden (style none) buildings are drawn lower than the extrusion kind heights.",
     "ghost_ok_color": "#5CE07A",

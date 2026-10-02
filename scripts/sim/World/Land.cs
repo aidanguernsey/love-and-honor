@@ -58,9 +58,11 @@ public sealed class Treasury(long startingCents)
     }
 }
 
-public enum LandAction : byte { Clear, Buy }
+/// <summary>Land orders. Clear/Buy/RemovePath take a rectangle; Path a route from (X0, Y0) to (X1, Y1); PaveDesire the
+/// desire path under (X0, Y0).</summary>
+public enum LandAction : byte { Clear, Buy, Path, RemovePath, PaveDesire }
 
-/// <summary>A player land order for a rectangle of tiles (inclusive).</summary>
+/// <summary>A player land order for a rectangle of tiles (inclusive), or a path's two ends (see <see cref="LandAction"/>).</summary>
 public readonly record struct LandCommand(LandAction Action, int X0, int Y0, int X1, int Y1);
 
 /// <summary>What an order would do: tiles it applies to, total cost (cents), and for clearing, days of work.</summary>
@@ -91,8 +93,17 @@ public sealed class LandSystem
     private readonly ConcurrentQueue<LandCommand> _commands = new();
     private readonly List<string> _messages = [];
     private int _lastGrowthDay; // first update a month in
+    private readonly PathConfig? _paths;
+    private readonly byte[] _pathSurface;   // player-laid paths: 1 + index into paths.json surfaces; 0 = none
 
     public Treasury Treasury { get; }
+    public PathConfig? Paths => _paths;
+    /// <summary>Surface of each player-laid path (1 + index into <see cref="PathConfig.Surfaces"/>), 0 elsewhere.</summary>
+    public byte[] PathSurface => _pathSurface;
+    /// <summary>The Slant Walk's tiles once a long diagonal desire path has been paved (§12.4), else empty.</summary>
+    public IReadOnlyList<int> SlantWalk { get; private set; } = [];
+    /// <summary>Heritage earned by landmarks of the land layer (the Slant Walk), recorded until the Heritage score exists.</summary>
+    public double HeritageBonus { get; private set; }
     public double TownRelationsPenalty { get; private set; }
     /// <summary>Bumped whenever land state, ownership, paths or clearing orders change (the UI re-copies then).</summary>
     public int Version { get; private set; }
@@ -107,8 +118,11 @@ public sealed class LandSystem
         public double Progress; // tiles' worth of work done but not yet finished
     }
 
-    public LandSystem(TileGrid grid, LandConfig cfg, EraTable eras, LandHistory? history, bool[] pathOn, Treasury treasury)
+    public LandSystem(TileGrid grid, LandConfig cfg, EraTable eras, LandHistory? history, bool[] pathOn, Treasury treasury,
+        PathConfig? paths = null)
     {
+        _paths = paths;
+        _pathSurface = new byte[grid.Width * grid.Height];
         _grid = grid;
         _cfg = cfg;
         _eras = eras;
@@ -135,6 +149,10 @@ public sealed class LandSystem
         return lawn ? TileType.Grass : TileType.Rough;
     }
 
+    /// <summary>The live map as path planning sees it (sim thread; call after foot traffic is synced).</summary>
+    public PathMap LivePathMap() => new(_grid.Width, _grid.Height, _grid.TileSizeM, _grid.Types, _grid.LandState, _grid.Ownership,
+        _grid.Protected, _clearing, _grid.Wear, _grid.PathType);
+
     // ---------------- commands (any thread enqueues, sim thread applies) ----------------
 
     public void Enqueue(LandCommand command) => _commands.Enqueue(command);
@@ -155,6 +173,11 @@ public sealed class LandSystem
         var edits = new List<Engine.TileEdit>();
         while (_commands.TryDequeue(out var c))
         {
+            if (c.Action is LandAction.Path or LandAction.RemovePath or LandAction.PaveDesire)
+            {
+                ApplyPathCommand(c, date, edits);
+                continue;
+            }
             var q = Quote(_cfg, _eras, c, _grid.Width, _grid.Height, _grid.LandState, _grid.Ownership, _grid.Types, _clearing, date);
             if (!q.Ok) { _messages.Add(q.Problem.Length > 0 ? q.Problem : "Nothing to do there."); continue; }
             if (!Treasury.CanAfford(q.Cents)) { _messages.Add($"Not enough money: that costs {Money(q.Cents)}, you have {Money(Treasury.Cents)}."); continue; }
@@ -182,6 +205,83 @@ public sealed class LandSystem
             Version++;
         }
         return edits;
+    }
+
+    private void ApplyPathCommand(LandCommand c, DateOnly date, List<Engine.TileEdit> edits)
+    {
+        if (_paths is null) { _messages.Add("Paths aren't available here."); return; }
+        var q = QuotePaths(_paths, _eras, c, LivePathMap(), date, out var tiles);
+        if (!q.Ok) { _messages.Add(q.Problem.Length > 0 ? q.Problem : "Nothing to do there."); return; }
+        if (!Treasury.CanAfford(q.Cents)) { _messages.Add($"Not enough money: that costs {Money(q.Cents)}, you have {Money(Treasury.Cents)}."); return; }
+        int w = _grid.Width;
+        if (c.Action == LandAction.RemovePath)
+        {
+            foreach (int t in tiles)
+            {
+                _pathOn[t] = false;
+                _pathSurface[t] = 0;
+                _grid.PathType[t] = PathType.None;
+                AddSurfaceEdit(t, edits);
+            }
+            _messages.Add($"Removed {tiles.Count} tiles of path.");
+            Version++;
+            return;
+        }
+        int surface = _paths.SurfaceFor(_eras, date.Year);
+        int laid = 0;
+        foreach (int t in tiles)
+        {
+            if (_grid.Types[t] == TileType.Path) continue;
+            _pathOn[t] = true;
+            _pathSurface[t] = (byte)(surface + 1);
+            _grid.PathType[t] = PathType.Footway; // the grid holds today's OSM classes; a player path is a footpath
+            AddSurfaceEdit(t, edits);
+            laid++;
+        }
+        Treasury.Spend(date, q.Cents, c.Action == LandAction.PaveDesire ? "Paving a desire path" : "Laying a path");
+        string name = _paths.Surfaces[surface].Name.ToLowerInvariant();
+        if (c.Action == LandAction.PaveDesire)
+        {
+            _messages.Add($"Paved the desire path: {laid} tiles of {name}, {Money(q.Cents)}.");
+            var shape = PathPlanner.SlantWalk(_paths, tiles, w, _grid.TileSizeM);
+            if (SlantWalk.Count == 0 && shape.Qualifies)
+            {
+                SlantWalk = tiles.ToArray();
+                HeritageBonus += _paths.SlantWalk.HeritageBonus;
+                _messages.Add($"The students' {shape.LengthM:0} m diagonal shortcut is now the Slant Walk (Heritage +{_paths.SlantWalk.HeritageBonus:0}).");
+            }
+        }
+        else
+            _messages.Add($"Laid {laid} tile{(laid == 1 ? "" : "s")} of {name}: {Money(q.Cents)}.");
+        Version++;
+    }
+
+    /// <summary>
+    /// Quotes a path order (lay a route, remove paths, pave a desire path) and returns the tiles it covers (for Path,
+    /// the whole route including existing path tiles; only new tiles cost money).
+    /// </summary>
+    public static LandQuote QuotePaths(PathConfig cfg, EraTable eras, LandCommand c, PathMap m, DateOnly date, out List<int> tiles)
+    {
+        int w = m.Width;
+        int a = Math.Clamp(c.Y0, 0, m.Height - 1) * w + Math.Clamp(c.X0, 0, w - 1);
+        int b = Math.Clamp(c.Y1, 0, m.Height - 1) * w + Math.Clamp(c.X1, 0, w - 1);
+        double perTile = cfg.Surfaces[cfg.SurfaceFor(eras, date.Year)].CostPerTile * eras.At(date.Year).PriceMultiplier;
+        switch (c.Action)
+        {
+            case LandAction.RemovePath:
+                tiles = PathPlanner.Removable(m, c.X0, c.Y0, c.X1, c.Y1);
+                return new LandQuote(tiles.Count, 0, 0, 0, tiles.Count == 0 ? "No footpaths on university land there (roads can't be removed)." : "");
+            case LandAction.PaveDesire:
+                tiles = PathPlanner.DesireRegion(m, a);
+                if (tiles.Count == 0) return new LandQuote(0, 0, 0, 0, "Pick a desire path: lawn worn down to dirt by regular shortcuts.");
+                return new LandQuote(tiles.Count, 0, (long)Math.Round(tiles.Count * perTile * 100), 0, "");
+            default:
+                tiles = PathPlanner.Route(cfg, m, a, b, out string problem) ?? [];
+                if (tiles.Count == 0) return new LandQuote(0, 0, 0, 0, problem);
+                int fresh = tiles.Count(t => m.Types[t] != TileType.Path);
+                if (fresh == 0) return new LandQuote(0, tiles.Count, 0, 0, "There's already a path all the way.");
+                return new LandQuote(fresh, tiles.Count - fresh, (long)Math.Round(fresh * perTile * 100), 0, "");
+        }
     }
 
     // ---------------- daily work ----------------

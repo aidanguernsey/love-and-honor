@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Player-built paths (§11.8, §12.4)",
+  "type": "object",
+  "required": ["surfaces", "route", "slant_walk"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": { "type": "string" },
+    "surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "unlock_era", "cost_per_tile", "color", "width_m"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z_]+$" },
+          "name": { "type": "string" },
+          "unlock_era": { "type": "string" },
+          "cost_per_tile": { "type": "number", "minimum": 0 },
+          "color": { "type": "string", "pattern": "^(#[0-9A-Fa-f]{6}|[a-z_]+(:[0-9]+)?)$" },
+          "width_m": { "type": "number", "exclusiveMinimum": 0, "maximum": 10 }
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "required": ["existing_path_cost", "search_margin_tiles", "max_tiles"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "existing_path_cost": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "search_margin_tiles": { "type": "integer", "minimum": 0 },
+        "max_tiles": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "slant_walk": {
+      "type": "object",
+      "required": ["min_length_m", "max_angle_from_diagonal_deg", "heritage_bonus"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "min_length_m": { "type": "number", "minimum": 0 },
+        "max_angle_from_diagonal_deg": { "type": "number", "minimum": 0, "maximum": 45 },
+        "heritage_bonus": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

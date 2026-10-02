@@ -41,7 +41,12 @@ public sealed class SimSnapshot
     public readonly Ownership[] Owners;
     public readonly byte[] Clearing;
     public readonly TileType[] Surfaces;
+    /// <summary>Player-laid path surfaces (1 + index into paths.json surfaces), copied with the land layer.</summary>
+    public readonly byte[] PathSurfaces;
+    /// <summary>OSM path class per tile (player paths become footways), copied with the land layer.</summary>
+    public readonly PathType[] PathTypes;
     public int LandVersion = -1;
+    public double LandHeritageBonus;
     public long CashCents;
     public int ClearingTiles;
 
@@ -60,6 +65,8 @@ public sealed class SimSnapshot
         Owners = new Ownership[tileCount];
         Clearing = new byte[tileCount];
         Surfaces = new TileType[tileCount];
+        PathSurfaces = new byte[tileCount];
+        PathTypes = new PathType[tileCount];
     }
 }
 
@@ -251,12 +258,15 @@ public sealed class SimRunner : IDisposable
         {
             s.CashCents = land.Treasury.Cents;
             s.ClearingTiles = land.ActiveClearingTiles;
+            s.LandHeritageBonus = land.HeritageBonus;
             if (s.LandVersion != land.Version + _grid.Version)
             {
                 Array.Copy(_grid.LandState, s.LandStates, s.LandStates.Length);
                 Array.Copy(_grid.Ownership, s.Owners, s.Owners.Length);
                 Array.Copy(land.Clearing, s.Clearing, s.Clearing.Length);
                 Array.Copy(_grid.Types, s.Surfaces, s.Surfaces.Length);
+                Array.Copy(land.PathSurface, s.PathSurfaces, s.PathSurfaces.Length);
+                Array.Copy(_grid.PathType, s.PathTypes, s.PathTypes.Length);
                 s.LandVersion = land.Version + _grid.Version;
             }
             foreach (var m in land.TakeMessages()) _messages.Enqueue(m);

@@ -13,6 +13,7 @@ public sealed class RenderingConfig
     public TerrainSection Terrain { get; init; } = new();
     public ExtrusionSection Extrusion { get; init; } = new();
     public PlacementSection Placement { get; init; } = new();
+    public PathMeshesSection PathMeshes { get; init; } = new();
     public SunSection Sun { get; init; } = new();
 
     public sealed class CrowdSection
@@ -84,6 +85,14 @@ public sealed class RenderingConfig
         public string UndatedCampusColor { get; init; } = "";
         public string TownColor { get; init; } = "";
         public string ApproximateSiteColor { get; init; } = "";
+    }
+
+    public sealed class PathMeshesSection
+    {
+        public Dictionary<string, float> WidthsM { get; init; } = [];
+        public float LiftM { get; init; }
+        public int Segments { get; init; } = 2;
+        public float VisibleToM { get; init; } = 1800;
     }
 
     public sealed class PlacementSection

@@ -55,6 +55,16 @@ hip/gable roofs, chimneys, portico, cupola, plinth, scaffolding, far block), rec
 `BuildingKit` merges a building into 3 distance meshes. The game draws real buildings with a recipe from the kit on
 their fitted outline (long side = front) and the player's buildings from the kit at each 5% construction stage. Check
 scene `scenes/spikes/building_kit_test.tscn`. Next: **1g** (paths).
+**1g done (2026-10-02):** paths (`World/Paths.cs`, `data/paths.json`): lay a route by dragging (P; A* over buildable
+university tiles, joins existing paths cheaply), remove footpaths (Shift+P), pave a desire path (V; flood fill of fully
+worn lawn); the first paved desire path that's a long diagonal (>= 100 m, within 25° of a diagonal) becomes **the Slant
+Walk** (Heritage +10 recorded). Surface by era, in order of preference: dirt (1820s), gravel, brick (concrete exists but
+brick wins). LandAction gains Path/RemovePath/PaveDesire; `LandSystem.PathSurface`; snapshots copy path surfaces and
+classes. Placement now **requires** a path at the door. Paths and roads are drawn as **meshes** (`View/PathMeshBuilder` +
+bridge `PathRenderer`, per chunk, real widths from `rendering.json path_meshes`, draped on `TerrainMesher.SurfaceHeight`,
+hidden beyond 1.8 km); the game's tile texture no longer paints paths (retires R11; Spike B still paints them). 2026:
+~245k path triangles in total, only nearby chunks drawn. Demo options `--demo-pave`, and `--demo-build` lays door paths.
+Next: **1h** (people).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -126,6 +136,10 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
 - 1f: real buildings' storeys/roofs/windows in their recipes are guesses; roofs are generated, not kit pieces; large
   halls exceed 5k tris at full detail (per-bay rule instead); only buildings with recipes are drawn from the kit (the
   other 80 real buildings stay extruded blocks until arbitrary footprints, Phase 2), so at night only they glow.
+- 1g: path costs/widths are placeholders; paths are laid instantly (no construction time); the player can't choose
+  a surface yet; the Slant Walk is designated automatically (§12.4 says "can be designated"); campus footpaths from OSM
+  are removable for free on university land. A 2026 run wore in a 29-tile, 226 m diagonal in ~6 months and made it
+  the Slant Walk (it isn't where the real one is: the real Slant Walk exists as a paved path in the 2026 data).
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 

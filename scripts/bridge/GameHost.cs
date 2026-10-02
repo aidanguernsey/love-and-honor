@@ -18,8 +18,9 @@ namespace LoveAndHonor.Bridge;
 /// clock (1c). Phase 1 1d adds scenarios (Chapter 1 starts in 1824), the live land layer with clearing and buying land,
 /// money, the ownership overlay, and a day/night switch. 1e adds building: the era's catalogue and Heritage Projects,
 /// a ghost preview with the placement checks, rotation (Z/X), construction sites, cancelling, and the Heritage site
-/// layer. The HUD (GDScript) reads <see cref="GetHud"/> and calls the control methods; the sim world is built on a
-/// worker thread behind a loading message.
+/// layer. 1f draws buildings from the kit; 1g adds paths: laying routes (P), removing them, paving desire paths (V,
+/// the Slant Walk), all drawn as meshes. The HUD (GDScript) reads <see cref="GetHud"/> and calls the control methods;
+/// the sim world is built on a worker thread behind a loading message.
 /// </summary>
 [GlobalClass]
 public partial class GameHost : Node3D
@@ -54,7 +55,7 @@ public partial class GameHost : Node3D
     private Vector2 _startFocus;
 
     // Tools: land orders (drag a rectangle), building (ghost under the cursor), cancelling construction.
-    private enum Tool { None, Clear, Buy, Build, Cancel }
+    private enum Tool { None, Clear, Buy, Build, Cancel, Path, RemovePath, Pave }
     private Tool _tool;
     private int _dragStart = -1, _dragEnd = -1;
     private LandQuote? _quote;
@@ -63,6 +64,13 @@ public partial class GameHost : Node3D
     // Building (1e).
     private BuildingCatalog? _catalog;
     private BuildingKit _kit = null!;
+    // Paths (1g).
+    private PathConfig _pathCfg = null!;
+    private PathRenderer _pathRenderer = null!;
+    private float[] _wear = [];
+    private List<int> _pathTiles = [];
+    private (int A, int B, int Land) _pathKey = (-1, -1, -1);
+    private bool _demoPave, _demoPaved;
     private Dictionary<string, CatalogItem> _items = [];
     private PlacementRenderer _placementRenderer = null!;
     private CatalogItem? _buildItem;
@@ -112,6 +120,10 @@ public partial class GameHost : Node3D
         _map.SetDate(_scenario.MapYear, Math.Min(365, start.DayOfYear));
         _map.SetBuildingsYear(_scenario.MapYear); // later real buildings are the player's to build
         _placementRenderer = new PlacementRenderer(this, map, _map.Render, new Palette(source.ReadText("branding.json")), _kit);
+        _pathCfg = PathConfig.Load(source);
+        _pathRenderer = new PathRenderer(this, map, _map.Render, new Palette(source.ReadText("branding.json")), _pathCfg, _eras);
+        _map.PathsAsMeshes = true;
+        _wear = new float[map.Grid.Width * map.Grid.Height];
         _startFocus = FocusPoint(map);
         RenderingServer.ViewportSetMeasureRenderTime(GetViewport().GetViewportRid(), true);
 
@@ -154,6 +166,7 @@ public partial class GameHost : Node3D
         {
             _landVersion = s.LandVersion;
             _map.SetLiveLand(s.LandStates, s.Surfaces, s.Owners, s.Clearing);
+            _pathRenderer.Update(s);
         }
 
         // Desire paths (always shown) and the overlays: traffic data refreshed from the sim about once a second.
@@ -167,10 +180,13 @@ public partial class GameHost : Node3D
         {
             _trafficVersion = s.TrafficVersion;
             _map.SetOverlay(EffectiveOverlay, s.Wear, s.Traffic);
+            Array.Copy(s.Wear, _wear, _wear.Length); // our own copy: snapshot buffers are reused
+            if (_demoPave && !_demoPaved) DemoPave();
         }
 
         UpdateLandTool();
         UpdateBuildTool();
+        UpdatePaveTool();
         _placementRenderer.SetSites(s.Placement, _items);
         _placementRenderer.SetHeritageSites(AvailableHeritage(), _showHeritage || _tool == Tool.Build);
         if (_demoBuild) DemoBuildStep();
@@ -187,14 +203,15 @@ public partial class GameHost : Node3D
     public override void _UnhandledInput(InputEvent e)
     {
         if (_tool == Tool.None || _runner is null) return;
-        if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } && _tool is Tool.Build or Tool.Cancel)
+        if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } && _tool is Tool.Build or Tool.Cancel or Tool.Pave)
         {
             if (_tool == Tool.Build) PlaceBuilding();
+            else if (_tool == Tool.Pave) PaveHovered();
             else CancelHoveredSite();
             GetViewport().SetInputAsHandled();
             return;
         }
-        if (_tool is not (Tool.Clear or Tool.Buy)) return;
+        if (!IsDragTool) return;
         if (e is InputEventMouseButton mb)
         {
             if (mb.ButtonIndex == MouseButton.Left && mb.Pressed && _map.HoverTile >= 0)
@@ -209,6 +226,7 @@ public partial class GameHost : Node3D
                 _dragStart = _dragEnd = -1;
                 _quote = null;
                 _map.SetSelection(null, true);
+                _pathRenderer.SetPreview(null, true);
                 GetViewport().SetInputAsHandled();
             }
             else if (mb.ButtonIndex == MouseButton.Right && mb.Pressed && _dragStart >= 0)
@@ -216,6 +234,7 @@ public partial class GameHost : Node3D
                 _dragStart = _dragEnd = -1; // right-click cancels the drag (camera orbit stays on the right button otherwise)
                 _quote = null;
                 _map.SetSelection(null, true);
+                _pathRenderer.SetPreview(null, true);
             }
         }
     }
@@ -273,7 +292,11 @@ public partial class GameHost : Node3D
     /// (off). While a tool is on, ownership is shown.</summary>
     public void SetTool(string tool)
     {
-        _tool = tool switch { "clear" => Tool.Clear, "buy" => Tool.Buy, "cancel" => Tool.Cancel, "build" when _buildItem is not null => Tool.Build, _ => Tool.None };
+        _tool = tool switch
+        {
+            "clear" => Tool.Clear, "buy" => Tool.Buy, "cancel" => Tool.Cancel, "build" when _buildItem is not null => Tool.Build,
+            "path" => Tool.Path, "remove_path" => Tool.RemovePath, "pave" => Tool.Pave, _ => Tool.None,
+        };
         if (_tool != Tool.Build) _buildItem = null;
         _dragStart = _dragEnd = -1;
         _quote = null;
@@ -282,11 +305,14 @@ public partial class GameHost : Node3D
         _map.SetSelection(null, true);
         _map.SetOverlayMode(EffectiveOverlay);
         _placementRenderer.SetGhost(null, default, -1, false);
+        _pathRenderer?.SetPreview(null, true);
+        _pathKey = (-1, -1, -1);
     }
 
     public string GetTool() => _tool switch
     {
-        Tool.Clear => "clear", Tool.Buy => "buy", Tool.Build => "build", Tool.Cancel => "cancel", _ => "",
+        Tool.Clear => "clear", Tool.Buy => "buy", Tool.Build => "build", Tool.Cancel => "cancel",
+        Tool.Path => "path", Tool.RemovePath => "remove_path", Tool.Pave => "pave", _ => "",
     };
 
     /// <summary>Starts placing a catalogue item (id from <see cref="GetCatalog"/>); "" stops.</summary>
@@ -388,7 +414,8 @@ public partial class GameHost : Node3D
         hud["cash"] = LandSystem.Money(s.CashCents);
         hud["clearing_tiles"] = s.ClearingTiles;
         hud["construction"] = ConstructionText(s);
-        hud["heritage_bonus"] = s.Placement?.HeritageBonus ?? 0;
+        hud["heritage_bonus"] = (s.Placement?.HeritageBonus ?? 0) + s.LandHeritageBonus;
+        hud["path_triangles"] = _pathRenderer.Triangles;
         hud["walks_last_hour"] = s.WalksLastTick;
         hud["tick_ms_p95"] = s.P95TickMs;
         hud["dropped_ticks"] = s.DroppedTicks;
@@ -401,19 +428,45 @@ public partial class GameHost : Node3D
 
     private MapOverlay EffectiveOverlay => _tool != Tool.None && _overlay == MapOverlay.None ? MapOverlay.Ownership : _overlay;
 
+    private bool IsDragTool => _tool is Tool.Clear or Tool.Buy or Tool.Path or Tool.RemovePath;
+
     private LandCommand Command()
     {
         int w = _map.Map.Grid.Width;
-        return new LandCommand(_tool == Tool.Clear ? LandAction.Clear : LandAction.Buy, _dragStart % w, _dragStart / w, _dragEnd % w, _dragEnd / w);
+        var action = _tool switch { Tool.Clear => LandAction.Clear, Tool.Path => LandAction.Path, Tool.RemovePath => LandAction.RemovePath, _ => LandAction.Buy };
+        return new LandCommand(action, _dragStart % w, _dragStart / w, _dragEnd % w, _dragEnd / w);
+    }
+
+    private PathMap SnapshotPathMap()
+    {
+        var s = _snapshot!;
+        var g = _map.Map.Grid;
+        return new PathMap(g.Width, g.Height, g.TileSizeM, s.Surfaces, s.LandStates, s.Owners, g.Protected, s.Clearing, _wear, s.PathTypes);
     }
 
     private void UpdateLandTool()
     {
-        if (_tool is not (Tool.Clear or Tool.Buy) || _dragStart < 0 || _snapshot is null) return;
+        if (!IsDragTool || _dragStart < 0 || _snapshot is null) return;
         if (_map.HoverTile >= 0) _dragEnd = _map.HoverTile;
         var g = _map.Map.Grid;
         var c = Command();
         var s = _snapshot;
+        if (_tool is Tool.Path or Tool.RemovePath)
+        {
+            // Routes are searched only when an end or the map changes.
+            var key = (_dragStart, _dragEnd, s.LandVersion);
+            if (key == _pathKey) return;
+            _pathKey = key;
+            _quote = LandSystem.QuotePaths(_pathCfg, _eras, c, SnapshotPathMap(), s.Date, out _pathTiles);
+            bool ok = _quote.Value.Ok && s.CashCents >= _quote.Value.Cents;
+            if (_tool == Tool.Path) _pathRenderer.SetPreview(_pathTiles.Count > 0 ? _pathTiles : [_dragStart, _dragEnd], ok);
+            else
+            {
+                int rx0 = Math.Min(c.X0, c.X1), ry0 = Math.Min(c.Y0, c.Y1);
+                _map.SetSelection(new Rect2I(rx0, ry0, Math.Abs(c.X1 - c.X0) + 1, Math.Abs(c.Y1 - c.Y0) + 1), ok);
+            }
+            return;
+        }
         _quote = LandSystem.Quote(_landCfg, _eras, c, g.Width, g.Height, s.LandStates, s.Owners, s.Surfaces, s.Clearing, s.Date);
         int x0 = Math.Min(c.X0, c.X1), y0 = Math.Min(c.Y0, c.Y1);
         _map.SetSelection(new Rect2I(x0, y0, Math.Abs(c.X1 - c.X0) + 1, Math.Abs(c.Y1 - c.Y0) + 1),
@@ -428,6 +481,7 @@ public partial class GameHost : Node3D
                 ? $"Cancel the {hs.Name} ({hs.Progress:P0} built)? Click to cancel: half of the unspent part is refunded (all of it on the day it was ordered)."
                 : "Cancel construction: click a building under construction (Esc to stop).";
         if (_tool == Tool.None) return "";
+        if (_tool is Tool.Path or Tool.RemovePath or Tool.Pave) return PathHint();
         string what = _tool == Tool.Clear ? "Clear forest: drag over university-owned woods" : "Buy land: drag over land next to the campus";
         if (_quote is not { } q || _snapshot is null) return what + " (right-click or Esc to stop).";
         if (!q.Ok) return q.Problem;
@@ -436,6 +490,75 @@ public partial class GameHost : Node3D
         return _tool == Tool.Clear
             ? $"Clear {q.Tiles} tiles: {cost}, about {Math.Ceiling(q.Days)} days{afford}. Release to order."
             : $"Buy {q.Tiles} tiles: {cost}{afford}. Release to buy.";
+    }
+
+    // ---------------- paths (1g) ----------------
+
+    private string SurfaceName() => _snapshot is null ? "path" : _pathCfg.Surfaces[_pathCfg.SurfaceFor(_eras, _snapshot.Date.Year)].Name.ToLowerInvariant();
+
+    private string PathHint()
+    {
+        string afford = _quote is { } aq && _snapshot is not null && _snapshot.CashCents < aq.Cents ? " (not enough money)" : "";
+        switch (_tool)
+        {
+            case Tool.Path:
+                if (_dragStart < 0 || _quote is not { } q) return $"Lay a {SurfaceName()}: drag from one end to the other; the route goes round obstacles and joins existing paths (Esc to stop).";
+                if (!q.Ok) return q.Problem;
+                return $"{q.Tiles} new tiles of {SurfaceName()}{(q.Skipped > 0 ? $" (+{q.Skipped} on existing paths)" : "")}: {LandSystem.Money(q.Cents)}{afford}. Release to lay it.";
+            case Tool.RemovePath:
+                if (_dragStart < 0 || _quote is not { } r) return "Remove paths: drag over footpaths on university land (roads stay). Free.";
+                return r.Ok ? $"Remove {r.Tiles} tiles of path. Release to remove." : r.Problem;
+            default:
+                if (_quote is not { } p) return "Pave a desire path: point at a shortcut worn into the lawn (Esc to stop).";
+                if (!p.Ok) return p.Problem;
+                var shape = PathPlanner.SlantWalk(_pathCfg, _pathTiles, _map.Map.Grid.Width, _map.Map.Grid.TileSizeM);
+                string slant = _snapshot is { LandHeritageBonus: 0 } && shape.Qualifies ? " A long diagonal: paving it makes it the Slant Walk!" : "";
+                return $"Pave this desire path: {p.Tiles} tiles of {SurfaceName()}, {LandSystem.Money(p.Cents)}{afford}. Click to pave.{slant}";
+        }
+    }
+
+    /// <summary>Pave tool: preview the desire path under the cursor.</summary>
+    private void UpdatePaveTool()
+    {
+        if (_tool != Tool.Pave || _snapshot is not { } s) return;
+        int t = _map.HoverTile;
+        var key = (t, t, s.LandVersion ^ (_trafficVersion << 16));
+        if (key == _pathKey) return;
+        _pathKey = key;
+        if (t < 0) { _quote = null; _pathRenderer.SetPreview(null, true); return; }
+        int w = _map.Map.Grid.Width;
+        _quote = LandSystem.QuotePaths(_pathCfg, _eras, new LandCommand(LandAction.PaveDesire, t % w, t / w, t % w, t / w), SnapshotPathMap(), s.Date, out _pathTiles);
+        _pathRenderer.SetPreview(_pathTiles, _quote.Value.Ok && s.CashCents >= _quote.Value.Cents);
+    }
+
+    private void PaveHovered()
+    {
+        if (_quote is not { } q || _map.HoverTile < 0) return;
+        if (!q.Ok) { AddMessage(q.Problem); return; }
+        int w = _map.Map.Grid.Width, t = _map.HoverTile;
+        _runner!.Submit(new LandCommand(LandAction.PaveDesire, t % w, t / w, t % w, t / w));
+    }
+
+    /// <summary>Launch option --demo-pave: once desire paths have worn in, paves the biggest one.</summary>
+    private void DemoPave()
+    {
+        var g = _map.Map.Grid;
+        var seen = new bool[_wear.Length];
+        List<int> best = [];
+        var m = SnapshotPathMap();
+        for (int t = 0; t < _wear.Length; t++)
+        {
+            if (seen[t] || _wear[t] < TileGrid.DesirePathWear) continue;
+            var region = PathPlanner.DesireRegion(m, t);
+            foreach (int r in region) seen[r] = true;
+            if (region.Count > best.Count) best = region;
+        }
+        if (best.Count < 6) return;
+        int pick = best[best.Count / 2];
+        _runner!.Submit(new LandCommand(LandAction.PaveDesire, pick % g.Width, pick / g.Width, pick % g.Width, pick / g.Width));
+        var shape = PathPlanner.SlantWalk(_pathCfg, best, g.Width, g.TileSizeM);
+        GD.Print($"DEMO_PAVE {best.Count} tiles at ({pick % g.Width}, {pick / g.Width}), {shape.LengthM:0} m, {shape.AngleFromDiagonalDeg:0} deg from diagonal, slant={shape.Qualifies}");
+        _demoPaved = true;
     }
 
     // ---------------- building ----------------
@@ -591,6 +714,7 @@ public partial class GameHost : Node3D
         _items = _catalog?.Items.ToDictionary(i => i.Id) ?? [];
         if (OS.GetCmdlineUserArgs().Contains("--demo-land")) DemoLand();
         _demoBuild = OS.GetCmdlineUserArgs().Contains("--demo-build");
+        _demoPave = OS.GetCmdlineUserArgs().Contains("--demo-pave");
         var r = _world.CampusReport!;
         GD.Print($"Game ready ({_scenario.Name}): {r.CampusBuildings} Miami buildings + {r.HousingZones} housing zones, " +
                  $"{pop.Count:N0} agents, flow fields {_world.FlowFieldsMs:F0} ms, {SimInfo.Describe()}, optimized={SimInfo.IsOptimizedBuild}");
@@ -635,7 +759,9 @@ public partial class GameHost : Node3D
                     {
                         if (Math.Max(Math.Abs(dx), Math.Abs(dy)) != r) continue;
                         var pose = FootprintMath.Snap(cx + dx, cy + dy, item.W, item.H, rot);
-                        if (PlacementSystem.Check(_catalog, item, pose, map, s.Date).Ok) return pose;
+                        var q = PlacementSystem.Check(_catalog, item, pose, map, s.Date);
+                        if (q.Ok) return pose;
+                        if (q.Problem.StartsWith("The entrance needs a path")) { ConnectDoor(q.Entrance); return pose; }
                     }
             return null;
         }
@@ -661,8 +787,27 @@ public partial class GameHost : Node3D
         var tiles = site.Tiles.Append(q.Entrance).Where(t => t >= 0).ToArray();
         int x0 = tiles.Min(t => t % g.Width), x1 = tiles.Max(t => t % g.Width), y0 = tiles.Min(t => t / g.Width), y1 = tiles.Max(t => t / g.Width);
         if (q.Ok) { _runner!.Submit(PlacementCommand.Build(elliott.Id, site.Pose)); _demoStep = 5; }
+        else if (q.Problem.StartsWith("The entrance needs a path")) { ConnectDoor(q.Entrance); _runner!.Submit(PlacementCommand.Build(elliott.Id, site.Pose)); _demoStep = 5; }
         else if (q.Problem.Contains("university land") && _demoStep == 2) { _runner!.Submit(new LandCommand(LandAction.Buy, x0, y0, x1, y1)); _demoStep = 3; }
         else if (q.Problem.Contains("forest") && _demoStep <= 3) { _runner!.Submit(new LandCommand(LandAction.Clear, x0, y0, x1, y1)); _demoStep = 4; }
+    }
+
+    /// <summary>Demo helper: a path from a door to the nearest existing path (or just at the door if none is reachable).</summary>
+    private void ConnectDoor(int door)
+    {
+        var g = _map.Map.Grid;
+        var s = _snapshot!;
+        int dx0 = door % g.Width, dy0 = door / g.Width, target = door;
+        var m = SnapshotPathMap();
+        for (int r = 1; r < 25 && target == door; r++)
+            for (int dy = -r; dy <= r && target == door; dy++)
+                for (int dx = -r; dx <= r; dx++)
+                {
+                    if (Math.Max(Math.Abs(dx), Math.Abs(dy)) != r || !g.InBounds(dx0 + dx, dy0 + dy)) continue;
+                    int t = g.Index(dx0 + dx, dy0 + dy);
+                    if (s.Surfaces[t] == TileType.Path && PathPlanner.Route(_pathCfg, m, door, t, out _) is not null) { target = t; break; }
+                }
+        _runner!.Submit(new LandCommand(LandAction.Path, dx0, dy0, target % g.Width, target / g.Width));
     }
 
     private void BuildWalkers()

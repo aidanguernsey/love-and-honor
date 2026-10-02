@@ -1,7 +1,8 @@
 extends CanvasLayer
 ## Main HUD (§27.1), Phase 1 checkpoints 1c–1e. Systems that don't exist yet show "—" with a tooltip saying which
 ## checkpoint brings them. Keys (§27.5): Space pause/resume · 1–4 speed (1×/2×/4×/8×) · 5 skip to next event (reserved)
-## · O overlays · G build grid · C clear forest · L buy land · B build menu · Z/X turn the building · Del cancel
+## · O overlays · G build grid · C clear forest · L buy land · P lay path · Shift+P remove path · V pave a desire path
+## · B build menu · Z/X turn the building · Del cancel
 ## construction · H Heritage sites · N day/night cycle · Esc stop tool / close menu / main menu.
 ## The day/night and Heritage-site settings are remembered in user://settings.cfg (`--day-night=on|off` overrides
 ## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs), `--build-menu` (open the build list).
@@ -161,6 +162,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_G: _host.ToggleGrid()
 		KEY_B: _open_build_list("")
 		KEY_C: _toggle_tool("clear")
+		KEY_P: _toggle_tool("remove_path" if event.shift_pressed else "path")
+		KEY_V: _toggle_tool("pave")
 		KEY_L: _toggle_tool("buy")
 		KEY_DELETE, KEY_BACKSPACE: _toggle_tool("cancel")
 		KEY_Z: _host.RotateBuild(-1)
@@ -232,7 +235,10 @@ func _build_build_menu() -> void:
 	panel.add_child(col)
 	col.add_child(_label(14, "Land"))
 	for spec in [["clear", "Clear forest (C)", "Clear university-owned woods: drag a rectangle. Costs money and takes days of work (slower in winter)."],
-			["buy", "Buy land (L)", "Buy land next to the campus: drag a rectangle. Town land costs far more and annoys the town."]]:
+			["buy", "Buy land (L)", "Buy land next to the campus: drag a rectangle. Town land costs far more and annoys the town."],
+			["path", "Lay path (P)", "Drag from one end to the other: the route goes round obstacles and joins existing paths. Dirt in the 1820s, gravel, then brick."],
+			["remove_path", "Remove path (Shift+P)", "Drag over footpaths on university land to remove them (roads stay)."],
+			["pave", "Pave desire path (V)", "Click a shortcut students have worn into the lawn to pave it. A long diagonal becomes the Slant Walk."]]:
 		var t := Button.new()
 		t.text = spec[1]
 		t.tooltip_text = spec[2]

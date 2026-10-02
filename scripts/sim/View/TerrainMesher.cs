@@ -23,6 +23,23 @@ public static class TerrainMesher
 {
     /// <param name="tileColor">Linear RGB colour of tile (tx, ty).</param>
     /// <param name="step">Tiles per quad: 1 = full detail, 2, 4 … for distant LODs. Must divide sizeTiles.</param>
+    /// <summary>
+    /// Height of the full-detail terrain surface (LOD 0) at world (x, z): the same tile corners and the same diagonal
+    /// split as <see cref="BuildChunk"/>, so things laid on the ground (paths) sit exactly on it.
+    /// </summary>
+    public static float SurfaceHeight(Heightmap heights, float tileSizeM, float x, float z)
+    {
+        int spt = (int)MathF.Round(tileSizeM / heights.ResolutionM);
+        float fx = x / tileSizeM, fz = z / tileSizeM;
+        int cx = Math.Clamp((int)MathF.Floor(fx), 0, (heights.Width - 2) / spt), cy = Math.Clamp((int)MathF.Floor(fz), 0, (heights.Height - 2) / spt);
+        float u = Math.Clamp(fx - cx, 0, 1), v = Math.Clamp(fz - cy, 0, 1);
+        float ha = heights.Sample(cx * spt, cy * spt), hb = heights.Sample((cx + 1) * spt, cy * spt);
+        float hc = heights.Sample(cx * spt, (cy + 1) * spt), hd = heights.Sample((cx + 1) * spt, (cy + 1) * spt);
+        if (MathF.Abs(ha - hd) <= MathF.Abs(hb - hc))
+            return u >= v ? ha + (hb - ha) * u + (hd - hb) * v : ha + (hd - hc) * u + (hc - ha) * v; // split a–d
+        return u + v <= 1 ? ha + (hb - ha) * u + (hc - ha) * v : hd + (hc - hd) * (1 - u) + (hb - hd) * (1 - v); // split b–c
+    }
+
     public static TerrainChunkMesh BuildChunk(Heightmap heights, float tileSizeM, int tx0, int ty0, int sizeTiles,
         int step, Func<int, int, Rgb> tileColor, float skirtDepthM)
     {

@@ -55,3 +55,22 @@ triangles per window bay), with the middle-distance version inside 5k. OK, or sh
 **Q14 — only buildings with a recipe are drawn from the kit.** In the 2026 preview that's just Elliott and Stoddard; the
 other ~80 real buildings stay plain blocks until arbitrary footprints are supported (Phase 2, per the approved plan).
 *Default:* as planned.
+
+## 1g — Paths
+
+**Q15 — path at the door is now required** (this settles Q5 with its default). A new building needs a path next to its
+entrance, so in 1824 the first job is a dirt path from the road. OK?
+
+**Q16 — the Slant Walk is automatic.** §12.4 says the first major diagonal desire path "can be designated" the Slant
+Walk. *Default:* the first paved desire path that's long (≥ 100 m) and diagonal (within 25°) becomes it automatically,
+with a message. Should it be the player's choice (a button when paving)?
+
+**Q17 — path surfaces.** New paths use the era's preferred surface: dirt (1820s), gravel (1880s), brick (1900s on;
+concrete exists but brick wins). *Default:* no surface picker yet. Want one (e.g. cheap concrete vs brick, with the
+Architect grumbling, §11.8)?
+
+**Q18 — paths are instant and cheap** ($0.40 a tile in the 1820s; brick $40 a tile today). *Default:* placeholders;
+no construction time for paths. OK?
+
+**Q19 — removing the real campus footpaths.** On university land the player can remove any footpath, including the
+real ones from the 2026 map, for free; roads can't be removed. *Default:* allowed. OK?

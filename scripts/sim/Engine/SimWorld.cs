@@ -81,7 +81,7 @@ public sealed class SimWorld
         var campus = RealCampusBuilder.Build(map, features, timeline, RealCampusConfig.Load(source), s.MapYear, present, out var report, past);
         var eras = EraTable.Load(source);
         var land = new LandSystem(map.Grid, LandConfig.Load(source), eras, past ? history : null, pathOn,
-            new Treasury((long)Math.Round((startingCash ?? s.StartingCash) * 100)));
+            new Treasury((long)Math.Round((startingCash ?? s.StartingCash) * 100)), PathConfig.Load(source));
         var catalog = BuildingCatalog.Load(source, data, eras, timeline, historic, map.Grid.Width, map.Grid.Height);
         // Heritage Projects whose real building already stands at the start (Old Main in 1824) are done.
         var standing = catalog.Items.Where(i => i.Site is { } site && site.RealYear <= s.MapYear

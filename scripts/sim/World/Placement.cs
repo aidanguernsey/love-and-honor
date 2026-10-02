@@ -601,7 +601,7 @@ public sealed class PlacementSystem
         string warning = "";
         if (!pathAtDoor)
         {
-            if (cfg.PathAccess.Required) return Fail("The entrance needs a path next to it.", slope);
+            if (cfg.PathAccess.Required) return Fail("The entrance needs a path next to it: lay one first (P).", slope);
             warning = "No path at the door yet: people will walk across the grass to it.";
         }
         return new PlacementQuote([.. tiles], entrance, cents, workDays, finish, slope, onSite, "", warning);

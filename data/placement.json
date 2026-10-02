@@ -5,8 +5,8 @@
   "max_slope_m": 4.0,
   "_max_slope_comment": "Largest ground-height difference allowed under a footprint (corners and tile centres). Placeholder; §12.1 gives no number.",
   "path_access": {
-    "_comment": "§12.1: a building's entrance must be next to a path. Players can't lay paths until checkpoint 1g, so for now a missing path is only a warning (people walk across the lawn or rough ground to the door). Set required to true once paths exist.",
-    "required": false
+    "_comment": "§12.1: a building's entrance must be next to a path (lay one with the path tool, P). It was only a warning until players could lay paths (1g).",
+    "required": true
   },
   "construction": {
     "_comment": "§12.1: small 3 months, medium 9 months, large 18-24 months (21 used), summer x1.5, winter x0.7. A building may set its own construction_months. Size class by footprint area in tiles. Paid in full when ordered (financing comes with the budget, 1i).",

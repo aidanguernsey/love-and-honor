@@ -11,7 +11,8 @@
     "extrusion",
     "sun",
     "camera",
-    "placement"
+    "placement",
+    "path_meshes"
   ],
   "additionalProperties": false,
   "patternProperties": {
@@ -558,6 +559,73 @@
           "$ref": "#/$defs/positive"
         },
         "wooden_height_m": {
+          "$ref": "#/$defs/positive"
+        }
+      }
+    },
+    "path_meshes": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^_": {}
+      },
+      "required": [
+        "widths_m",
+        "lift_m",
+        "segments",
+        "visible_to_m"
+      ],
+      "properties": {
+        "widths_m": {
+          "type": "object",
+          "required": [
+            "footway",
+            "cycleway",
+            "service",
+            "residential",
+            "tertiary",
+            "secondary",
+            "primary",
+            "railway"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "footway": {
+              "$ref": "#/$defs/positive"
+            },
+            "cycleway": {
+              "$ref": "#/$defs/positive"
+            },
+            "service": {
+              "$ref": "#/$defs/positive"
+            },
+            "residential": {
+              "$ref": "#/$defs/positive"
+            },
+            "tertiary": {
+              "$ref": "#/$defs/positive"
+            },
+            "secondary": {
+              "$ref": "#/$defs/positive"
+            },
+            "primary": {
+              "$ref": "#/$defs/positive"
+            },
+            "railway": {
+              "$ref": "#/$defs/positive"
+            }
+          }
+        },
+        "lift_m": {
+          "type": "number",
+          "minimum": 0
+        },
+        "segments": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8
+        },
+        "visible_to_m": {
           "$ref": "#/$defs/positive"
         }
       }

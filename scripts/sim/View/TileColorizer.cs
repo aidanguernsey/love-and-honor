@@ -106,7 +106,8 @@ public sealed class TileColorizer
     /// Paints from a live land layer (the game, Phase 1 1d) instead of the land-history model: each tile's current land
     /// state, and roads/paths wherever the walking surface is a path (road colour by era, as in <see cref="Paint"/>).
     /// </summary>
-    public void PaintLive(ReadOnlySpan<LandState> states, ReadOnlySpan<TileType> surfaces, int year, int dayOfYear)
+    /// <param name="paintPaths">False when paths are drawn as meshes (the game, 1g): path tiles get their ground colour.</param>
+    public void PaintLive(ReadOnlySpan<LandState> states, ReadOnlySpan<TileType> surfaces, int year, int dayOfYear, bool paintPaths = true)
     {
         BlendSeasons(dayOfYear);
         string surface = _eras.At(year).RoadType;
@@ -118,7 +119,9 @@ public sealed class TileColorizer
         {
             Rgb c;
             var path = paths[i];
-            if (surfaces[i] == TileType.Path && path != PathType.None)
+            if (!paintPaths)
+                c = _blended[(int)states[i]];
+            else if (surfaces[i] == TileType.Path && path != PathType.None)
                 c = path == PathType.Railway ? _modernPaths[(int)PathType.Railway]
                     : path == PathType.Footway ? footway
                     : modern ? _modernPaths[(int)path] : eraRoad;

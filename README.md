@@ -83,13 +83,15 @@ stood then), or **Preview — 2026 campus** for the modern campus with everyone 
 
 Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F tilt · Space pause/resume · 1–4 speed
 (1×/2×/4×/8×) · O overlays (ownership, foot traffic) · C clear forest · L buy land (drag a rectangle; the cost shows
-before you let go) · B build menu (or the category buttons; pick a building, then click the map: the ghost is green
+before you let go) · P lay a path (drag from end to end; the route goes round obstacles) · Shift+P remove paths ·
+V pave a desire path (click a worn shortcut; a long diagonal becomes the Slant Walk) · B build menu (or the category buttons; pick a building, then click the map: the ghost is green
 when it can be built, red with the reason when not) · Z/X turn the building 15° · Del cancel construction · H Heritage
 Project sites on/off · N day/night cycle on/off (both remembered) · G build grid · Esc stop the tool / main menu. Hover a
 building for its name or construction progress. Desire paths wear into the campus lawns over a few in-game weeks.
 Launch options (after `--`): `--scenario=chapter1_the_hill|preview_2026`, `--speed=N`, `--camera=x,z,distance,pitch,yaw`,
 `--day-night=on|off`, `--cash=N` (starting cash), `--demo-land` (a sample clearing order and purchase), `--demo-build`
 (two buildings near Old Main, then Elliott Hall on its real site once it's offered in 1825; add `--cash=20000`),
+`--demo-pave` (pave the biggest desire path once one has worn in; try it with the 2026 preview at 8×),
 `--build-item=ID`, `--build-rotation=DEG`, `--ghost-at=x,z` (screenshots of the ghost), `--game-smoke[=seconds]`
 (print stats and quit), `--screenshot=FILE` (with `--game-smoke`).
 

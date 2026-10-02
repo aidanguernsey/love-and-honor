@@ -162,6 +162,10 @@ public sealed class EnrollmentSystem
 
     public int CampusBeds => Ready(BuildingKind.Residence).Sum(_capacityOf);
     public int Seats => Ready(BuildingKind.Academic).Sum(_capacityOf);
+    /// <summary>Total capacity of the finished buildings of a kind (dining places, beds, seats ...).</summary>
+    public int CapacityOfKind(BuildingKind kind) => Ready(kind).Sum(_capacityOf);
+    /// <summary>The era's student/faculty ratio (what hiring aims for).</summary>
+    public double TargetRatio(DateOnly date) => _cfg.EraFor(_eras.At(date.Year).Id).StudentFacultyRatio;
 
     /// <summary>Beds with families in town: town land within reach of the campus.</summary>
     public int TownBeds()

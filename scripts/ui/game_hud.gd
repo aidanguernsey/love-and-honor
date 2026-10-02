@@ -152,6 +152,8 @@ func _process(delta: float) -> void:
 	_stat_labels["happiness"].text = "%d%%" % roundi(hud["happiness"])
 	_stat_labels["cash"].text = hud["cash"]
 	_stat_labels["trustees"].text = hud["confidence"]
+	_stat_labels["reputation"].text = hud["reputation"]
+	_stat_labels["reputation"].get_parent().tooltip_text = hud["reputation_tip"]
 	if _budget_panel.visible:
 		_budget_label.text = hud["budget"]
 		_tuition_label.text = hud["tuition"]
@@ -316,7 +318,7 @@ func _build_top_bar() -> void:
 	_add_stat(row, "cash", "Cash", "—", "Operating cash (§8.1). Spent on clearing and buying land; income and the budget come in 1i.")
 	_add_stat(row, "enrollment", "Enrollment", "—", "Everyone is simulated. Students arrive at move-in (August), graduate or leave at commencement (May), and are away over the summer and winter breaks. Details under Demand.")
 	_add_stat(row, "happiness", "Happiness", "—", "Average student and faculty happiness from their needs (§10.1).")
-	_add_stat(row, "reputation", "Reputation", "—", "Rankings come later (Phase 2).")
+	_add_stat(row, "reputation", "Reputation", "—", "Reputation (§9): moves toward the college's Quality and brings in applicants.")
 	_add_stat(row, "trustees", "Trustee Confidence", "—", "Trustee Confidence (0-100, §3): reviewed every August 1 (balanced budget and growing enrollment raise it); falls whenever cash runs out. At 0 the Trustees dismiss you. Budget: Y.")
 	var budget_button := Button.new()
 	budget_button.text = "Budget (Y)"

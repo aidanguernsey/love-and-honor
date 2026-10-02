@@ -29,6 +29,7 @@ public class SaveGameTests
         Mix(w.Population.Count); Mix(w.Population.StudentCount); Mix(w.Campus.Buildings.Count); Mix(w.Simulation.Time.Tick);
         Mix(w.Enrollment!.Alumni); Mix((long)(w.Enrollment.Scholarship * 1000)); Mix((long)(w.Budget!.Confidence * 1000));
         Mix(w.Campaign!.Version); Mix(w.Placement!.Sites.Count); Mix(w.Simulation.Timelapse!.Frames.Count);
+        Mix((long)(w.Reputation!.Reputation * 1e6)); Mix(w.Reputation.Version);
         return h;
     }
 

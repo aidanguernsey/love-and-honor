@@ -19,6 +19,7 @@
           "timeline_id": { "type": "string", "description": "timeline.json entry: name, real dates and the site outline" },
           "building": { "type": "string", "description": "building definition (category, capacity)" },
           "cost_usd": { "type": "number", "minimum": 0, "description": "modern dollars, x the era's price_multiplier" },
+          "upkeep_usd_per_year": { "type": "number", "minimum": 0, "description": "yearly upkeep once built, in the same dollars as cost_usd; default: the building definition's" },
           "construction_months": { "type": "number", "exclusiveMinimum": 0 },
           "verified": { "type": "boolean" }
         }

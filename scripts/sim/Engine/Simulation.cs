@@ -95,6 +95,8 @@ public sealed class Simulation
     public Economy.BudgetSystem? Budget { get; }
     /// <summary>Events, History Book, advisors and goals (Phase 1 1j), or null.</summary>
     public CampaignSystem? Campaign { get; }
+    /// <summary>Reputation (Chapter 1 balance pass), or null.</summary>
+    public ReputationSystem? Reputation { get; init; }
     /// <summary>Monthly map recording for the time-lapse (Phase 1 1k), or null for worlds without land.</summary>
     public TimelapseRecorder? Timelapse { get; }
     private readonly string _moveIn;
@@ -197,7 +199,8 @@ public sealed class Simulation
     /// <summary>
     /// A finished construction site joins the campus (1e): the next building index, its footprint tiles, and its own
     /// flow field (built in the background like any map edit). Nobody is assigned to it until enrollment and
-    /// schedules use new buildings (1h).
+    /// schedules use new buildings (1h). A Heritage Project takes its real building's timeline id (like the real one
+    /// would), so its own numbers (upkeep) apply and goals can name it.
     /// </summary>
     private void AddFinishedBuilding(ConstructionSite site)
     {
@@ -206,7 +209,7 @@ public sealed class Simulation
         int minX = site.Tiles.Min(t => t % w), maxX = site.Tiles.Max(t => t % w), minY = site.Tiles.Min(t => t / w), maxY = site.Tiles.Max(t => t / w);
         _campus.Add(new CampusBuilding
         {
-            Index = index, DefId = site.Item.Def.Id, Kind = CampusBuilding.KindForCategory(site.Item.Category),
+            Index = index, DefId = site.Item.Site?.TimelineId ?? site.Item.Def.Id, Kind = CampusBuilding.KindForCategory(site.Item.Category),
             X = minX, Y = minY, W = maxX - minX + 1, H = maxY - minY + 1, EntranceTile = site.Entrance,
         });
         Placement!.Finish(site, index, Time.Date);
@@ -282,6 +285,7 @@ public sealed class Simulation
             Enrollment?.DailyUpdate(Time.Date);
             Budget?.DailyUpdate(Time.Date, new DateOnly(Time.Date.Year, int.Parse(_moveIn[..2], System.Globalization.CultureInfo.InvariantCulture),
                 int.Parse(_moveIn[3..], System.Globalization.CultureInfo.InvariantCulture)));
+            Reputation?.DailyUpdate(Time.Date);
             if (Campaign is not null)
             {
                 var fy = Budget?.Config.FiscalYearStart ?? "08-01";

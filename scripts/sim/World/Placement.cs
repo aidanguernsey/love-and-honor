@@ -67,6 +67,9 @@ public sealed class HeritageProjectsConfig
         public string TimelineId { get; init; } = "";
         public string Building { get; init; } = "";
         public double CostUsd { get; init; }
+        /// <summary>Yearly upkeep of the building once built as this project, in the same modern dollars as the cost;
+        /// null = the building definition's upkeep.</summary>
+        public double? UpkeepUsdPerYear { get; init; }
         public double ConstructionMonths { get; init; }
         public bool Verified { get; init; }
     }
@@ -219,6 +222,8 @@ public sealed class CatalogItem
     public required int H { get; init; }
     /// <summary>Modern dollars; × the era's price multiplier when ordered.</summary>
     public required double CostUsd { get; init; }
+    /// <summary>Heritage Projects: yearly upkeep in modern dollars once built (null = the building definition's).</summary>
+    public double? UpkeepUsd { get; init; }
     public required double Months { get; init; }
     /// <summary>Era indices: offered from <see cref="FromEra"/> up to (not including) <see cref="UntilEra"/>.</summary>
     public int FromEra { get; init; }
@@ -299,7 +304,7 @@ public sealed class BuildingCatalog
             items.Add(new CatalogItem
             {
                 Id = HeritagePrefix + p.Id, Name = entry.Name, Def = def, W = w, H = h, CostUsd = p.CostUsd,
-                Months = p.ConstructionMonths, HeritageId = p.Id, Site = site, HeritageVerified = p.Verified && entry.Verified,
+                Months = p.ConstructionMonths, HeritageId = p.Id, Site = site, UpkeepUsd = p.UpkeepUsdPerYear, HeritageVerified = p.Verified && entry.Verified,
             });
         }
         return new BuildingCatalog(cfg, eras, items);

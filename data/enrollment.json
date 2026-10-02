@@ -9,9 +9,10 @@
   "eras": {
     "founding": {
       "applicants_per_year": 24,
-      "applicant_growth_per_year": 1.08,
+      "applicant_growth_per_year": 1.06,
       "admit_rate": 0.9,
-      "student_faculty_ratio": 12,
+      "student_faculty_ratio": 25,
+      "_balance_comment": "Chapter 1 balance pass (2026-10-02, tools/BalanceRunner): 12 students per professor hired $600 of salary for every $240 of tuition, so each new student lost money and even an idle game was dismissed by 1835. At 25 a student roughly pays for their share of a professor (the sources point to about 33: 234 students and 7 professors in 1834, events/old_miami_1834.json). Applicant growth 8% -> 6% a year, because Reputation (reputation.json) now adds applicants for a well-run college [TWEAK].",
       "min_faculty": 3,
       "student_sections": 3,
       "faculty_sections": { "min": 2, "max": 3 },

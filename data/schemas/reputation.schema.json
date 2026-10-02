@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reputation (§9), the historic-play stand-in",
+  "type": "object",
+  "required": ["drift_per_year", "weights", "classroom_comfort", "heritage_for_full", "applicants"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": { "type": "string" },
+    "drift_per_year": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+    "weights": {
+      "type": "object",
+      "required": ["teaching", "faculty_ratio", "housing", "classrooms", "dining", "happiness", "heritage"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "teaching": { "type": "number", "minimum": 0 },
+        "faculty_ratio": { "type": "number", "minimum": 0 },
+        "housing": { "type": "number", "minimum": 0 },
+        "classrooms": { "type": "number", "minimum": 0 },
+        "dining": { "type": "number", "minimum": 0 },
+        "happiness": { "type": "number", "minimum": 0 },
+        "heritage": { "type": "number", "minimum": 0 }
+      }
+    },
+    "classroom_comfort": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+    "heritage_for_full": { "type": "number", "exclusiveMinimum": 0 },
+    "applicants": {
+      "type": "object",
+      "required": ["per_point", "min_factor", "max_factor"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "per_point": { "type": "number", "minimum": 0 },
+        "min_factor": { "type": "number", "minimum": 0 },
+        "max_factor": { "type": "number", "minimum": 1 }
+      }
+    }
+  }
+}

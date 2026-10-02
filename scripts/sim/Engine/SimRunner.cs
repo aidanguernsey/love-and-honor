@@ -63,6 +63,8 @@ public sealed class SimSnapshot
     public Economy.BudgetView? Budget;
     /// <summary>Events, History Book, goals (1j), or null.</summary>
     public CampaignView? Campaign;
+    /// <summary>Reputation and its Quality parts, or null.</summary>
+    public ReputationView? Reputation;
 
     public SimSnapshot(int agentCount, int tileCount)
     {
@@ -304,6 +306,7 @@ public sealed class SimRunner : IDisposable
             s.Campaign = campaign.View();
             foreach (var m in campaign.TakeMessages()) _messages.Enqueue(m);
         }
+        if (_sim.Reputation is { } reputation) s.Reputation = reputation.View();
         if (_sim.Budget is { } budget)
         {
             s.Budget = budget.View(time.Date);

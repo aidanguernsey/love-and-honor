@@ -32,6 +32,8 @@ public sealed class SimWorld
     public Economy.BudgetSystem? Budget { get; init; }
     /// <summary>Set for scenario worlds (Phase 1 1j): events, the History Book, advisors, goals.</summary>
     public CampaignSystem? Campaign { get; init; }
+    /// <summary>Reputation (the historic-play stand-in, Chapter 1 balance pass), or null without enrollment.</summary>
+    public ReputationSystem? Reputation { get; init; }
     public CampaignContent? Content { get; init; }
     public ScenarioConfig? Scenario { get; init; }
     /// <summary>Campus buildings when the world was created (buildings finished in play come after; saves, 1k).</summary>
@@ -106,10 +108,16 @@ public sealed class SimWorld
             return def is not null && data.Buildings.TryGetValue(def, out var d) ? d : null;
         }
         var budgetCfg = Economy.BudgetConfig.Load(source);
-        double UpkeepOf(CampusBuilding b) => DefOf(b)?.UpkeepUsdPerYear
+        // Heritage Projects built in play use the project's upkeep (calibrated like its cost); real buildings standing at
+        // the start keep their definition's.
+        int initialBuildings = campus.Buildings.Count;
+        var heritageUpkeep = catalog.Items.Where(i => i.Site is not null && i.UpkeepUsd is not null)
+            .ToDictionary(i => i.Site!.TimelineId, i => i.UpkeepUsd!.Value);
+        double UpkeepOf(CampusBuilding b) => (b.Index >= initialBuildings ? heritageUpkeep.GetValueOrDefault(b.DefId, -1) : -1) is var h and >= 0 ? h
+            : DefOf(b)?.UpkeepUsdPerYear
             ?? budgetCfg.DefaultUpkeep.GetValueOrDefault(b.Kind.ToString().ToLowerInvariant(), budgetCfg.DefaultUpkeep["other"]);
         var budgetSetup = new BudgetSetup(budgetCfg, eras, land.Treasury, UpkeepOf, EnrollmentConfig.Load(source).IntakeDate,
-            CampaignContent.Load(source), s.Goals);
+            CampaignContent.Load(source), s.Goals, ReputationConfig.Load(source));
         if (s.Enrollment)
         {
             // Capacity of a campus building: its building definition, else enrollment.json's default for its kind.
@@ -127,7 +135,7 @@ public sealed class SimWorld
 
     private sealed record EnrollmentSetup(EnrollmentConfig Config, EraTable Eras, Func<CampusBuilding, int> CapacityOf, int? Capacity);
     private sealed record BudgetSetup(Economy.BudgetConfig Config, EraTable Eras, Treasury Treasury, Func<CampusBuilding, double> UpkeepOf, string MoveIn,
-        CampaignContent Content, GoalsConfig? Goals);
+        CampaignContent Content, GoalsConfig? Goals, ReputationConfig Reputation);
 
     private static SimWorld Assemble(SimData data, RngStreams rng, Campus campus, double campusMs, int? threads, int? students,
         int? faculty, int? chunkSize, RealMap? map, RealCampusReport? report,
@@ -150,7 +158,11 @@ public sealed class SimWorld
         var budgetSystem = budget is null ? null
             : new Economy.BudgetSystem(budget.Config, budget.Eras, budget.Treasury, pop, campus, budget.UpkeepOf,
                 data.Balance.Trustees.StartingConfidence, start);
-        if (enrollmentSystem is not null && budgetSystem is not null) enrollmentSystem.ApplicantFactor = () => budgetSystem.ApplicantFactor;
+        ReputationSystem? reputation = enrollmentSystem is null || budget is null ? null
+            : new ReputationSystem(budget.Reputation, pop, enrollmentSystem,
+                () => (placement?.HeritageBonus ?? 0) + (land?.HeritageBonus ?? 0), start);
+        if (enrollmentSystem is not null && budgetSystem is not null)
+            enrollmentSystem.ApplicantFactor = () => budgetSystem.ApplicantFactor * (reputation?.ApplicantFactor ?? 1);
         CampaignSystem? campaign = null;
         if (budget is not null)
         {
@@ -165,9 +177,9 @@ public sealed class SimWorld
         {
             Data = data, Rng = rng, Campus = campus, Fields = fields, Population = pop,
             Simulation = new Simulation(data, campus, fields, pop, rng, t, chunkSize, startDate, land, placement, enrollmentSystem,
-                budgetSystem, budget?.MoveIn ?? "08-19", campaign),
+                budgetSystem, budget?.MoveIn ?? "08-19", campaign) { Reputation = reputation },
             Map = map, CampusReport = report, Land = land, Placement = placement, Enrollment = enrollmentSystem, Budget = budgetSystem,
-            Campaign = campaign, Content = budget?.Content, InitialBuildingCount = campus.Buildings.Count,
+            Campaign = campaign, Reputation = reputation, Content = budget?.Content, InitialBuildingCount = campus.Buildings.Count,
             Scenario = scenario,
             CampusMs = campusMs, FlowFieldsMs = fieldsMs, PopulationMs = popMs,
         };

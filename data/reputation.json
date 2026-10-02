@@ -1,0 +1,23 @@
+{
+  "$schema": "./schemas/reputation.schema.json",
+  "_comment": "Reputation for historic play (§9), the Chapter 1 stand-in until Phase 2's full version (Academic Quality, outcomes, rankings). Quality (0-100) is a weighted mix of what the player can already shape; Reputation drifts toward it (§32 'Reputation drift': 10% of the gap a year, applied monthly) and scales applicants. Every number is a [TWEAK] placeholder.",
+  "drift_per_year": 0.10,
+  "_weights_comment": "Quality components (weights are normalised): teaching = faculty's mean teaching score; faculty_ratio = 100 at the era's student/faculty ratio, less when there are more students per professor; housing = share of students in university halls; classrooms = 100 while seats are at most classroom_comfort full, 0 when full; dining = steward's hall places per student; happiness = students' mean happiness; heritage = Heritage earned (projects on their real sites, the Slant Walk) out of heritage_for_full.",
+  "weights": {
+    "teaching": 0.20,
+    "faculty_ratio": 0.15,
+    "housing": 0.25,
+    "classrooms": 0.10,
+    "dining": 0.10,
+    "happiness": 0.10,
+    "heritage": 0.10
+  },
+  "classroom_comfort": 0.75,
+  "heritage_for_full": 20,
+  "_applicants_comment": "Applicants x (1 + per_point x (Reputation - Reputation at the start)), clamped. The start scenario's applicant numbers are the baseline.",
+  "applicants": {
+    "per_point": 0.04,
+    "min_factor": 0.4,
+    "max_factor": 2.5
+  }
+}

@@ -19,7 +19,7 @@ namespace LoveAndHonor.Sim.Engine;
 public static class SaveGame
 {
     /// <summary>Bump when the payload changes; add a migration in <see cref="Restore"/> for older numbers.</summary>
-    public const int Format = 2;
+    public const int Format = 3;
     private static readonly byte[] Magic = "LHSV"u8.ToArray();
 
     public sealed class Header
@@ -76,6 +76,7 @@ public static class SaveGame
         bw.Mark("budget"); bw.Write(w.Budget is not null); w.Budget?.WriteState(bw);
         bw.Mark("campaign"); bw.Write(w.Campaign is not null); w.Campaign?.WriteState(bw);
         bw.Mark("timelapse"); bw.Write(sim.Timelapse is not null); sim.Timelapse?.WriteState(bw);
+        bw.Mark("reputation"); bw.Write(w.Reputation is not null); w.Reputation?.WriteState(bw);
         bw.Mark("end");
         return header;
     }
@@ -101,7 +102,8 @@ public static class SaveGame
     {
         var header = ReadHeader(input);
         if (header.Scenario != (w.Scenario?.Id ?? "")) throw new InvalidDataException($"The save is for scenario '{header.Scenario}'.");
-        // Format migrations: 1 → 2 added the Slant Walk candidate (land section).
+        // Format migrations: 1 → 2 added the Slant Walk candidate (land section); 2 → 3 added Reputation (older saves
+        // start it at today's Quality).
         using var zip = new DeflateStream(input, CompressionMode.Decompress, leaveOpen: true);
         using var br = new BinaryReader(zip, Encoding.UTF8, leaveOpen: true);
         var sim = w.Simulation;
@@ -124,6 +126,8 @@ public static class SaveGame
         br.Expect("budget"); if (br.ReadBoolean()) w.Budget!.ReadState(br);
         br.Expect("campaign"); if (br.ReadBoolean()) w.Campaign!.ReadState(br);
         br.Expect("timelapse"); if (br.ReadBoolean()) sim.Timelapse!.ReadState(br);
+        if (header.Format >= 3) { br.Expect("reputation"); if (br.ReadBoolean()) w.Reputation!.ReadState(br, sim.Time.Date); }
+        else w.Reputation?.ResetTo(sim.Time.Date);
         br.Expect("end");
         sim.AfterRestore();
         return header;

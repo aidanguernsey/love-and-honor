@@ -457,6 +457,7 @@ public partial class GameHost : Node3D
         hud["construction"] = ConstructionText(s);
         hud["demand"] = DemandText(s);
         hud["confidence"] = s.Budget is { } bv ? $"{bv.Confidence:0}" : "—";
+        (hud["reputation"], hud["reputation_tip"]) = ReputationText(s);
         hud["budget"] = BudgetText(s);
         hud["tuition"] = s.Budget is { } tv ? $"Tuition: {LandSystem.Money(tv.TuitionPerYearCents)} a year ({tv.TuitionLevel:P0} of the usual rate)" : "";
         hud["dismissed"] = s.Budget?.Dismissed ?? false;
@@ -892,6 +893,22 @@ public partial class GameHost : Node3D
     {
         if (_runner is null || _snapshot?.Budget is not { } b || _world?.Budget is not { } budget) return;
         _runner.SubmitTuitionLevel(b.TuitionLevel + direction * budget.Config.Tuition.Step);
+    }
+
+    /// <summary>Reputation in the top bar (with the way it's heading) and its tooltip: Quality's parts, weakest first.</summary>
+    private static (string Value, string Tip) ReputationText(SimSnapshot s)
+    {
+        if (s.Reputation is not { } r) return ("—", "Reputation comes with enrollment.");
+        string arrow = r.Quality > r.Reputation + 1 ? " ↑" : r.Quality < r.Reputation - 1 ? " ↓" : "";
+        var lines = new List<string>
+        {
+            $"Reputation {r.Reputation:0} (0-100, §9): what families hear about the college. It moves slowly toward its",
+            $"Quality, now {r.Quality:0}, and brings in applicants: ×{r.ApplicantFactor:0.00} at the next move-in.",
+            "Quality, weakest first (weight):",
+        };
+        lines.AddRange(r.Parts.OrderBy(x => x.Score).Select(part => $"  {part.Name} {part.Score:0} ({part.Weight:P0}): {part.Note}"));
+        lines.Add("A Chapter 1 stand-in: the full Reputation (outcomes, rankings) comes in Phase 2.");
+        return ($"{r.Reputation:0}{arrow}", string.Join('\n', lines));
     }
 
     /// <summary>The budget panel (§8, 1i): this year so far and last year, by category.</summary>

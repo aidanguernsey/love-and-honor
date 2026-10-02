@@ -1,0 +1,53 @@
+{
+  "$schema": "./schemas/enrollment.schema.json",
+  "_comment": "Enrollment for historic play (§10.1 lifecycle, §14 simplified), Phase 1 checkpoint 1h: one intake a year at move-in, graduation and year changes at commencement, attrition from the §32 retention formula (balance.json retention), faculty hired to a student/faculty ratio. Admissions proper (marketing, yield, aid) come later. All numbers are [TWEAK] placeholders, not history.",
+  "intake_date": "08-19",
+  "graduation_date": "05-16",
+  "assumed_gpa": 3.0,
+  "_assumed_gpa_comment": "GPA isn't simulated yet (learning model, §13.5); the retention formula uses this.",
+  "_eras_comment": "Per era id (eras.json); 'default' covers eras not listed. applicants = applicants_per_year x applicant_growth_per_year^(years since the scenario start).",
+  "eras": {
+    "founding": {
+      "applicants_per_year": 24,
+      "applicant_growth_per_year": 1.08,
+      "admit_rate": 0.9,
+      "student_faculty_ratio": 12,
+      "min_faculty": 3,
+      "student_sections": 3,
+      "faculty_sections": { "min": 2, "max": 3 },
+      "class_hours": [8, 11, 14],
+      "class_days": ["mon", "tue", "wed", "thu", "fri"],
+      "_class_comment": "An 1820s college day of recitations: placeholder [VERIFY] (early colleges also held Saturday classes and daily chapel; not modelled).",
+      "verified": false
+    },
+    "default": {
+      "applicants_per_year": 4000,
+      "applicant_growth_per_year": 1.0,
+      "admit_rate": 0.85,
+      "student_faculty_ratio": 17,
+      "min_faculty": 10,
+      "student_sections": 5,
+      "faculty_sections": { "min": 2, "max": 3 },
+      "class_hours": [8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "class_days": ["mon", "tue", "wed", "thu", "fri"],
+      "verified": false
+    }
+  },
+  "town_boarding": {
+    "_comment": "Students who can't live in a university hall board with families in town (§18.3 grows into the off-campus market later). Beds per town-land tile within max_distance_m of the campus.",
+    "beds_per_town_tile": 0.12,
+    "max_distance_m": 1200
+  },
+  "_default_capacity_comment": "Capacity of real buildings whose timeline entry has no building_def (seats for academic buildings, beds for residences ...).",
+  "default_capacity": {
+    "academic": 150,
+    "residence": 60,
+    "dining": 100,
+    "library": 100,
+    "recreation": 100
+  },
+  "scholarship": {
+    "_comment": "§13.7 minimal: each faculty member produces research_score/100 x works_per_year scholarly works a year (publications, sermons, lectures in print ...), tallied at commencement.",
+    "works_per_year": 0.6
+  }
+}

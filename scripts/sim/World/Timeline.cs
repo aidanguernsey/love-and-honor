@@ -11,6 +11,8 @@ public sealed class TimelineEntry
     public string[] OtherNames { get; init; } = [];
     public string Kind { get; init; } = "other";
     public string Campus { get; init; } = "";
+    /// <summary>Building definition (buildings/*.json) it's an instance of, if any (capacity, recipe).</summary>
+    public string? BuildingDef { get; init; }
     public int? BuiltYear { get; init; }
     public string BuiltPrecision { get; init; } = "unknown";
     public int? DemolishedYear { get; init; }

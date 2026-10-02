@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Enrollment for historic play (§10.1, §14)",
+  "type": "object",
+  "required": ["intake_date", "graduation_date", "assumed_gpa", "eras", "town_boarding", "default_capacity", "scholarship"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "monthDay": { "type": "string", "pattern": "^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$" },
+    "era": {
+      "type": "object",
+      "required": ["applicants_per_year", "applicant_growth_per_year", "admit_rate", "student_faculty_ratio", "min_faculty",
+                   "student_sections", "faculty_sections", "class_hours", "class_days", "verified"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "applicants_per_year": { "type": "number", "minimum": 0 },
+        "applicant_growth_per_year": { "type": "number", "exclusiveMinimum": 0 },
+        "admit_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "student_faculty_ratio": { "type": "number", "exclusiveMinimum": 0 },
+        "min_faculty": { "type": "integer", "minimum": 0 },
+        "student_sections": { "type": "integer", "minimum": 0, "maximum": 8 },
+        "faculty_sections": {
+          "type": "object", "required": ["min", "max"], "additionalProperties": false,
+          "properties": { "min": { "type": "integer", "minimum": 0, "maximum": 8 }, "max": { "type": "integer", "minimum": 0, "maximum": 8 } }
+        },
+        "class_hours": { "type": "array", "minItems": 1, "items": { "type": "integer", "minimum": 0, "maximum": 23 }, "uniqueItems": true },
+        "class_days": { "type": "array", "minItems": 1, "items": { "enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] }, "uniqueItems": true },
+        "verified": { "type": "boolean" }
+      }
+    }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "intake_date": { "$ref": "#/$defs/monthDay" },
+    "graduation_date": { "$ref": "#/$defs/monthDay" },
+    "assumed_gpa": { "type": "number", "minimum": 0, "maximum": 4 },
+    "eras": {
+      "type": "object",
+      "required": ["default"],
+      "patternProperties": { "^_": {} },
+      "additionalProperties": { "$ref": "#/$defs/era" }
+    },
+    "town_boarding": {
+      "type": "object",
+      "required": ["beds_per_town_tile", "max_distance_m"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "beds_per_town_tile": { "type": "number", "minimum": 0 },
+        "max_distance_m": { "type": "number", "minimum": 0 }
+      }
+    },
+    "default_capacity": {
+      "type": "object",
+      "required": ["academic", "residence", "dining", "library", "recreation"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "academic": { "type": "integer", "minimum": 0 },
+        "residence": { "type": "integer", "minimum": 0 },
+        "dining": { "type": "integer", "minimum": 0 },
+        "library": { "type": "integer", "minimum": 0 },
+        "recreation": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "scholarship": {
+      "type": "object",
+      "required": ["works_per_year"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": { "works_per_year": { "type": "number", "minimum": 0 } }
+    }
+  }
+}

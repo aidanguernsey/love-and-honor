@@ -74,3 +74,23 @@ no construction time for paths. OK?
 
 **Q19 — removing the real campus footpaths.** On university land the player can remove any footpath, including the
 real ones from the 2026 map, for free; roads can't be removed. *Default:* allowed. OK?
+
+## 1h — People
+
+**Q20 — 1820s enrollment numbers.** 24 applicants a year (growing 8% a year), 90% admitted, one faculty member per 12
+students, and families in town who board about 230 students in 1825. With these, the 250-student goal takes roughly
+15 years of building halls and classrooms. *Default:* placeholders until the 1j research; do you want Chapter 1 faster
+or slower than that?
+
+**Q21 — the 1820s school day.** Three recitations a day, Monday–Friday, at 8, 11 and 2. Early colleges also had
+Saturday classes and daily chapel. *Default:* not modelled yet. Add them?
+
+**Q22 — who gets the hall beds.** Hall beds go to first-years first, then second-years and so on (like the modern
+"first- and second-years on campus" policy, §11.3); everyone else boards in town. *Default:* as described. OK for the
+1820s, or should seniors get first pick?
+
+**Q23 — faculty hiring is automatic.** Faculty are hired at move-in to keep one per 12 students (min 3). Real hiring
+(§13.3: candidates, salaries, tenure) needs the budget. *Default:* automatic until 1i/Phase 2. OK?
+
+**Q24 — breaks.** Students leave Oxford for the whole summer and winter break (they "go home" and don't walk around
+campus). *Default:* as described.

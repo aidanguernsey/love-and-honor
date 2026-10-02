@@ -20,6 +20,19 @@ public sealed class BalanceConfig
     public MapSection Map { get; init; } = new();
     public NeedsSection Needs { get; init; } = new();
     public WalkingSection Walking { get; init; } = new();
+    public RetentionSection Retention { get; init; } = new();
+
+    /// <summary>§32 retention: R = base + happiness·H/100 + gpa·GPA/4 + belonging·B/100 − financial_stress·FS/100, clamped.</summary>
+    public sealed class RetentionSection
+    {
+        public double Base { get; init; }
+        public double Happiness { get; init; }
+        public double Gpa { get; init; }
+        public double Belonging { get; init; }
+        public double FinancialStress { get; init; }
+        public double Min { get; init; }
+        public double Max { get; init; } = 1;
+    }
 
     public sealed class TimeSection
     {

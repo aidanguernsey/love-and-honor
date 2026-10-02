@@ -14,6 +14,9 @@ public sealed class ScenarioConfig
     public double StartingCash { get; init; }
     public int Students { get; init; }
     public int Faculty { get; init; }
+    /// <summary>Students arrive, graduate and leave each year (enrollment.json, 1h); false = a fixed population.</summary>
+    public bool Enrollment { get; init; }
+    public int? PopulationCapacity { get; init; }
     public CampusSection? Campus { get; init; }
 
     public sealed class CampusSection

@@ -5,6 +5,8 @@ public enum AgentKind : byte { Student = 0, Faculty = 1 }
 public enum Activity : byte
 {
     Sleep, Eat, Class, Study, Social, Exercise, Leisure, Teach, Work,
+    /// <summary>Away from Oxford (students over the summer and winter breaks, 1h).</summary>
+    Away,
 }
 
 public enum FacultyRank : byte { None, Lecturer, Assistant, Associate, Full, Distinguished }
@@ -13,7 +15,9 @@ public enum HousingType : byte { OnCampus, OffCampus }
 
 /// <summary>
 /// Every student and faculty member as structure-of-arrays (§30.2). Agents are indices, never objects or
-/// Godot nodes. Students occupy [0, StudentCount), faculty [StudentCount, Count).
+/// Godot nodes. Live agents occupy [0, Count) of arrays sized for <see cref="Capacity"/>; enrollment (1h) adds people
+/// at the end and removes them by moving the last agent into the gap, at fixed times on the sim thread, so the order
+/// stays deterministic. The initial population has students first, then faculty; after that kinds mix (use Kind).
 /// Per-agent blocks (needs, class sections) are stored flat: needs of agent a are Needs[a*NeedCount .. +NeedCount).
 /// </summary>
 public sealed class PopulationStore
@@ -22,9 +26,11 @@ public sealed class PopulationStore
     public const int MaxSections = 8;
     public const short NoBuilding = -1;
 
-    public int Count { get; }
-    public int StudentCount { get; }
+    public int Capacity { get; }
+    public int Count { get; private set; }
+    public int StudentCount { get; private set; }
     public int FacultyCount => Count - StudentCount;
+    private int _nextId;
 
     // Identity & profile (§10.1, §10.2)
     public readonly int[] Id;
@@ -73,11 +79,14 @@ public sealed class PopulationStore
     public readonly int[] WalkDepartMinute;
     public readonly int[] WalkArriveMinute;
 
-    public PopulationStore(int students, int faculty)
+    /// <param name="capacity">Room for this many agents (at least students + faculty); enrollment can grow up to it.</param>
+    public PopulationStore(int students, int faculty, int? capacity = null)
     {
         StudentCount = students;
         Count = students + faculty;
-        int n = Count;
+        Capacity = Math.Max(Count, capacity ?? Count);
+        _nextId = Count;
+        int n = Capacity;
         Id = new int[n];
         Kind = new AgentKind[n];
         Age = new byte[n];
@@ -118,11 +127,66 @@ public sealed class PopulationStore
 
     public bool IsWalking(int agent, int gameMinute) => WalkArriveMinute[agent] > gameMinute;
 
+    /// <summary>Adds an agent at index Count with cleared fields (the caller fills in the rest). Returns its index.</summary>
+    public int Add(AgentKind kind)
+    {
+        if (Count >= Capacity) throw new InvalidOperationException($"Population is full ({Capacity:N0}).");
+        int a = Count++;
+        Clear(a);
+        Id[a] = _nextId++;
+        Kind[a] = kind;
+        if (kind == AgentKind.Student) StudentCount++;
+        return a;
+    }
+
+    /// <summary>Removes agent <paramref name="a"/>: the last agent moves into its slot (so indices above may change).</summary>
+    public void RemoveAt(int a)
+    {
+        if ((uint)a >= (uint)Count) throw new ArgumentOutOfRangeException(nameof(a));
+        if (Kind[a] == AgentKind.Student) StudentCount--;
+        int last = --Count;
+        if (a != last) Move(last, a);
+        Clear(last);
+    }
+
+    private void Clear(int a)
+    {
+        Id[a] = 0; Kind[a] = AgentKind.Student; Age[a] = 0; Year[a] = 0; Department[a] = 0; Rank[a] = FacultyRank.None;
+        TeachingScore[a] = 0; ResearchScore[a] = 0; Housing[a] = HousingType.OffCampus;
+        Home[a] = Dining[a] = StudySpot[a] = SocialSpot[a] = ExerciseSpot[a] = NoBuilding;
+        Office[a] = NoBuilding;
+        WakeHour[a] = BedHour[a] = WeekendWakeHour[a] = ArriveHour[a] = LeaveHour[a] = 0;
+        SectionCount[a] = 0;
+        Array.Clear(SectionBuilding, a * MaxSections, MaxSections);
+        Array.Clear(SectionDays, a * MaxSections, MaxSections);
+        Array.Clear(SectionHour, a * MaxSections, MaxSections);
+        Array.Clear(Needs, a * NeedCount, NeedCount);
+        Happiness[a] = 0; CurrentBuilding[a] = NoBuilding; CurrentActivity[a] = Activity.Sleep;
+        WalkFrom[a] = WalkTo[a] = NoBuilding; WalkDepartMinute[a] = 0; WalkArriveMinute[a] = int.MinValue;
+    }
+
+    private void Move(int from, int to)
+    {
+        Id[to] = Id[from]; Kind[to] = Kind[from]; Age[to] = Age[from]; Year[to] = Year[from]; Department[to] = Department[from];
+        Rank[to] = Rank[from]; TeachingScore[to] = TeachingScore[from]; ResearchScore[to] = ResearchScore[from];
+        Housing[to] = Housing[from]; Home[to] = Home[from]; Dining[to] = Dining[from]; StudySpot[to] = StudySpot[from];
+        SocialSpot[to] = SocialSpot[from]; ExerciseSpot[to] = ExerciseSpot[from]; Office[to] = Office[from];
+        WakeHour[to] = WakeHour[from]; BedHour[to] = BedHour[from]; WeekendWakeHour[to] = WeekendWakeHour[from];
+        ArriveHour[to] = ArriveHour[from]; LeaveHour[to] = LeaveHour[from]; SectionCount[to] = SectionCount[from];
+        Array.Copy(SectionBuilding, from * MaxSections, SectionBuilding, to * MaxSections, MaxSections);
+        Array.Copy(SectionDays, from * MaxSections, SectionDays, to * MaxSections, MaxSections);
+        Array.Copy(SectionHour, from * MaxSections, SectionHour, to * MaxSections, MaxSections);
+        Array.Copy(Needs, from * NeedCount, Needs, to * NeedCount, NeedCount);
+        Happiness[to] = Happiness[from]; CurrentBuilding[to] = CurrentBuilding[from]; CurrentActivity[to] = CurrentActivity[from];
+        WalkFrom[to] = WalkFrom[from]; WalkTo[to] = WalkTo[from];
+        WalkDepartMinute[to] = WalkDepartMinute[from]; WalkArriveMinute[to] = WalkArriveMinute[from];
+    }
+
     /// <summary>Approximate managed memory used by the arrays, for reporting.</summary>
     public long ApproximateBytes()
     {
         long perAgent = 4 + 1 + 1 + 1 + 2 + 1 + 1 + 1 + 1 + 2 * 6 + 5 + 1
                         + MaxSections * (2 + 1 + 1) + NeedCount * 4 + 4 + 2 + 1 + 2 + 2 + 4 + 4;
-        return perAgent * Count;
+        return perAgent * Capacity;
     }
 }

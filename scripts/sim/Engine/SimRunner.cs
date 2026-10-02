@@ -53,6 +53,11 @@ public sealed class SimSnapshot
     /// <summary>Construction sites, entrances and Heritage Projects taken (Phase 1 1e). Immutable; replaced when it changes.</summary>
     public PlacementView? Placement;
 
+    /// <summary>People right now (enrollment changes them, 1h); arrays above are sized for the capacity.</summary>
+    public int AgentCount, StudentCount, FacultyCount;
+    /// <summary>Enrollment figures (1h), or null for a fixed population.</summary>
+    public EnrollmentView? Enrollment;
+
     public SimSnapshot(int agentCount, int tileCount)
     {
         WalkAgent = new int[agentCount];
@@ -123,7 +128,7 @@ public sealed class SimRunner : IDisposable
         _speeds = speeds;
         _ticksPerRealSecondAt1x = ticksPerGameDay / realSecondsPerGameDay;
         _speedIndex = Math.Clamp(startSpeedIndex, 0, speeds.Length - 1);
-        int agents = sim.Population.Count, tiles = grid.Width * grid.Height;
+        int agents = sim.Population.Capacity, tiles = grid.Width * grid.Height;
         _buffers = [new SimSnapshot(agents, tiles), new SimSnapshot(agents, tiles), new SimSnapshot(agents, tiles)];
         _state = 0;
         _window = new double[statsWindowTicks];
@@ -253,6 +258,14 @@ public sealed class SimRunner : IDisposable
         s.LateLastTick = last.LateArrivals;
         s.DroppedTicks = Interlocked.Read(ref _droppedTicks);
         s.LastTickMs = last.ElapsedMs;
+        s.AgentCount = p.Count;
+        s.StudentCount = p.StudentCount;
+        s.FacultyCount = p.FacultyCount;
+        if (_sim.Enrollment is { } enrollment)
+        {
+            s.Enrollment = enrollment.View(time.Date);
+            foreach (var m in enrollment.TakeMessages()) _messages.Enqueue(m);
+        }
 
         if (_sim.Land is { } land)
         {

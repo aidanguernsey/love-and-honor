@@ -24,7 +24,8 @@
           "id": { "type": "string", "pattern": "^[a-z_]+$" },
           "name": { "type": "string", "minLength": 1 },
           "term": { "enum": ["fall", "spring", null] },
-          "classes": { "type": "boolean" }
+          "classes": { "type": "boolean" },
+          "students_away": { "type": "boolean" }
         }
       }
     },

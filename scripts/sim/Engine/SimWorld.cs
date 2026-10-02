@@ -26,6 +26,8 @@ public sealed class SimWorld
     public LandSystem? Land { get; init; }
     /// <summary>Set for scenario worlds (Phase 1 1e): building placement and construction.</summary>
     public PlacementSystem? Placement { get; init; }
+    /// <summary>Set for scenarios with enrollment (Phase 1 1h).</summary>
+    public EnrollmentSystem? Enrollment { get; init; }
     public ScenarioConfig? Scenario { get; init; }
     public double CampusMs { get; init; }
     public double FlowFieldsMs { get; init; }
@@ -88,13 +90,31 @@ public sealed class SimWorld
                                                 && (site.DemolishedYear is null || s.MapYear < site.DemolishedYear))
             .Select(i => i.HeritageId!);
         var placement = new PlacementSystem(map.Grid, map.Heights, land, campus, catalog, standing);
+        EnrollmentSetup? enrollment = null;
+        if (s.Enrollment)
+        {
+            // Capacity of a campus building: its building definition (player buildings by id, real ones through their
+            // timeline entry's building_def), else enrollment.json's default for its kind.
+            var cfg = EnrollmentConfig.Load(source);
+            var timelineDefs = timeline.Entries.Where(e => e.BuildingDef is not null).ToDictionary(e => e.Id, e => e.BuildingDef!);
+            int CapacityOf(CampusBuilding b)
+            {
+                string? def = data.Buildings.ContainsKey(b.DefId) ? b.DefId : timelineDefs.GetValueOrDefault(b.DefId);
+                if (def is not null && data.Buildings.TryGetValue(def, out var d)) return d.Capacity.Value;
+                return cfg.DefaultCapacity.GetValueOrDefault(b.Kind.ToString().ToLowerInvariant());
+            }
+            enrollment = new EnrollmentSetup(cfg, eras, CapacityOf, s.PopulationCapacity);
+        }
         return Assemble(data, rng, campus, sw.Elapsed.TotalMilliseconds, threads, students ?? s.Students, faculty ?? s.Faculty,
-            chunkSize, map, report, s.Start, land, s, placement);
+            chunkSize, map, report, s.Start, land, s, placement, enrollment);
     }
+
+    private sealed record EnrollmentSetup(EnrollmentConfig Config, EraTable Eras, Func<CampusBuilding, int> CapacityOf, int? Capacity);
 
     private static SimWorld Assemble(SimData data, RngStreams rng, Campus campus, double campusMs, int? threads, int? students,
         int? faculty, int? chunkSize, RealMap? map, RealCampusReport? report,
-        DateOnly? startDate = null, LandSystem? land = null, ScenarioConfig? scenario = null, PlacementSystem? placement = null)
+        DateOnly? startDate = null, LandSystem? land = null, ScenarioConfig? scenario = null, PlacementSystem? placement = null,
+        EnrollmentSetup? enrollment = null)
     {
         int t = threads ?? data.Balance.Performance.SimWorkerThreads;
         var sw = Stopwatch.StartNew();
@@ -103,14 +123,19 @@ public sealed class SimWorld
         double fieldsMs = sw.Elapsed.TotalMilliseconds;
 
         sw.Restart();
-        var pop = PopulationGenerator.Generate(data, campus, fields, rng, students, faculty);
+        var start = startDate ?? DateOnly.Parse(data.Spike.StartDate, System.Globalization.CultureInfo.InvariantCulture);
+        SectionPlan? plan = enrollment is null ? null
+            : SectionPlan.FromEra(enrollment.Config.EraFor(enrollment.Eras.At(start.Year).Id), data.Schedules.Student.SectionsInMajorBuilding);
+        var pop = PopulationGenerator.Generate(data, campus, fields, rng, students, faculty, enrollment?.Capacity, plan);
+        var enrollmentSystem = enrollment is null ? null
+            : new EnrollmentSystem(data, enrollment.Config, enrollment.Eras, campus, fields, pop, rng, enrollment.CapacityOf, start);
         double popMs = sw.Elapsed.TotalMilliseconds;
 
         return new SimWorld
         {
             Data = data, Rng = rng, Campus = campus, Fields = fields, Population = pop,
-            Simulation = new Simulation(data, campus, fields, pop, rng, t, chunkSize, startDate, land, placement),
-            Map = map, CampusReport = report, Land = land, Placement = placement, Scenario = scenario,
+            Simulation = new Simulation(data, campus, fields, pop, rng, t, chunkSize, startDate, land, placement, enrollmentSystem),
+            Map = map, CampusReport = report, Land = land, Placement = placement, Enrollment = enrollmentSystem, Scenario = scenario,
             CampusMs = campusMs, FlowFieldsMs = fieldsMs, PopulationMs = popMs,
         };
     }

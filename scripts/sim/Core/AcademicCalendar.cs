@@ -17,6 +17,7 @@ public sealed class AcademicCalendar
         public string Name { get; init; } = "";
         public string? Term { get; init; }
         public bool Classes { get; init; }
+        public bool StudentsAway { get; init; }
     }
 
     public sealed class EventDef
@@ -78,6 +79,9 @@ public sealed class AcademicCalendar
     }
 
     public bool ClassesHeld(DateOnly date) => _phases[IndexAt(date)].Def.Classes;
+
+    /// <summary>Students have left Oxford (summer, winter break).</summary>
+    public bool StudentsAway(DateOnly date) => _phases[IndexAt(date)].Def.StudentsAway;
 
     public Phase At(DateOnly date)
     {

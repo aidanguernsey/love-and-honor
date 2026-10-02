@@ -408,12 +408,13 @@ public partial class GameHost : Node3D
         hud["calendar_verified"] = _data.Calendar.Verified;
         hud["speed_index"] = _runner.SpeedIndex;
         hud["speed"] = _runner.CurrentSpeed;
-        hud["students"] = _students;
-        hud["faculty"] = _faculty;
+        hud["students"] = s.StudentCount;
+        hud["faculty"] = s.FacultyCount;
         hud["happiness"] = s.AverageHappiness;
         hud["cash"] = LandSystem.Money(s.CashCents);
         hud["clearing_tiles"] = s.ClearingTiles;
         hud["construction"] = ConstructionText(s);
+        hud["demand"] = DemandText(s);
         hud["heritage_bonus"] = (s.Placement?.HeritageBonus ?? 0) + s.LandHeritageBonus;
         hud["path_triangles"] = _pathRenderer.Triangles;
         hud["walks_last_hour"] = s.WalksLastTick;
@@ -641,6 +642,19 @@ public partial class GameHost : Node3D
         string site = item.Site is null ? "" : q.OnHeritageSite ? " On the real site: Heritage bonus." : " Not on the real site (that's fine; no bonus).";
         string warn = q.Warning.Length > 0 ? "\n" + q.Warning : "";
         return $"{head}\nClick to build ({turn}).{site}{afford}{warn}";
+    }
+
+    /// <summary>§12.7 demand, the 1h part: beds and seats against capacity, and the enrollment calendar.</summary>
+    private static string DemandText(SimSnapshot s)
+    {
+        if (s.Enrollment is not { } e) return $"{s.StudentCount:N0} students, {s.FacultyCount:N0} faculty (fixed population in this preview).";
+        int beds = e.CampusBeds + e.TownBeds;
+        return $"Beds: {e.Students} of {beds} ({e.OnCampus} of {e.CampusBeds} in halls, {e.InTown} boarding in town)\n" +
+               $"Seats: {e.Students} of {e.Seats} classroom seats\n" +
+               $"Years: {e.ByYear[0]} · {e.ByYear[1]} · {e.ByYear[2]} · {e.ByYear[3]} (1st–4th)\n" +
+               $"Next move-in {e.NextIntake:MMM d, yyyy} · commencement {e.NextCommencement:MMM d}\n" +
+               (e.LastApplicants > 0 ? $"Last intake: {e.LastIntake} of {e.LastApplicants} applicants · " : "") +
+               $"{e.Alumni} alumni · scholarship {e.Scholarship:0.#} works";
     }
 
     private static string ConstructionText(SimSnapshot s)

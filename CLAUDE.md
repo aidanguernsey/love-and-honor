@@ -65,6 +65,18 @@ bridge `PathRenderer`, per chunk, real widths from `rendering.json path_meshes`,
 hidden beyond 1.8 km); the game's tile texture no longer paints paths (retires R11; Spike B still paints them). 2026:
 ~245k path triangles in total, only nearby chunks drawn. Demo options `--demo-pave`, and `--demo-build` lays door paths.
 Next: **1h** (people).
+**1h done (2026-10-02):** enrollment (`Population/Enrollment.cs`, `data/enrollment.json`, scenario `enrollment: true` +
+`population_capacity`): `PopulationStore` has a Capacity and a live Count (Add at the end, RemoveAt moves the last agent
+in; done only at hour 0 on the sim thread, so deterministic; kinds mix after the start). Commencement (May 16): seniors
+graduate, others leave by the §32 retention formula (balance.json `retention`; GPA assumed 3.0) or move up, faculty
+scholarship tallied. Move-in (Aug 19): freshmen = applicants (era base × growth^years) × admit rate, capped by free beds
+(hall beds + town boarding = beds_per_town_tile × town tiles near campus) and free seats; faculty hired to the era's
+student/faculty ratio; everyone rehoused (hall beds by year, then town) and given the era's timetable (1820s: 3
+recitations Mon–Fri at 8, 11, 14). Building capacity = building def (timeline `building_def` for real buildings) else
+enrollment.json defaults. `PeopleContext` (PopulationGenerator.cs) sets people up for both the start and intakes, using
+only buildings whose flow fields exist. Students are **away** in calendar phases with `students_away` (summer, winter
+break): Activity.Away, needs held steady. Snapshots carry AgentCount/StudentCount/FacultyCount and an `EnrollmentView`;
+VisualCrowd caps walkers by AgentCount. HUD Demand panel: beds, seats, years, next move-in. Next: **1i** (economy).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -140,6 +152,11 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
   a surface yet; the Slant Walk is designated automatically (§12.4 says "can be designated"); campus footpaths from OSM
   are removable for free on university land. A 2026 run wore in a 29-tile, 226 m diagonal in ~6 months and made it
   the Slant Walk (it isn't where the real one is: the real Slant Walk exists as a paved path in the 2026 data).
+- 1h: every enrollment number is a placeholder (24 applicants a year growing 8%, 90% admitted, 12 students per
+  faculty member, town boarding ≈ 230 beds in 1825); no Saturday classes or chapel in the 1820s timetable; GPA isn't
+  simulated (retention assumes 3.0); faculty are hired automatically (hiring/salaries come with the budget).
+  Lesson: the Godot `--build-solutions` output can hide C# compile errors (and a leftover game process can lock the
+  assembly): check with `dotnet build LoveAndHonor.csproj`.
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 

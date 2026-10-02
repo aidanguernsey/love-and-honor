@@ -36,10 +36,18 @@ public sealed class ScheduleModel
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     /// <param name="classes">False outside term time (academic calendar, §6.2): nobody goes to class.</param>
-    public short Resolve(PopulationStore p, int a, int day, int weekday, int hour, out Activity activity, bool classes = true) =>
-        p.Kind[a] == AgentKind.Student
-            ? ResolveStudent(p, a, day, weekday, hour, out activity, classes)
-            : ResolveFaculty(p, a, weekday, hour, out activity, classes);
+    /// <param name="studentsAway">Summer and winter break: students are away from Oxford (1h).</param>
+    public short Resolve(PopulationStore p, int a, int day, int weekday, int hour, out Activity activity, bool classes = true,
+        bool studentsAway = false)
+    {
+        if (p.Kind[a] != AgentKind.Student) return ResolveFaculty(p, a, weekday, hour, out activity, classes);
+        if (studentsAway)
+        {
+            activity = Activity.Away;
+            return p.Home[a];
+        }
+        return ResolveStudent(p, a, day, weekday, hour, out activity, classes);
+    }
 
     private short ResolveStudent(PopulationStore p, int a, int day, int weekday, int hour, out Activity activity, bool classes)
     {

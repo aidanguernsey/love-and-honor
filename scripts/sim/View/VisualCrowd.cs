@@ -116,7 +116,7 @@ public sealed class VisualCrowd
     private void Spawn(GroundRect view, SimSnapshot s)
     {
         // Never more walkers than people (a small early college), and each of this hour's walks drawn at most once.
-        int limit = Math.Min(Capacity, s.WalkAgent.Length);
+        int limit = Math.Min(Capacity, s.AgentCount);
         int free = limit - ActiveCount;
         if (free <= 0 || s.WalkCount == 0) return;
         if (s.Tick != _usedTick)

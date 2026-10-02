@@ -326,13 +326,28 @@
         },
         "desire_paths": {
           "type": "object",
-          "required": ["min_walkers_per_day", "days_to_wear", "days_to_regrow"],
+          "required": [
+            "min_walkers_per_day",
+            "days_to_wear",
+            "days_to_regrow"
+          ],
           "additionalProperties": false,
-          "patternProperties": { "^_": {} },
+          "patternProperties": {
+            "^_": {}
+          },
           "properties": {
-            "min_walkers_per_day": { "type": "integer", "minimum": 1 },
-            "days_to_wear": { "type": "number", "exclusiveMinimum": 0 },
-            "days_to_regrow": { "type": "number", "exclusiveMinimum": 0 }
+            "min_walkers_per_day": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "days_to_wear": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "days_to_regrow": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
           }
         },
         "speed_m_per_min": {
@@ -385,7 +400,8 @@
         "exercise",
         "leisure",
         "teach",
-        "work"
+        "work",
+        "away"
       ]
     }
   }

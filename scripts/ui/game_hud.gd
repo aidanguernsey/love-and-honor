@@ -32,6 +32,7 @@ var _tool_buttons := {}
 var _tool_hint: Label
 var _day_night_button: CheckButton
 var _heritage_button: CheckButton
+var _demand_label: Label
 var _category_buttons := {}
 var _build_popup: PanelContainer
 var _build_list: VBoxContainer
@@ -108,6 +109,7 @@ func _process(delta: float) -> void:
 	_stat_labels["happiness"].text = "%d%%" % roundi(hud["happiness"])
 	_stat_labels["cash"].text = hud["cash"]
 	_overlay_button.text = "Overlays: %s (O)" % hud["overlay"]
+	_demand_label.text = hud["demand"]
 
 	var tool: String = hud["tool"]
 	for key in _tool_buttons:
@@ -221,7 +223,7 @@ func _build_top_bar() -> void:
 	row.add_child(spacer)
 
 	_add_stat(row, "cash", "Cash", "—", "Operating cash (§8.1). Spent on clearing and buying land; income and the budget come in 1i.")
-	_add_stat(row, "enrollment", "Enrollment", "—", "Everyone simulated on the real campus. Admissions and enrollment change come in 1h.")
+	_add_stat(row, "enrollment", "Enrollment", "—", "Everyone is simulated. Students arrive at move-in (August), graduate or leave at commencement (May), and are away over the summer and winter breaks. Details under Demand.")
 	_add_stat(row, "happiness", "Happiness", "—", "Average student and faculty happiness from their needs (§10.1).")
 	_add_stat(row, "reputation", "Reputation", "—", "Rankings come later (Phase 2).")
 	_add_stat(row, "trustees", "Trustee Confidence", "—", "Trustee Confidence comes with the budget and Chapter 1 goals (1i, 1j).")
@@ -312,8 +314,11 @@ func _build_right_panel() -> void:
 	_heritage_button.toggled.connect(_set_heritage)
 	col.add_child(_heritage_button)
 	col.add_child(_label(14, "Demand"))
-	var demand := _label(12, "Demand bars come with enrollment (1h).")
-	demand.modulate = Color(1, 1, 1, 0.6)
+	var demand := _label(12, "")
+	demand.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	demand.custom_minimum_size = Vector2(240, 0)
+	_demand_label = demand
+	demand.modulate = Color(1, 1, 1, 0.9)
 	col.add_child(demand)
 	col.add_child(_label(14, "Notifications"))
 	_notice_label = _label(12, "No notifications yet.")

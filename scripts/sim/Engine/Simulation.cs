@@ -44,7 +44,7 @@ public sealed class Simulation
     private readonly float _commutePenalty;
     private readonly int _classChangeWindow;
     private readonly int _chunkSize;
-    private readonly int _chunkCount;
+    private int _chunkCount;      // chunks covering the live population (it changes with enrollment, 1h)
     private readonly int _threads;
     private readonly ParallelOptions _parallel;
     private readonly Action<int> _processChunk;
@@ -68,7 +68,7 @@ public sealed class Simulation
 
     // Values for the tick in progress, read by ProcessChunk.
     private int _tickStartMinute, _day, _weekday, _hour;
-    private bool _classesHeld;
+    private bool _classesHeld, _studentsAway;
     private readonly AcademicCalendar _calendar;
 
     private struct ChunkStats
@@ -88,14 +88,19 @@ public sealed class Simulation
     public LandSystem? Land { get; }
     /// <summary>Building placement and construction (Phase 1 1e), or null.</summary>
     public PlacementSystem? Placement { get; }
+    /// <summary>Yearly intake, graduation and hiring (Phase 1 1h), or null for a fixed population.</summary>
+    public EnrollmentSystem? Enrollment { get; }
+    private readonly bool _awayEnabled;
     private readonly Campus _campus;
 
     public Simulation(SimData data, Campus campus, FlowFieldSet fields, PopulationStore population, RngStreams rng,
         int? threads = null, int? chunkSize = null, DateOnly? startDate = null, LandSystem? land = null,
-        PlacementSystem? placement = null)
+        PlacementSystem? placement = null, EnrollmentSystem? enrollment = null)
     {
         Land = land;
         Placement = placement;
+        Enrollment = enrollment;
+        _awayEnabled = enrollment is not null; // fixed-population worlds (benchmarks, the 2026 preview) keep everyone here
         _campus = campus;
         _pop = population;
         _fields = fields;
@@ -108,6 +113,7 @@ public sealed class Simulation
         _classChangeWindow = (int)MathF.Round(data.Balance.Time.ClassChangeWindowMinutes);
         _threads = Math.Max(1, threads ?? data.Balance.Performance.SimWorkerThreads);
         _chunkSize = chunkSize ?? data.Balance.Performance.AgentChunkSize;
+        int maxChunks = Math.Max(1, (population.Capacity + _chunkSize - 1) / _chunkSize);
         _chunkCount = (population.Count + _chunkSize - 1) / _chunkSize;
         _parallel = new ParallelOptions { MaxDegreeOfParallelism = _threads };
         _processChunk = ProcessChunk;
@@ -118,10 +124,10 @@ public sealed class Simulation
         _traffic = new TrafficWork(campus.Grid, wear.MinWalkersPerDay, 1f / wear.DaysToWear, 1f / wear.DaysToRegrow);
         _fields.EnsureCurrent();
         UsePaths(_fields.Current);
-        _chunkStats = new ChunkStats[_chunkCount];
-        _chunkWalkers = new int[_chunkCount][];
-        for (int c = 0; c < _chunkCount; c++) _chunkWalkers[c] = new int[_chunkSize];
-        _chunkWalkerCount = new int[_chunkCount];
+        _chunkStats = new ChunkStats[maxChunks];
+        _chunkWalkers = new int[maxChunks][];
+        for (int c = 0; c < maxChunks; c++) _chunkWalkers[c] = new int[_chunkSize];
+        _chunkWalkerCount = new int[maxChunks];
 
         double happiness = 0;
         for (int a = 0; a < _pop.Count; a++) happiness += _pop.Happiness[a] = _needs.Happiness(_pop.Needs, a);
@@ -245,6 +251,8 @@ public sealed class Simulation
                 foreach (var site in finished) AddFinishedBuilding(site);
                 if (finished.Count > 0) StartRebuild();
             }
+            if (Enrollment is not null && Enrollment.DailyUpdate(Time.Date))
+                _chunkCount = (_pop.Count + _chunkSize - 1) / _chunkSize;
         }
         bool swapped = false;
         double swapWait = 0;
@@ -262,6 +270,7 @@ public sealed class Simulation
         _weekday = Time.WeekdayIndex;
         _hour = Time.HourOfDay;
         _classesHeld = _calendar.ClassesHeld(Time.Date);
+        _studentsAway = _awayEnabled && _calendar.StudentsAway(Time.Date);
 
         if (_threads == 1)
             for (int c = 0; c < _chunkCount; c++) ProcessChunk(c);
@@ -289,7 +298,7 @@ public sealed class Simulation
             Stopwatch.GetElapsedTime(t0, t1).TotalMilliseconds,
             Stopwatch.GetElapsedTime(t1, t2).TotalMilliseconds,
             walks, late, walkMinutes, routesTraced,
-            (float)(happiness / _pop.Count), swapped, swapWait);
+            _pop.Count > 0 ? (float)(happiness / _pop.Count) : 0, swapped, swapWait);
         Time.Advance();
     }
 
@@ -317,7 +326,7 @@ public sealed class Simulation
             }
             else
             {
-                short target = _schedule.Resolve(p, a, _day, _weekday, _hour, out activity, _classesHeld);
+                short target = _schedule.Resolve(p, a, _day, _weekday, _hour, out activity, _classesHeld, _studentsAway);
                 if (target != current)
                 {
                     int minutes = (int)MathF.Ceiling(distance[current * b + target] / _walkSpeed);

@@ -419,6 +419,22 @@ public partial class GameHost : Node3D
         hud["budget"] = BudgetText(s);
         hud["tuition"] = s.Budget is { } tv ? $"Tuition: {LandSystem.Money(tv.TuitionPerYearCents)} a year ({tv.TuitionLevel:P0} of the usual rate)" : "";
         hud["dismissed"] = s.Budget?.Dismissed ?? false;
+        var cv = s.Campaign;
+        hud["goals"] = GoalsText(s);
+        hud["outcome"] = cv?.Outcome.ToString() ?? "Playing";
+        hud["outcome_text"] = cv?.OutcomeText ?? "";
+        var card = cv is { Cards.Length: > 0 } ? cv.Cards[^1] : null;
+        hud["card_seq"] = card?.Seq ?? 0;
+        hud["card_title"] = card?.Title ?? "";
+        hud["card_date"] = card is null ? "" : card.DatePrecision switch
+        {
+            "year" => $"{card.Date.Year}", "month" => $"{card.Date:MMMM yyyy}", _ => $"{card.Date:MMMM d, yyyy}",
+        };
+        hud["card_text"] = card?.Text ?? "";
+        hud["card_sources"] = card is null || card.Sources.Length == 0 ? (card is { Historical: false } ? "A typical event of the era (not a historical record)." : "")
+            : "Sources (not yet checked by the University Archives):\n" + string.Join("\n", card.Sources.Select(x => $"• {x.Title}: {x.Url}"));
+        hud["card_codex"] = card is { Codex.Length: > 0 } ? "New in the History Book (K)." : "";
+        hud["ticker"] = card is null ? "" : $"{hud["card_date"]}: {card.Title}";
         hud["heritage_bonus"] = (s.Placement?.HeritageBonus ?? 0) + s.LandHeritageBonus;
         hud["path_triangles"] = _pathRenderer.Triangles;
         hud["walks_last_hour"] = s.WalksLastTick;
@@ -646,6 +662,32 @@ public partial class GameHost : Node3D
         string site = item.Site is null ? "" : q.OnHeritageSite ? " On the real site: Heritage bonus." : " Not on the real site (that's fine; no bonus).";
         string warn = q.Warning.Length > 0 ? "\n" + q.Warning : "";
         return $"{head}\nClick to build ({turn}).{site}{afford}{warn}";
+    }
+
+    /// <summary>History Book (K, §19.3): every entry, unlocked ones with their text and sources.</summary>
+    public Godot.Collections.Array<Godot.Collections.Dictionary> GetCodex()
+    {
+        var list = new Godot.Collections.Array<Godot.Collections.Dictionary>();
+        if (_world?.Content is not { } content) return list;
+        var unlocked = _snapshot?.Campaign?.Unlocked ?? [];
+        foreach (var e in content.Codex.OrderBy(e => e.EraYears, StringComparer.Ordinal))
+        {
+            bool open = unlocked.Contains(e.Id);
+            list.Add(new Godot.Collections.Dictionary
+            {
+                ["id"] = e.Id, ["title"] = open ? e.Title : "???", ["years"] = e.EraYears, ["unlocked"] = open,
+                ["text"] = open ? e.Text : "Not yet discovered: it unlocks as the college's history unfolds.",
+                ["sources"] = open ? "Sources (not yet checked by the University Archives):\n" + string.Join("\n", e.Sources.Select(x => $"• {x.Title}\n   {x.Url}")) : "",
+            });
+        }
+        return list;
+    }
+
+    private static string GoalsText(SimSnapshot s)
+    {
+        if (s.Campaign is not { StudentsGoal: > 0 } c) return "";
+        string hall = c.HallGoal ? (c.HasHall ? "✓ a residence hall" : "✗ a residence hall (none yet)") : "";
+        return $"{(c.Students >= c.StudentsGoal ? "✓" : "•")} {c.Students} of {c.StudentsGoal} students\n{hall}\nby {c.Deadline:MMMM d, yyyy}";
     }
 
     /// <summary>Y / Budget panel: − or + one tuition step.</summary>

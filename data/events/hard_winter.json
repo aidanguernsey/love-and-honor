@@ -1,0 +1,25 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "hard_winter",
+  "title": "A hard winter",
+  "kind": "generic",
+  "window": {
+    "from_year": 1825,
+    "to_year": 1845,
+    "months": [
+      1,
+      2
+    ],
+    "chance_per_year": 0.3
+  },
+  "text": "Snow has closed the roads to Cincinnati and firewood is dear. Students huddle around stoves in their rooms; the steward's bills climb.",
+  "effects": {
+    "student_needs": {
+      "health": -8,
+      "fun": -6
+    },
+    "cash": -60
+  },
+  "_comment": "Generic era event: fictional, not a historical claim.",
+  "verified": false
+}

@@ -17,6 +17,8 @@ public sealed class ScenarioConfig
     /// <summary>Students arrive, graduate and leave each year (enrollment.json, 1h); false = a fixed population.</summary>
     public bool Enrollment { get; init; }
     public int? PopulationCapacity { get; init; }
+    /// <summary>Chapter goals (win/lose, 1j), or null for an open-ended start.</summary>
+    public Engine.GoalsConfig? Goals { get; init; }
     public CampusSection? Campus { get; init; }
 
     public sealed class CampusSection

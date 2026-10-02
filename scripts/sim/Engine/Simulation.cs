@@ -92,6 +92,8 @@ public sealed class Simulation
     public EnrollmentSystem? Enrollment { get; }
     /// <summary>Operating budget and Trustee Confidence (Phase 1 1i), or null.</summary>
     public Economy.BudgetSystem? Budget { get; }
+    /// <summary>Events, History Book, advisors and goals (Phase 1 1j), or null.</summary>
+    public CampaignSystem? Campaign { get; }
     private readonly string _moveIn;
     private readonly bool _awayEnabled;
     private readonly Campus _campus;
@@ -99,8 +101,9 @@ public sealed class Simulation
     public Simulation(SimData data, Campus campus, FlowFieldSet fields, PopulationStore population, RngStreams rng,
         int? threads = null, int? chunkSize = null, DateOnly? startDate = null, LandSystem? land = null,
         PlacementSystem? placement = null, EnrollmentSystem? enrollment = null, Economy.BudgetSystem? budget = null,
-        string moveInMonthDay = "08-19")
+        string moveInMonthDay = "08-19", CampaignSystem? campaign = null)
     {
+        Campaign = campaign;
         Budget = budget;
         _moveIn = moveInMonthDay;
         Land = land;
@@ -258,10 +261,17 @@ public sealed class Simulation
                 foreach (var site in finished) AddFinishedBuilding(site);
                 if (finished.Count > 0) StartRebuild();
             }
-            if (Enrollment is not null && Enrollment.DailyUpdate(Time.Date))
-                _chunkCount = (_pop.Count + _chunkSize - 1) / _chunkSize;
+            Enrollment?.DailyUpdate(Time.Date);
             Budget?.DailyUpdate(Time.Date, new DateOnly(Time.Date.Year, int.Parse(_moveIn[..2], System.Globalization.CultureInfo.InvariantCulture),
                 int.Parse(_moveIn[3..], System.Globalization.CultureInfo.InvariantCulture)));
+            if (Campaign is not null)
+            {
+                var fy = Budget?.Config.FiscalYearStart ?? "08-01";
+                bool review = Time.Date.Month == int.Parse(fy[..2], System.Globalization.CultureInfo.InvariantCulture)
+                              && Time.Date.Day == int.Parse(fy[3..], System.Globalization.CultureInfo.InvariantCulture);
+                Campaign.DailyUpdate(Time.Date, review);
+            }
+            _chunkCount = (_pop.Count + _chunkSize - 1) / _chunkSize; // enrollment and events change the population
         }
         bool swapped = false;
         double swapWait = 0;

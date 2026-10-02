@@ -115,3 +115,27 @@ for each entering class). *Default:* simple version now, cohort pricing later. O
 
 **Q29 — being dismissed.** At Trustee Confidence 0 a banner appears and the game pauses. *Default:* the proper ending
 screen comes with Chapter 1's win/fail conditions (1j).
+
+## 1j — Chapter 1
+
+**Q30 — the deadline.** Win: 250 students and a residence hall by August 1, 1841 (the end of President Bishop's term;
+the real Old Miami reached 250 students in 1839). Lose: dismissed, bankrupt, or out of time. *Default:* as described.
+Tighter or looser?
+
+**Q31 — which events.** Eight historical events (literary societies 1825, McGuffey 1826 and 1836, The Literary Focus
+1827, North Hall 1828, Oxford incorporated 1830, Alpha Delta Phi 1835, Beta Theta Pi 1839) and two invented ones (a
+hard winter, a Trustees' visit), all in `data/events/`. Anything you'd add (e.g. something you know from campus lore)
+or drop? The cuts allowed 10.
+
+**Q32 — event cards pause the game.** *Default:* yes, until you press Continue. OK?
+
+**Q33 — the Miami people and the university's name.** There's no History Book entry about the Myaamia people or how
+the university got its name: §20 allows only university-published language until the Myaamia Center has reviewed it.
+*Default:* leave it out until then. (The outreach draft in `docs/outreach/` is the place to ask.)
+
+**Q34 — real historical people.** President Bishop and Professor McGuffey appear by name in the History Book, and
+McGuffey as a faculty member hired by an event (historical figures, not current ones, so within the content rules).
+OK?
+
+**Q35 — after the chapter.** Winning shows a banner; "Keep playing" continues the same campus open-ended (Chapter 2
+doesn't exist yet). *Default:* as described.

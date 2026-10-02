@@ -59,6 +59,8 @@ public sealed class SimSnapshot
     public EnrollmentView? Enrollment;
     /// <summary>Budget and Trustee Confidence (1i), or null.</summary>
     public Economy.BudgetView? Budget;
+    /// <summary>Events, History Book, goals (1j), or null.</summary>
+    public CampaignView? Campaign;
 
     public SimSnapshot(int agentCount, int tileCount)
     {
@@ -272,6 +274,11 @@ public sealed class SimRunner : IDisposable
         s.AgentCount = p.Count;
         s.StudentCount = p.StudentCount;
         s.FacultyCount = p.FacultyCount;
+        if (_sim.Campaign is { } campaign)
+        {
+            s.Campaign = campaign.View();
+            foreach (var m in campaign.TakeMessages()) _messages.Enqueue(m);
+        }
         if (_sim.Budget is { } budget)
         {
             s.Budget = budget.View(time.Date);

@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "franklin_hall",
+  "title": "Franklin Hall: the first college building",
+  "era_years": "1816-1824",
+  "text": "Work on Miami's first classroom building, Franklin Hall (later known as Old Main), began in 1816. In 1822 a proposal to move the university to Cincinnati was defeated, and the college stayed in Oxford.",
+  "unlock": "start",
+  "sources": [
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

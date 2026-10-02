@@ -1,0 +1,31 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "mcguffey_appointed_1826",
+  "title": "A new professor of ancient languages",
+  "kind": "historical",
+  "date": "1826-06-14",
+  "date_precision": "day",
+  "text": "William Holmes McGuffey, 26, has accepted the chair of ancient languages. He is said to be a gifted teacher, and he takes an interest in the village's schools.",
+  "effects": {
+    "hire_faculty": {
+      "name": "William Holmes McGuffey",
+      "teaching": 95,
+      "research": 75
+    },
+    "applicants": 1.1
+  },
+  "codex": [
+    "mcguffey"
+  ],
+  "sources": [
+    {
+      "title": "Wikipedia: William Holmes McGuffey",
+      "url": "https://en.wikipedia.org/wiki/William_Holmes_McGuffey"
+    },
+    {
+      "title": "Miami University Libraries Special Collections: McGuffey and His Readers",
+      "url": "https://spec.lib.miamioh.edu/wp-content/uploads/2013/03/McGuffey+His-Readers-for-web.pdf"
+    }
+  ],
+  "verified": false
+}

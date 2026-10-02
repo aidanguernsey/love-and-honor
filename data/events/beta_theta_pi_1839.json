@@ -1,0 +1,29 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "beta_theta_pi_1839",
+  "title": "Beta Theta Pi",
+  "kind": "historical",
+  "date": "1839-08-08",
+  "date_precision": "year",
+  "text": "Students have founded a new fraternity, Beta Theta Pi, at Miami: the first of the fraternities that will one day call Miami the \"Mother of Fraternities\".",
+  "effects": {
+    "student_needs": {
+      "belonging": 6
+    }
+  },
+  "codex": [
+    "old_miami_peak"
+  ],
+  "sources": [
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    },
+    {
+      "title": "Wikipedia: Miami University",
+      "url": "https://en.wikipedia.org/wiki/Miami_University"
+    }
+  ],
+  "_date_comment": "The timeline gives 1839; the exact day is often given as August 8, 1839 [VERIFY].",
+  "verified": false
+}

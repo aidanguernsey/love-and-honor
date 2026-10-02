@@ -1,0 +1,27 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "literary_societies",
+  "title": "The literary societies",
+  "era_years": "1825-1827",
+  "text": "In November 1825 thirteen students formed the Erodelphian Society, Miami's first student organization; the Union Literary Society followed. The societies debated literature, politics and society, kept libraries, and in 1827 together published Miami's first student periodical, The Literary Focus.",
+  "unlock": "event",
+  "sources": [
+    {
+      "title": "Miami University Archives: Erodelphian Society, 1823-1913",
+      "url": "https://archivesspace.lib.miamioh.edu/repositories/2/archival_objects/5621"
+    },
+    {
+      "title": "Miami University Archives: Union Literary Society, 1829-1901",
+      "url": "https://archivesspace.lib.miamioh.edu/repositories/2/archival_objects/5636"
+    },
+    {
+      "title": "The Miami Student: One letter at a time (2026)",
+      "url": "https://www.miamistudent.net/article/2026/02/one-letter-at-a-time-the-literary-focus-shapes-the-student"
+    },
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

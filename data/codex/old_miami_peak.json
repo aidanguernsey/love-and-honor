@@ -1,0 +1,19 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "old_miami_peak",
+  "title": "Old Miami at its height",
+  "era_years": "1835-1839",
+  "text": "Fraternities arrived with a chapter of Alpha Delta Phi in 1835, and Beta Theta Pi was founded at Miami in 1839. That year Old Miami reached 250 students from thirteen states, one of the largest colleges in the country.",
+  "unlock": "event",
+  "sources": [
+    {
+      "title": "Wikipedia: Miami University",
+      "url": "https://en.wikipedia.org/wiki/Miami_University"
+    },
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

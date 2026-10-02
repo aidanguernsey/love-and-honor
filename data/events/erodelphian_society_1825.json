@@ -1,0 +1,29 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "erodelphian_society_1825",
+  "title": "Students found a literary society",
+  "kind": "historical",
+  "date": "1825-11-14",
+  "date_precision": "day",
+  "text": "Thirteen students have formed the Erodelphian Society to debate and write. It is the college's first student organization, and the students say it already feels more like home.",
+  "effects": {
+    "student_needs": {
+      "belonging": 12,
+      "social": 8
+    }
+  },
+  "codex": [
+    "literary_societies"
+  ],
+  "sources": [
+    {
+      "title": "Miami University Archives: Erodelphian Society, 1823-1913",
+      "url": "https://archivesspace.lib.miamioh.edu/repositories/2/archival_objects/5621"
+    },
+    {
+      "title": "The Miami Student: One letter at a time (2026)",
+      "url": "https://www.miamistudent.net/article/2026/02/one-letter-at-a-time-the-literary-focus-shapes-the-student"
+    }
+  ],
+  "verified": false
+}

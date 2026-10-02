@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/scenario.schema.json",
-  "_comment": "Campaign Chapter 1, 'The Hill' (§4.1): play starts in 1824 on the map as it stood that year (GAME_DESIGN.md v0.4). Start state only so far (Phase 1 1d); goals and events come in 1j. Every number is a placeholder: the real 1824 enrollment, faculty, finances and campus extent are unverified.",
+  "_comment": "Campaign Chapter 1, 'The Hill' (§4.1): play starts in 1824 on the map as it stood that year (GAME_DESIGN.md v0.4). Classes began on November 1, 1824 with 20 students and two faculty besides President Bishop (sources in codex/opening_1824.json; not yet confirmed by the University Archives). Cash, finances and the campus extent are placeholders.",
   "id": "chapter1_the_hill",
   "name": "Chapter 1: The Hill",
   "start_date": "1824-11-01",
@@ -12,9 +12,18 @@
   "_cash_comment": "In 1824 dollars. 'Tiny budget' (§4.1). Placeholder until the budget system (1i).",
   "students": 20,
   "faculty": 3,
+  "_population_comment": "20 students and 3 faculty (two professors and the president): see codex/opening_1824.json.",
   "enrollment": true,
   "_enrollment_comment": "Yearly intake, graduation and hiring by data/enrollment.json (Phase 1 1h). population_capacity = room the simulation reserves for growth.",
   "population_capacity": 3000,
+  "goals": {
+    "_comment": "§4.1 key objective: reach 250 students and build the first residence hall (Elliott-style). Old Miami reached 250 students in 1839 (codex/old_miami_peak.json); the deadline is the end of President Bishop's term (1841) [TWEAK]. Lose: dismissed by the Trustees, bankrupt (cash below bankrupt_below dollars at bankrupt_reviews yearly reviews in a row), or the deadline passes.",
+    "students": 250,
+    "residence_hall": true,
+    "deadline": "1841-08-01",
+    "bankrupt_below": -1500,
+    "bankrupt_reviews": 2
+  },
   "campus": {
     "_comment": "The university's starting land: a square around the Old Main site. Placeholder for Miami's real 1824 holdings [VERIFY].",
     "center_timeline_id": "old_main",

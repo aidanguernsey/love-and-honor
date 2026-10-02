@@ -84,7 +84,7 @@ stood then), or **Preview — 2026 campus** for the modern campus with everyone 
 Controls: WASD / middle-drag pan · wheel zoom · Q/E / right-drag orbit · R/F tilt · Space pause/resume · 1–4 speed
 (1×/2×/4×/8×) · O overlays (ownership, foot traffic) · C clear forest · L buy land (drag a rectangle; the cost shows
 before you let go) · P lay a path (drag from end to end; the route goes round obstacles) · Shift+P remove paths ·
-V pave a desire path (click a worn shortcut; a long diagonal becomes the Slant Walk) · Y budget (tuition −/+) · B build menu (or the category buttons; pick a building, then click the map: the ghost is green
+V pave a desire path (click a worn shortcut; a long diagonal becomes the Slant Walk) · Y budget (tuition −/+) · K History Book · B build menu (or the category buttons; pick a building, then click the map: the ghost is green
 when it can be built, red with the reason when not) · Z/X turn the building 15° · Del cancel construction · H Heritage
 Project sites on/off · N day/night cycle on/off (both remembered) · G build grid · Esc stop the tool / main menu. Hover a
 building for its name or construction progress. Desire paths wear into the campus lawns over a few in-game weeks.

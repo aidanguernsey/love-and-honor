@@ -85,6 +85,19 @@ Old Main now `college_building`). Fiscal-year review: report by category + Trust
 deficit −8, fall enrollment up +3/down −6, −3 per month of negative cash; 0 = dismissed). Tuition level 50–200%
 changes applicants (elasticity 0.8). 1824–25 runs a $1,230 surplus (land rents carry it). HUD: Trustee Confidence,
 Budget panel (Y) with tuition −/+, dismissal banner. Money prints negatives as "−$". Next: **1j** (Chapter 1 content).
+**1j done (2026-10-02):** Chapter 1 content (`Engine/Campaign.cs`): `data/events/*.json` (8 historical events on their
+real dates with sources: Erodelphian Society 1825, McGuffey appointed 1826 (a named faculty member with teaching 95, who
+leaves in 1836), The Literary Focus 1827, North Hall 1828 (text depends on whether you built Elliott), Oxford
+incorporated 1830 (town boarding +15%), Alpha Delta Phi 1835, McGuffey's Reader 1836, Beta Theta Pi 1839; plus 2
+generic era events by chance, labelled as not historical), `data/codex/*.json` (9 History Book entries with sources;
+4 known from the start, the rest unlocked by events), `data/advisors.json` (6 monthly advisor messages with cooldowns:
+beds, seats, cash, turned-away students, desire paths, no hall). Goals in the scenario (`goals`): 250 students + a
+residence hall by Aug 1, 1841 (Old Miami reached 250 in 1839, codex); lose when dismissed, bankrupt (cash below
+−$1,500 at 2 reviews in a row) or out of time; after the end you can keep playing. Research sources: Miami's historical
+timeline, Wikipedia, Miami Archives (ArchivesSpace), Special Collections, The Miami Student, City of Oxford, Butler
+County history (1882); everything `verified: false`. The 1824 start (20 students, 2 faculty + Bishop) matches the
+sources. HUD: event cards (pause; `--cards-no-pause` for tests), History Book (K; `--codex[=id]`), goals panel, ticker,
+chapter-end banner. Next: **1k** (save/load + time-lapse).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -168,6 +181,9 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
 - 1i: all 1820s money is placeholder (tuition $30/yr, room $10, land rents $3,000/yr, salary $600/yr, administration
   $800/yr); everything is paid in cash (no bonds/donors yet, §8.5); tuition applies to everyone (no cohort pricing,
   §8.4); dismissal only shows a banner and pauses (proper ending in 1j).
+- 1j: no History Book entry on the Miami people or the university's name yet: §20 limits that to university-published
+  language until the Myaamia Center reviews it. Event effects and the generic events are invented (only the dated
+  facts are sourced).
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 

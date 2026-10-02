@@ -1,0 +1,22 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "north_hall_1828",
+  "title": "North Hall",
+  "kind": "historical",
+  "date": "1828-09-01",
+  "date_precision": "year",
+  "heritage_project": "elliott_hall",
+  "text": "In the real Miami, the first residence hall, North Hall (today's Elliott Hall), was built this year. Your students still board with families in town: the Trustees ask when the college will house its own.",
+  "text_if_built": "In the real Miami, the first residence hall, North Hall (today's Elliott Hall), was built this year. Yours is already standing: the Trustees are pleased.",
+  "effects": {},
+  "codex": [
+    "north_and_south_halls"
+  ],
+  "sources": [
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

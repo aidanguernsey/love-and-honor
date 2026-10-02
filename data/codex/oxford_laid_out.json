@@ -1,0 +1,23 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "oxford_laid_out",
+  "title": "Oxford and the Mile Square",
+  "era_years": "1810",
+  "text": "In 1810 the village of Oxford was laid out to be the university's home, its first lots sold inside a square mile bounded by today's Sycamore, Locust and Chestnut Streets and Patterson Avenue. A log schoolhouse went up on the University Square the next year.",
+  "unlock": "start",
+  "sources": [
+    {
+      "title": "Wikipedia: Oxford, Ohio",
+      "url": "https://en.wikipedia.org/wiki/Oxford,_Ohio"
+    },
+    {
+      "title": "City of Oxford: The History of Oxford",
+      "url": "https://cityofoxford.org/explore/history_demographics/oxfords_history/index.php"
+    },
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

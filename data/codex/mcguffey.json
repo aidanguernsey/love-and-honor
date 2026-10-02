@@ -1,0 +1,23 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "mcguffey",
+  "title": "Professor McGuffey",
+  "era_years": "1826-1836",
+  "text": "William Holmes McGuffey joined the faculty in 1826 as professor of ancient languages, aged 26. In Oxford he worked with local schools and compiled the first of his Eclectic Readers, published in 1836; the Readers went on to sell well over a hundred million copies. He left Miami in 1836 to lead Cincinnati College.",
+  "unlock": "event",
+  "sources": [
+    {
+      "title": "Wikipedia: William Holmes McGuffey",
+      "url": "https://en.wikipedia.org/wiki/William_Holmes_McGuffey"
+    },
+    {
+      "title": "Miami University Libraries Special Collections: McGuffey and His Readers",
+      "url": "https://spec.lib.miamioh.edu/wp-content/uploads/2013/03/McGuffey+His-Readers-for-web.pdf"
+    },
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

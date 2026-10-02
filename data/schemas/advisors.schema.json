@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Advisor messages (§3), minimal",
+  "type": "object",
+  "required": ["advisors", "messages"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "properties": {
+    "$schema": { "type": "string" },
+    "advisors": { "type": "object", "additionalProperties": { "type": "string" } },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "advisor", "condition", "value", "cooldown_days", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+          "advisor": { "type": "string" },
+          "condition": { "enum": ["beds_ratio_above", "seats_ratio_above", "cash_months_below", "intake_limited", "desire_paths_above", "no_residence_hall_after_year"] },
+          "value": { "type": "number" },
+          "cooldown_days": { "type": "integer", "minimum": 0 },
+          "text": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -167,6 +167,34 @@ public static class DataValidation
             }
         }
 
+        // Events and codex: file name == id; events unlock existing codex entries, name real needs and heritage projects,
+        // and faculty who leave were hired by an earlier event.
+        var codexIds = docs.Where(d => d.Key.StartsWith("codex/")).Select(d => Str(d.Value, "id")).ToHashSet();
+        foreach (var (rel, node) in docs.Where(d => d.Key.StartsWith("codex/") || d.Key.StartsWith("events/")))
+            if (Path.GetFileNameWithoutExtension(rel) != Str(node, "id")) issues.Add(new(rel, "/id", "id must match the file name"));
+        var needIds = (docs.GetValueOrDefault("balance.json")?["needs"]?["ids"] as JsonArray)?.Select(n => n!.GetValue<string>()).ToHashSet() ?? [];
+        var heritageIds = (docs.GetValueOrDefault("heritage_projects.json")?["projects"] as JsonArray)?.Select(p => Str(p!, "id")).ToHashSet() ?? [];
+        var hired = docs.Where(d => d.Key.StartsWith("events/")).Select(d => d.Value["effects"]?["hire_faculty"]?["name"]?.GetValue<string>())
+            .Where(n => n is not null).ToHashSet();
+        foreach (var (rel, node) in docs.Where(d => d.Key.StartsWith("events/")))
+        {
+            foreach (var c in node["codex"]?.AsArray() ?? [])
+                if (!codexIds.Contains(c!.GetValue<string>())) issues.Add(new(rel, "/codex", $"unknown codex entry '{c}'"));
+            foreach (var (need, _) in node["effects"]?["student_needs"] as JsonObject ?? [])
+                if (needIds.Count > 0 && !needIds.Contains(need)) issues.Add(new(rel, "/effects/student_needs", $"unknown need '{need}'"));
+            if (node["heritage_project"] is not null && !heritageIds.Contains(Str(node, "heritage_project")))
+                issues.Add(new(rel, "/heritage_project", $"unknown heritage project '{Str(node, "heritage_project")}'"));
+            if (node["effects"]?["faculty_leaves"]?.GetValue<string>() is { } leaver && !hired.Contains(leaver))
+                issues.Add(new(rel, "/effects/faculty_leaves", $"'{leaver}' isn't hired by any event"));
+        }
+        if (docs.TryGetValue("advisors.json", out var advisorsDoc))
+        {
+            var roles = (advisorsDoc["advisors"] as JsonObject)?.Select(kv => kv.Key).ToHashSet() ?? [];
+            var msgs = advisorsDoc["messages"]?.AsArray() ?? [];
+            for (int i = 0; i < msgs.Count; i++)
+                if (!roles.Contains(Str(msgs[i]!, "advisor"))) issues.Add(new("advisors.json", $"/messages/{i}/advisor", $"unknown advisor '{Str(msgs[i]!, "advisor")}'"));
+        }
+
         // Heritage Projects: unique ids, timeline entry and building definition exist.
         if (docs.TryGetValue("heritage_projects.json", out var heritage) && heritage["projects"] is JsonArray projects)
         {

@@ -5,7 +5,7 @@ extends CanvasLayer
 ## · B build menu · Z/X turn the building · Del cancel
 ## construction · H Heritage sites · N day/night cycle · Esc stop tool / close menu / main menu.
 ## The day/night and Heritage-site settings are remembered in user://settings.cfg (`--day-night=on|off` overrides
-## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs), `--build-menu` (open the build list), `--budget` (open the budget).
+## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs), `--build-menu` (open the build list), `--budget` (open the budget), `--codex` (open the History Book).
 ## Launch options (after `--`; start from the boot scene with `--play`): `--speed=N` (0–4), `--camera=...` (see camera_rig.gd), `--game-smoke[=seconds]`
 ## (print GAME_SMOKE stats once the sim has run that long, then quit), `--screenshot=<file.png>` (with --game-smoke).
 
@@ -37,6 +37,22 @@ var _budget_panel: PanelContainer
 var _budget_label: Label
 var _tuition_label: Label
 var _dismissed_label: Label
+var _goals_label: Label
+var _ticker_label: Label
+var _card_panel: PanelContainer
+var _card_title: Label
+var _card_date: Label
+var _card_text: Label
+var _card_sources: Label
+var _card_seq := 0
+var _speed_before_card := 1
+var _codex_panel: PanelContainer
+var _codex_list: VBoxContainer
+var _codex_text: Label
+var _outcome_shown := false
+var _codex_refresh := 0.0
+var _codex_selected := ""
+var _outcome_buttons: HBoxContainer
 var _category_buttons := {}
 var _build_popup: PanelContainer
 var _build_list: VBoxContainer
@@ -63,6 +79,7 @@ func _ready() -> void:
 	_build_right_panel()
 	_build_ticker()
 	_build_budget_panel()
+	_build_card_and_codex()
 	_loading_label = _label(22, "Loading…")
 	_anchor(_loading_label, 0.5, 0.5, 0.5, 0.5)
 	_loading_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -102,6 +119,10 @@ func _process(delta: float) -> void:
 		_host.SetSpeedIndex(_start_speed)
 		if "--build-menu" in OS.get_cmdline_user_args(): _open_build_list("")  # screenshots
 		if "--budget" in OS.get_cmdline_user_args(): _toggle_budget()  # screenshots
+		for arg in OS.get_cmdline_user_args():  # screenshots: --codex or --codex=<entry id>
+			if arg == "--codex" or arg.begins_with("--codex="):
+				_codex_selected = arg.trim_prefix("--codex").trim_prefix("=")
+				_toggle_codex()
 
 	_date_label.text = "%s   %s" % [hud["date"], hud["time"]]
 	var phase: String = hud["phase"]
@@ -118,8 +139,21 @@ func _process(delta: float) -> void:
 	if _budget_panel.visible:
 		_budget_label.text = hud["budget"]
 		_tuition_label.text = hud["tuition"]
-	if hud["dismissed"] and not _dismissed_label.visible:
+	if _codex_panel.visible:
+		_codex_refresh -= delta
+		if _codex_refresh <= 0.0: _fill_codex()
+	_goals_label.text = hud["goals"]
+	_goals_label.visible = hud["goals"] != ""
+	if hud["ticker"] != "": _ticker_label.text = hud["ticker"]
+	var seq: int = hud["card_seq"]
+	if seq > _card_seq:
+		_card_seq = seq
+		_show_card(hud)
+	if hud["outcome"] != "Playing" and not _outcome_shown:
+		_outcome_shown = true
+		_dismissed_label.text = hud["outcome_text"]
 		_dismissed_label.visible = true
+		_outcome_buttons.visible = true
 		_host.SetSpeedIndex(0)
 	_overlay_button.text = "Overlays: %s (O)" % hud["overlay"]
 	_demand_label.text = hud["demand"]
@@ -185,9 +219,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_X: _host.RotateBuild(1)
 		KEY_H: _heritage_button.button_pressed = not _heritage_button.button_pressed
 		KEY_Y: _toggle_budget()
+		KEY_K: _toggle_codex()
 		KEY_N: _day_night_button.button_pressed = not _day_night_button.button_pressed
 		KEY_ESCAPE:
-			if _budget_panel.visible: _budget_panel.visible = false
+			if _card_panel.visible: _close_card()
+			elif _codex_panel.visible: _codex_panel.visible = false
+			elif _budget_panel.visible: _budget_panel.visible = false
 			elif _build_popup.visible: _build_popup.visible = false
 			elif _host.GetTool() != "": _host.SetTool("")
 			else: get_tree().change_scene_to_file("res://scenes/boot.tscn")
@@ -319,6 +356,11 @@ func _build_right_panel() -> void:
 	_overlay_button.tooltip_text = "Ownership (university / town land) and the foot-traffic heatmap. Desire paths worn into the lawns are always shown."
 	_overlay_button.pressed.connect(_cycle_overlay)
 	col.add_child(_overlay_button)
+	_goals_label = _label(13)
+	_goals_label.tooltip_text = "Chapter goals (§4.1). Old Miami reached 250 students in 1839."
+	_goals_label.mouse_filter = Control.MOUSE_FILTER_PASS
+	col.add_child(_label(14, "Goals"))
+	col.add_child(_goals_label)
 	_day_night_button = CheckButton.new()
 	_day_night_button.text = "Day/night cycle (N)"
 	_day_night_button.button_pressed = true
@@ -391,6 +433,128 @@ func _build_budget_panel() -> void:
 	add_child(_dismissed_label)
 
 
+func _build_card_and_codex() -> void:
+	# Event card (§23): pauses the game until read.
+	_card_panel = _panel()
+	_anchor(_card_panel, 0.5, 0.42, 0.5, 0.42)
+	_card_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_card_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_card_panel.visible = false
+	_opaque(_card_panel)
+	var col := VBoxContainer.new()
+	col.custom_minimum_size = Vector2(520, 0)
+	_card_panel.add_child(col)
+	_card_date = _label(13)
+	_card_date.modulate = Color(1, 1, 1, 0.7)
+	col.add_child(_card_date)
+	_card_title = _label(22)
+	col.add_child(_card_title)
+	_card_text = _label(15)
+	_card_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_card_text.custom_minimum_size = Vector2(520, 0)
+	col.add_child(_card_text)
+	_card_sources = _label(11)
+	_card_sources.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_card_sources.custom_minimum_size = Vector2(520, 0)
+	_card_sources.modulate = Color(1, 1, 1, 0.65)
+	col.add_child(_card_sources)
+	var ok := Button.new()
+	ok.text = "Continue (Esc)"
+	ok.focus_mode = Control.FOCUS_NONE
+	ok.pressed.connect(_close_card)
+	col.add_child(ok)
+
+	# History Book (§19.3).
+	_codex_panel = _panel()
+	_anchor(_codex_panel, 0.5, 0.5, 0.5, 0.5)
+	_codex_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_codex_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_codex_panel.visible = false
+	_opaque(_codex_panel)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 14)
+	_codex_panel.add_child(row)
+	var left := VBoxContainer.new()
+	left.add_child(_label(18, "History Book"))
+	_codex_list = VBoxContainer.new()
+	left.add_child(_codex_list)
+	var close := Button.new()
+	close.text = "Close (K / Esc)"
+	close.focus_mode = Control.FOCUS_NONE
+	close.pressed.connect(_toggle_codex)
+	left.add_child(close)
+	row.add_child(left)
+	_codex_text = _label(14, "Pick an entry.")
+	_codex_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_codex_text.custom_minimum_size = Vector2(460, 300)
+	row.add_child(_codex_text)
+
+	# Chapter end: keep playing (open-ended) or back to the menu.
+	_outcome_buttons = HBoxContainer.new()
+	_anchor(_outcome_buttons, 0.5, 0.42, 0.5, 0.42)
+	_outcome_buttons.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_outcome_buttons.visible = false
+	var keep := Button.new()
+	keep.text = "Keep playing"
+	keep.pressed.connect(func():
+		_outcome_buttons.visible = false
+		_dismissed_label.visible = false
+		_host.SetSpeedIndex(1))
+	_outcome_buttons.add_child(keep)
+	var menu := Button.new()
+	menu.text = "Main menu"
+	menu.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/boot.tscn"))
+	_outcome_buttons.add_child(menu)
+	add_child(_outcome_buttons)
+
+
+func _opaque(panel: PanelContainer) -> void:
+	var style: StyleBoxFlat = panel.get_theme_stylebox("panel")
+	style.bg_color.a = 0.97
+
+
+func _show_card(hud: Dictionary) -> void:
+	_card_date.text = hud["card_date"]
+	_card_title.text = hud["card_title"]
+	_card_text.text = hud["card_text"] + ("\n\n" + hud["card_codex"] if hud["card_codex"] != "" else "")
+	_card_sources.text = hud["card_sources"]
+	if not _card_panel.visible:
+		_speed_before_card = hud["speed_index"]
+	_card_panel.visible = true
+	if not "--cards-no-pause" in OS.get_cmdline_user_args():  # testing / screenshots
+		_host.SetSpeedIndex(0)
+
+
+func _close_card() -> void:
+	_card_panel.visible = false
+	if _speed_before_card > 0: _host.SetSpeedIndex(_speed_before_card)
+
+
+func _toggle_codex() -> void:
+	_codex_panel.visible = not _codex_panel.visible
+	if _codex_panel.visible: _fill_codex()
+
+
+## Rebuilds the History Book list (entries unlock while it's open) and shows the selected entry.
+func _fill_codex() -> void:
+	_codex_refresh = 1.0
+	for child in _codex_list.get_children():
+		child.queue_free()
+	for entry in _host.GetCodex():
+		var b := Button.new()
+		b.text = "%s  (%s)" % [entry["title"], entry["years"]]
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.focus_mode = Control.FOCUS_NONE
+		b.disabled = not entry["unlocked"]
+		var e: Dictionary = entry
+		b.pressed.connect(func():
+			_codex_selected = e["id"]
+			_codex_text.text = "%s\n%s\n\n%s\n\n%s" % [e["title"], e["years"], e["text"], e["sources"]])
+		_codex_list.add_child(b)
+		if e["id"] == _codex_selected and e["unlocked"]:
+			_codex_text.text = "%s\n%s\n\n%s\n\n%s" % [e["title"], e["years"], e["text"], e["sources"]]
+
+
 func _toggle_budget() -> void:
 	_budget_panel.visible = not _budget_panel.visible
 
@@ -401,10 +565,16 @@ func _build_ticker() -> void:
 	bar.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	var row := HBoxContainer.new()
 	bar.add_child(row)
-	var ticker := _label(13, "News ticker: headlines come with events (checkpoint 1j).")
-	ticker.modulate = Color(1, 1, 1, 0.6)
+	var ticker := _label(13, "")
+	ticker.modulate = Color(1, 1, 1, 0.85)
 	ticker.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(ticker)
+	_ticker_label = ticker
+	var book := Button.new()
+	book.text = "History Book (K)"
+	book.focus_mode = Control.FOCUS_NONE
+	book.pressed.connect(_toggle_codex)
+	row.add_child(book)
 	_debug_label = _label(12)
 	_debug_label.modulate = Color(1, 1, 1, 0.6)
 	row.add_child(_debug_label)

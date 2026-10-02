@@ -1,0 +1,30 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "literary_focus_1827",
+  "title": "The Literary Focus goes to press",
+  "kind": "historical",
+  "date": "1827-06-01",
+  "date_precision": "month",
+  "text": "The two literary societies have published the first number of The Literary Focus, the college's first student periodical. Copies are reaching families across the West.",
+  "effects": {
+    "student_needs": {
+      "belonging": 6,
+      "fun": 6
+    },
+    "applicants": 1.05
+  },
+  "codex": [
+    "literary_societies"
+  ],
+  "sources": [
+    {
+      "title": "The Miami Student: One letter at a time (2026)",
+      "url": "https://www.miamistudent.net/article/2026/02/one-letter-at-a-time-the-literary-focus-shapes-the-student"
+    },
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

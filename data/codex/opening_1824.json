@@ -1,0 +1,23 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "opening_1824",
+  "title": "Classes begin",
+  "era_years": "1824",
+  "text": "Robert Hamilton Bishop, a Presbyterian minister and professor of history, became Miami's first president in 1824. Classes began on November 1, 1824, with twenty students and two faculty members besides Bishop. The course of study led to a Bachelor of Arts: Greek, Latin, algebra, geography and Roman history.",
+  "unlock": "start",
+  "sources": [
+    {
+      "title": "Wikipedia: Miami University",
+      "url": "https://en.wikipedia.org/wiki/Miami_University"
+    },
+    {
+      "title": "Wikipedia: Robert Hamilton Bishop",
+      "url": "https://en.wikipedia.org/wiki/Robert_Hamilton_Bishop"
+    },
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

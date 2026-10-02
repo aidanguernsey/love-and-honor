@@ -1,0 +1,29 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "alpha_delta_phi_1835",
+  "title": "A fraternity chapter",
+  "kind": "historical",
+  "date": "1835-10-01",
+  "date_precision": "year",
+  "text": "Students have established a chapter of Alpha Delta Phi, the first fraternity at Miami. The literary societies are not entirely pleased.",
+  "effects": {
+    "student_needs": {
+      "belonging": 6,
+      "social": 6
+    }
+  },
+  "codex": [
+    "old_miami_peak"
+  ],
+  "sources": [
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    },
+    {
+      "title": "Wikipedia: Miami University",
+      "url": "https://en.wikipedia.org/wiki/Miami_University"
+    }
+  ],
+  "verified": false
+}

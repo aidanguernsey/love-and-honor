@@ -1,0 +1,21 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "trustees_visit",
+  "title": "The Trustees come to inspect",
+  "kind": "generic",
+  "window": {
+    "from_year": 1825,
+    "to_year": 1845,
+    "months": [
+      5,
+      6
+    ],
+    "chance_per_year": 0.35
+  },
+  "text": "The Board of Trustees rode out to Oxford to see the college for themselves. They count the students, walk the grounds and ask about the accounts.",
+  "effects": {
+    "confidence": 2
+  },
+  "_comment": "Generic era event: fictional, not a historical claim.",
+  "verified": false
+}

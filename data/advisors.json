@@ -1,0 +1,25 @@
+{
+  "$schema": "./schemas/advisors.schema.json",
+  "_comment": "Minimal advisor messages (§3 advisors are fictional characters; here only their titles), Phase 1 1j. Each message has a condition the campaign checks once a month, and a cooldown so it doesn't repeat every month. {placeholders} are filled in by the game.",
+  "advisors": {
+    "provost": "Provost",
+    "finance": "VP Finance",
+    "student_life": "VP Student Life",
+    "enrollment": "VP Enrollment",
+    "architect": "University Architect"
+  },
+  "messages": [
+    { "id": "beds_full", "advisor": "student_life", "condition": "beds_ratio_above", "value": 0.85, "cooldown_days": 150,
+      "text": "Nearly every bed is taken ({students} students, {beds} beds). Without a hall or boarding house, next fall's freshmen will have nowhere to live." },
+    { "id": "seats_full", "advisor": "provost", "condition": "seats_ratio_above", "value": 0.85, "cooldown_days": 150,
+      "text": "Our recitation rooms are nearly full ({students} students, {seats} seats). Another classroom building would let us admit more." },
+    { "id": "cash_low", "advisor": "finance", "condition": "cash_months_below", "value": 3, "cooldown_days": 90,
+      "text": "We have about {months} months of running costs in the bank. Careful with new construction until the land rents come in." },
+    { "id": "intake_limited", "advisor": "enrollment", "condition": "intake_limited", "value": 0, "cooldown_days": 300,
+      "text": "We had to turn away {turned_away} admitted students this fall for lack of room." },
+    { "id": "desire_path", "advisor": "architect", "condition": "desire_paths_above", "value": 0, "cooldown_days": 120,
+      "text": "Students have worn a path across the lawn. Pave it (V) if it's where people really walk, or let the grass grow back." },
+    { "id": "no_hall", "advisor": "student_life", "condition": "no_residence_hall_after_year", "value": 1826, "cooldown_days": 365,
+      "text": "Every student still boards in town. A residence hall would keep them on the Hill: Elliott Hall can be built as a Heritage Project." }
+  ]
+}

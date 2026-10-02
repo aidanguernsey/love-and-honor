@@ -34,7 +34,7 @@ public class BudgetTests(ITestOutputHelper output)
         string[] expected = ["tuition", "land_rents", "salaries", "administration", "upkeep"];
         Assert.All(expected, c => Assert.Contains(last.Lines, l => l.Category == c));
         Assert.True(last.Revenue > 0);
-        Assert.Equal(last.Revenue + last.Lines.Where(l => l.Category is "salaries" or "administration" or "upkeep").Sum(l => l.Cents), last.Operating);
+        Assert.Equal(last.Revenue + last.Lines.Where(l => l.Category is "salaries" or "administration" or "upkeep" or "other").Sum(l => l.Cents), last.Operating);
         Assert.NotEqual(Data.Balance.Trustees.StartingConfidence, b.Confidence);
         // The starting placeholders roughly balance an 1820s college (land rents carry it).
         Assert.True(last.Operating >= 0, $"operating {LandSystem.Money(last.Operating)}");

@@ -216,7 +216,8 @@ public sealed class BudgetSystem
         AdjustConfidence(delta, $"The Trustees' review: confidence {(delta >= 0 ? "+" : "")}{delta:0}.");
     }
 
-    private void AdjustConfidence(double delta, string message)
+    /// <summary>Changes Trustee Confidence (events, reviews) with a message; 0 = dismissed.</summary>
+    public void AdjustConfidence(double delta, string message)
     {
         if (Dismissed) return;
         Confidence = Math.Clamp(Confidence + delta, 0, 100);

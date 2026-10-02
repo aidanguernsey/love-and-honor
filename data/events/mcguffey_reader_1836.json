@@ -1,0 +1,28 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "mcguffey_reader_1836",
+  "title": "McGuffey's First Reader",
+  "kind": "historical",
+  "date": "1836-06-01",
+  "date_precision": "year",
+  "text": "Professor McGuffey's First Eclectic Reader has been published, and he has accepted the presidency of Cincinnati College. Oxford's name will travel with his Readers; the college loses a fine teacher.",
+  "effects": {
+    "faculty_leaves": "William Holmes McGuffey",
+    "scholarship": 3,
+    "applicants": 1.05
+  },
+  "codex": [
+    "mcguffey"
+  ],
+  "sources": [
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    },
+    {
+      "title": "Wikipedia: William Holmes McGuffey",
+      "url": "https://en.wikipedia.org/wiki/William_Holmes_McGuffey"
+    }
+  ],
+  "verified": false
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "north_and_south_halls",
+  "title": "North Hall and South Hall",
+  "era_years": "1828-1836",
+  "text": "Miami's first residence hall, North Hall, was built in 1828; a second, South Hall, followed in 1836. Today they are Elliott and Stoddard Halls, the oldest buildings on campus.",
+  "unlock": "event",
+  "sources": [
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "oxford_incorporated",
+  "title": "The village of Oxford",
+  "era_years": "1830",
+  "text": "By 1830 Oxford had grown to more than 700 people, and on February 23, 1830, the village was incorporated.",
+  "unlock": "event",
+  "sources": [
+    {
+      "title": "Wikipedia: Oxford, Ohio",
+      "url": "https://en.wikipedia.org/wiki/Oxford,_Ohio"
+    },
+    {
+      "title": "City of Oxford: The History of Oxford",
+      "url": "https://cityofoxford.org/explore/history_demographics/oxfords_history/index.php"
+    }
+  ],
+  "verified": false
+}

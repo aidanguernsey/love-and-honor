@@ -50,7 +50,7 @@ public sealed class EnrollmentConfig
 
 /// <summary>What the UI shows about enrollment (immutable, published in snapshots when it changes).</summary>
 public sealed record EnrollmentView(int Version, int Students, int Faculty, int[] ByYear, int OnCampus, int InTown,
-    int CampusBeds, int TownBeds, int Seats, int LastApplicants, int LastIntake, int LastGraduates, int LastLeavers,
+    int CampusBeds, int TownBeds, int Seats, int LastApplicants, int LastAdmitted, int LastIntake, int LastGraduates, int LastLeavers,
     int Alumni, double Scholarship, DateOnly NextIntake, DateOnly NextCommencement);
 
 /// <summary>
@@ -76,11 +76,17 @@ public sealed class EnrollmentSystem
     private readonly int _startYear;
     private readonly List<string> _messages = [];
     private EnrollmentView? _view;
-    private int _lastApplicants, _lastIntake, _lastGraduates, _lastLeavers;
+    private int _lastApplicants, _lastAdmitted, _lastIntake, _lastGraduates, _lastLeavers;
 
     public int Alumni { get; private set; }
     /// <summary>Scales applicants (the budget's tuition level, 1i); 1 by default.</summary>
     public Func<double> ApplicantFactor { get; set; } = () => 1.0;
+    /// <summary>One-off boost to the next move-in's applicants (events, 1j); reset after use.</summary>
+    public double ApplicantBoost { get; set; } = 1.0;
+    /// <summary>Scales town boarding beds from now on (events, 1j).</summary>
+    public double TownBoardingMultiplier { get; set; } = 1.0;
+
+    public void AddScholarship(double works) => Scholarship += works;
     /// <summary>This year's move-in date.</summary>
     public DateOnly IntakeDateIn(int year) => On(_cfg.IntakeDate, year);
     public double Scholarship { get; private set; }
@@ -149,7 +155,7 @@ public sealed class EnrollmentSystem
         for (int y = Math.Max(0, (int)(cy - r)); y <= Math.Min(g.Height - 1, (int)(cy + r)); y++)
             for (int x = Math.Max(0, (int)(cx - r)); x <= Math.Min(g.Width - 1, (int)(cx + r)); x++)
                 if (g.LandState[y * g.Width + x] == LandState.Town && (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r * r) town++;
-        return (int)(town * _cfg.TownBoarding.BedsPerTownTile);
+        return (int)(town * _cfg.TownBoarding.BedsPerTownTile * TownBoardingMultiplier);
     }
 
     // ---------------- commencement ----------------
@@ -199,7 +205,8 @@ public sealed class EnrollmentSystem
         // Freshmen: applicants x admit rate, capped by free beds (halls + town boarding) and free seats.
         int students = p.StudentCount;
         int campusBeds = CampusBeds, townBeds = TownBeds(), seats = Seats;
-        int applicants = (int)Math.Round(era.ApplicantsPerYear * Math.Pow(era.ApplicantGrowthPerYear, Math.Max(0, date.Year - _startYear)) * ApplicantFactor());
+        int applicants = (int)Math.Round(era.ApplicantsPerYear * Math.Pow(era.ApplicantGrowthPerYear, Math.Max(0, date.Year - _startYear)) * ApplicantFactor() * ApplicantBoost);
+        ApplicantBoost = 1.0;
         int admitted = (int)Math.Round(applicants * era.AdmitRate);
         int room = Math.Max(0, Math.Min(campusBeds + townBeds - students, seats - students));
         int intake = Math.Min(admitted, Math.Min(room, p.Capacity - p.Count));
@@ -227,6 +234,7 @@ public sealed class EnrollmentSystem
             if (p.Kind[a] == AgentKind.Student) ctx.AssignStudentSections(p, a, _random);
 
         _lastApplicants = applicants;
+        _lastAdmitted = admitted;
         _lastIntake = intake;
         string limit = intake >= admitted ? "" : room <= intake && campusBeds + townBeds - students <= seats - students
             ? " (not enough beds: build a residence hall or boarding house)" : " (not enough classroom seats)";
@@ -274,7 +282,7 @@ public sealed class EnrollmentSystem
             if (p.Housing[a] == HousingType.OnCampus) onCampus++;
         }
         return _view = new EnrollmentView(Version, p.StudentCount, p.FacultyCount, byYear, onCampus, p.StudentCount - onCampus,
-            CampusBeds, TownBeds(), Seats, _lastApplicants, _lastIntake, _lastGraduates, _lastLeavers, Alumni, Scholarship,
+            CampusBeds, TownBeds(), Seats, _lastApplicants, _lastAdmitted, _lastIntake, _lastGraduates, _lastLeavers, Alumni, Scholarship,
             Next(_cfg.IntakeDate, today), Next(_cfg.GraduationDate, today));
     }
 }

@@ -1,0 +1,26 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "oxford_incorporated_1830",
+  "title": "Oxford becomes a village",
+  "kind": "historical",
+  "date": "1830-02-23",
+  "date_precision": "day",
+  "text": "With more than 700 people, Oxford has been incorporated as a village. More families are ready to take in student boarders.",
+  "effects": {
+    "town_boarding": 1.15
+  },
+  "codex": [
+    "oxford_incorporated"
+  ],
+  "sources": [
+    {
+      "title": "Wikipedia: Oxford, Ohio",
+      "url": "https://en.wikipedia.org/wiki/Oxford,_Ohio"
+    },
+    {
+      "title": "City of Oxford: The History of Oxford",
+      "url": "https://cityofoxford.org/explore/history_demographics/oxfords_history/index.php"
+    }
+  ],
+  "verified": false
+}

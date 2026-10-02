@@ -6,7 +6,8 @@
       "id": "old_main",
       "timeline_id": "old_main",
       "building": "college_building",
-      "cost_usd": 400000,
+      "cost_usd": 300000,
+      "_cost_comment": "The 1820 contract for the main building was over $6,000 (Upham, Old Miami, 1909): $300,000 x 0.02.",
       "construction_months": 30,
       "verified": false,
       "_comment": "Already standing when Chapter 1 starts (1824); offered in an earlier start (the 1809 'Empty Hill' sandbox)."

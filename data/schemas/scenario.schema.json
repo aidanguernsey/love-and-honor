@@ -125,6 +125,12 @@
         "bankrupt_reviews": {
           "type": "integer",
           "minimum": 1
+        },
+        "residence_hall_defs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

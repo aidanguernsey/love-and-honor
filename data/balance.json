@@ -62,6 +62,7 @@
       "leisure":  { "fun": 3.0, "sleep": 1.0 },
       "teach":    { "belonging": 0.5, "social": 1.0 },
       "work":     { "study": 3.0 },
+      "chapel":   { "belonging": 2.0, "social": 1.0 },
       "away":     { "sleep": 2.5, "food": 4.0, "study": 1.0, "social": 1.5, "fun": 1.5, "health": 0.2, "belonging": 0.2 }
     }
   },

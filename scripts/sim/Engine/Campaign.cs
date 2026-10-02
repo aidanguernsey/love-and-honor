@@ -112,6 +112,8 @@ public sealed class GoalsConfig
     public string Deadline { get; init; } = "";
     public double BankruptBelow { get; init; }
     public int BankruptReviews { get; init; } = 2;
+    /// <summary>Building definitions (or timeline ids) that count as the residence hall; empty = any residence.</summary>
+    public string[] ResidenceHallDefs { get; init; } = [];
 
     public DateOnly DeadlineDate => DateOnly.Parse(Deadline, System.Globalization.CultureInfo.InvariantCulture);
 }
@@ -358,7 +360,8 @@ public sealed class CampaignSystem
 
     // ---------------- goals ----------------
 
-    private bool HasHall => _campus.Buildings.Any(b => b.Kind == BuildingKind.Residence);
+    private bool HasHall => _campus.Buildings.Any(b => b.Kind == BuildingKind.Residence
+        && (_goals is null || _goals.ResidenceHallDefs.Length == 0 || _goals.ResidenceHallDefs.Contains(b.DefId)));
 
     private void CheckGoals(DateOnly date, bool fiscalReviewToday)
     {

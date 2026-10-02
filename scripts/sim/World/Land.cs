@@ -78,7 +78,7 @@ public sealed class Treasury(long startingCents)
 
 /// <summary>Land orders. Clear/Buy/RemovePath take a rectangle; Path a route from (X0, Y0) to (X1, Y1); PaveDesire the
 /// desire path under (X0, Y0).</summary>
-public enum LandAction : byte { Clear, Buy, Path, RemovePath, PaveDesire }
+public enum LandAction : byte { Clear, Buy, Path, RemovePath, PaveDesire, DesignateSlantWalk, DeclineSlantWalk }
 
 /// <summary>A player land order for a rectangle of tiles (inclusive), or a path's two ends (see <see cref="LandAction"/>).</summary>
 public readonly record struct LandCommand(LandAction Action, int X0, int Y0, int X1, int Y1);
@@ -120,6 +120,8 @@ public sealed class LandSystem
     public byte[] PathSurface => _pathSurface;
     /// <summary>The Slant Walk's tiles once a long diagonal desire path has been paved (§12.4), else empty.</summary>
     public IReadOnlyList<int> SlantWalk { get; private set; } = [];
+    /// <summary>A paved desire path that could become the Slant Walk, waiting for the player's answer; empty if none.</summary>
+    public IReadOnlyList<int> SlantWalkCandidate { get; private set; } = [];
     /// <summary>Heritage earned by landmarks of the land layer (the Slant Walk), recorded until the Heritage score exists.</summary>
     public double HeritageBonus { get; private set; }
     public double TownRelationsPenalty { get; private set; }
@@ -186,9 +188,11 @@ public sealed class LandSystem
         Engine.SaveIO.WriteArray(w, SlantWalk.ToArray());
         w.Write(Version);
         Treasury.WriteState(w);
+        Engine.SaveIO.WriteArray(w, SlantWalkCandidate.ToArray()); // format 2
     }
 
-    public void ReadState(BinaryReader r)
+    /// <param name="format">Save format (format 1 had no Slant Walk candidate).</param>
+    public void ReadState(BinaryReader r, int format)
     {
         Engine.SaveIO.ReadArrayInto(r, _clearing);
         _jobs.Clear();
@@ -206,6 +210,7 @@ public sealed class LandSystem
         SlantWalk = Engine.SaveIO.ReadArray<int>(r);
         Version = r.ReadInt32();
         Treasury.ReadState(r);
+        SlantWalkCandidate = format >= 2 ? Engine.SaveIO.ReadArray<int>(r) : [];
     }
 
     // ---------------- commands (any thread enqueues, sim thread applies) ----------------
@@ -228,6 +233,21 @@ public sealed class LandSystem
         var edits = new List<Engine.TileEdit>();
         while (_commands.TryDequeue(out var c))
         {
+            if (c.Action is LandAction.DesignateSlantWalk or LandAction.DeclineSlantWalk)
+            {
+                if (SlantWalkCandidate.Count == 0 || SlantWalk.Count > 0) continue;
+                if (c.Action == LandAction.DesignateSlantWalk)
+                {
+                    SlantWalk = SlantWalkCandidate;
+                    HeritageBonus += _paths!.SlantWalk.HeritageBonus;
+                    _messages.Add($"The diagonal across the lawn is now the Slant Walk (Heritage +{_paths.SlantWalk.HeritageBonus:0}).");
+                }
+                else
+                    _messages.Add("Not this one: the next long diagonal you pave can still become the Slant Walk.");
+                SlantWalkCandidate = [];
+                Version++;
+                continue;
+            }
             if (c.Action is LandAction.Path or LandAction.RemovePath or LandAction.PaveDesire)
             {
                 ApplyPathCommand(c, date, edits);
@@ -299,11 +319,11 @@ public sealed class LandSystem
         {
             _messages.Add($"Paved the desire path: {laid} tiles of {name}, {Money(q.Cents)}.");
             var shape = PathPlanner.SlantWalk(_paths, tiles, w, _grid.TileSizeM);
+            // §12.4: the player decides which long diagonal becomes the Slant Walk (answers to Q16).
             if (SlantWalk.Count == 0 && shape.Qualifies)
             {
-                SlantWalk = tiles.ToArray();
-                HeritageBonus += _paths.SlantWalk.HeritageBonus;
-                _messages.Add($"The students' {shape.LengthM:0} m diagonal shortcut is now the Slant Walk (Heritage +{_paths.SlantWalk.HeritageBonus:0}).");
+                SlantWalkCandidate = tiles.ToArray();
+                _messages.Add($"The students' {shape.LengthM:0} m diagonal shortcut could become the Slant Walk: name it or wait for another.");
             }
         }
         else

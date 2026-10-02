@@ -19,7 +19,7 @@ namespace LoveAndHonor.Sim.Engine;
 public static class SaveGame
 {
     /// <summary>Bump when the payload changes; add a migration in <see cref="Restore"/> for older numbers.</summary>
-    public const int Format = 1;
+    public const int Format = 2;
     private static readonly byte[] Magic = "LHSV"u8.ToArray();
 
     public sealed class Header
@@ -101,7 +101,7 @@ public static class SaveGame
     {
         var header = ReadHeader(input);
         if (header.Scenario != (w.Scenario?.Id ?? "")) throw new InvalidDataException($"The save is for scenario '{header.Scenario}'.");
-        // Format migrations go here (none yet: format 1 is the first).
+        // Format migrations: 1 → 2 added the Slant Walk candidate (land section).
         using var zip = new DeflateStream(input, CompressionMode.Decompress, leaveOpen: true);
         using var br = new BinaryReader(zip, Encoding.UTF8, leaveOpen: true);
         var sim = w.Simulation;
@@ -118,7 +118,7 @@ public static class SaveGame
                 W = br.ReadInt32(), H = br.ReadInt32(), EntranceTile = br.ReadInt32(), Weight = br.ReadSingle(),
             });
         br.Expect("population"); w.Population.ReadState(br);
-        br.Expect("land"); if (br.ReadBoolean()) w.Land!.ReadState(br);
+        br.Expect("land"); if (br.ReadBoolean()) w.Land!.ReadState(br, header.Format);
         br.Expect("placement"); if (br.ReadBoolean()) w.Placement!.ReadState(br);
         br.Expect("enrollment"); if (br.ReadBoolean()) w.Enrollment!.ReadState(br);
         br.Expect("budget"); if (br.ReadBoolean()) w.Budget!.ReadState(br);

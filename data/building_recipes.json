@@ -99,6 +99,21 @@
       "chimneys": 4,
       "verified": false
     },
+    "brick_residence": {
+      "_comment": "A plain brick residence hall of the 1820s-30s (gable roof, end chimneys), like North and South Halls.",
+      "shape": { "type": "rect" },
+      "storeys": 3,
+      "walls": "brick",
+      "roof": { "type": "gable", "pitch_deg": 32 },
+      "windows": "6over6",
+      "quoins": false,
+      "belt_courses": false,
+      "door": "front",
+      "portico_bays": 0,
+      "cupola": false,
+      "chimneys": 4,
+      "verified": false
+    },
     "old_main": {
       "_comment": "Old Main (the first college building). Storeys, roof and cupola are guesses [VERIFY with archival images].",
       "shape": { "type": "rect" },

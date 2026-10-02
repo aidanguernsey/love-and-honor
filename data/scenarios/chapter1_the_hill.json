@@ -20,6 +20,8 @@
     "_comment": "§4.1 key objective: reach 250 students and build the first residence hall (Elliott-style). Old Miami reached 250 students in 1839 (codex/old_miami_peak.json); the deadline is the end of President Bishop's term (1841) [TWEAK]. Lose: dismissed by the Trustees, bankrupt (cash below bankrupt_below dollars at bankrupt_reviews yearly reviews in a row), or the deadline passes.",
     "students": 250,
     "residence_hall": true,
+    "residence_hall_defs": ["historic_hall", "brick_residence_hall", "elliott_hall", "stoddard_hall"],
+    "_residence_hall_comment": "Answer to Q36: only a brick hall counts (Elliott or Stoddard as Heritage Projects, or a Brick Residence Hall); a wooden boarding house adds beds but doesn't win the chapter.",
     "deadline": "1841-08-01",
     "bankrupt_below": -1500,
     "bankrupt_reviews": 2

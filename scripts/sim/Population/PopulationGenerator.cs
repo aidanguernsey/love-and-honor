@@ -15,6 +15,13 @@ public sealed class SectionPlan
     public required int MajorBuildingSections { get; init; }
     public required int FacultyMin { get; init; }
     public required int FacultyMax { get; init; }
+    /// <summary>Chapel hours on class days (empty = none).</summary>
+    public int[] ChapelHours { get; init; } = [];
+    /// <summary>Saturday is a class day (the weekend is only Sunday).</summary>
+    public bool SaturdayClasses { get; init; }
+    /// <summary>Era overrides for students' rising and bed hours (schedules.json otherwise).</summary>
+    public IntRange? StudentWakeHour { get; init; }
+    public IntRange? StudentBedHour { get; init; }
 
     public static SectionPlan FromSchedules(ScheduleConfig cfg)
     {
@@ -37,6 +44,8 @@ public sealed class SectionPlan
         Slots = era.ClassHours.Select(h => (Mask(era.ClassDays), (byte)h)).ToList(),
         StudentSections = era.StudentSections, MajorBuildingSections = majorBuildingSections,
         FacultyMin = era.FacultySections.Min, FacultyMax = era.FacultySections.Max,
+        ChapelHours = era.ChapelHours, SaturdayClasses = era.ClassDays.Contains("sat"),
+        StudentWakeHour = era.StudentWakeHour, StudentBedHour = era.StudentBedHour,
     };
 
     private static byte Mask(IEnumerable<string> days)
@@ -147,8 +156,10 @@ public sealed class PeopleContext
         bool studier = random.NextDouble() < st.StudyAtLibraryProbability;
         SetStudentHome(pop, a, home, onCampus, studier, random.NextInt(3));
         pop.CurrentBuilding[a] = home;
-        pop.WakeHour[a] = (byte)random.NextInt(st.WakeHour.Min, st.WakeHour.Max + 1);
-        pop.BedHour[a] = (byte)random.NextInt(st.BedHour.Min, st.BedHour.Max + 1);
+        var wake = Plan.StudentWakeHour ?? st.WakeHour;
+        var bed = Plan.StudentBedHour ?? st.BedHour;
+        pop.WakeHour[a] = (byte)random.NextInt(wake.Min, wake.Max + 1);
+        pop.BedHour[a] = (byte)random.NextInt(bed.Min, bed.Max + 1);
         pop.WeekendWakeHour[a] = (byte)random.NextInt(st.WeekendWakeHour.Min, st.WeekendWakeHour.Max + 1);
         AssignStudentSections(pop, a, random);
     }

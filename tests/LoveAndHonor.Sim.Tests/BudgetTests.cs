@@ -48,7 +48,7 @@ public class BudgetTests(ITestOutputHelper output)
         var tuition = w.Land!.Treasury.Ledger.Where(e => e.Category == "tuition").ToList();
         var spring = Assert.Single(tuition);
         Assert.Equal(new DateOnly(1825, 1, 26), spring.Date);
-        Assert.Equal(w.Population.StudentCount * 30 * 100 / 2, spring.Cents); // $30 a year, half a term
+        Assert.Equal(w.Population.StudentCount * 20 * 100 / 2, spring.Cents); // $20 a year ($10 a session), half a term
     }
 
     [Fact]

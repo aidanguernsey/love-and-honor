@@ -53,6 +53,7 @@ var _codex_list: VBoxContainer
 var _codex_text: Label
 var _outcome_shown := false
 var _codex_refresh := 0.0
+var _slant_panel: PanelContainer
 var _saves_panel: PanelContainer
 var _saves_list: VBoxContainer
 var _timelapse_bar: PanelContainer
@@ -93,6 +94,7 @@ func _ready() -> void:
 	_build_budget_panel()
 	_build_card_and_codex()
 	_build_saves_and_timelapse()
+	_build_slant_prompt()
 	_loading_label = _label(22, "Loading…")
 	_anchor(_loading_label, 0.5, 0.5, 0.5, 0.5)
 	_loading_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -172,6 +174,7 @@ func _process(delta: float) -> void:
 	if _codex_panel.visible:
 		_codex_refresh -= delta
 		if _codex_refresh <= 0.0: _fill_codex()
+	_slant_panel.visible = hud["slant_candidate"]
 	_goals_label.text = hud["goals"]
 	_goals_label.visible = hud["goals"] != ""
 	if hud["ticker"] != "": _ticker_label.text = hud["ticker"]
@@ -610,6 +613,33 @@ func _build_saves_and_timelapse() -> void:
 	back.focus_mode = Control.FOCUS_NONE
 	back.pressed.connect(_toggle_timelapse)
 	trow.add_child(back)
+
+
+func _build_slant_prompt() -> void:
+	# §12.4: the player names the Slant Walk (answers to Q16).
+	_slant_panel = _panel()
+	_anchor(_slant_panel, 0.5, 0.2, 0.5, 0.2)
+	_slant_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_slant_panel.visible = false
+	_opaque(_slant_panel)
+	var col := VBoxContainer.new()
+	col.custom_minimum_size = Vector2(440, 0)
+	_slant_panel.add_child(col)
+	col.add_child(_label(18, "Name this the Slant Walk?"))
+	var text := _label(13, "Students wore this diagonal across the lawn and you paved it. Only one path can be the Slant Walk: a landmark with a Heritage bonus.")
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.custom_minimum_size = Vector2(440, 0)
+	col.add_child(text)
+	var row := HBoxContainer.new()
+	var yes := Button.new()
+	yes.text = "Name it the Slant Walk"
+	yes.pressed.connect(func(): _host.AnswerSlantWalk(true))
+	row.add_child(yes)
+	var no := Button.new()
+	no.text = "Not this one"
+	no.pressed.connect(func(): _host.AnswerSlantWalk(false))
+	row.add_child(no)
+	col.add_child(row)
 
 
 func _toggle_saves() -> void:

@@ -1,0 +1,19 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "old_miami_grows",
+  "title": "Old Miami grows",
+  "era_years": "1829-1838",
+  "text": "In 1829 Miami added a theological department and a \"farmers' college\": not an agricultural school but a three-year course for farm boys. By 1834 the faculty had grown to seven professors and enrollment stood at 234. In 1838 the Oxford Theological Seminary was established.",
+  "unlock": "event",
+  "sources": [
+    {
+      "title": "Wikipedia: Miami University",
+      "url": "https://en.wikipedia.org/wiki/Miami_University"
+    },
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

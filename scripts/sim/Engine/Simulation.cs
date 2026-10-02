@@ -69,6 +69,7 @@ public sealed class Simulation
     // Values for the tick in progress, read by ProcessChunk.
     private int _tickStartMinute, _day, _weekday, _hour;
     private bool _classesHeld, _studentsAway;
+    private int _rulesDay = -1;
     private readonly AcademicCalendar _calendar;
 
     private struct ChunkStats
@@ -307,6 +308,16 @@ public sealed class Simulation
         _weekday = Time.WeekdayIndex;
         _hour = Time.HourOfDay;
         _classesHeld = _calendar.ClassesHeld(Time.Date);
+        if (Enrollment is not null && _rulesDay != Time.Day)
+        {
+            _rulesDay = Time.Day; // also right after a save is loaded mid-day
+            // The era's college day (chapel, Saturday classes); chapel is in the first academic building.
+            var plan = Enrollment.PlanFor(Time.Date.Year);
+            short chapel = PopulationStore.NoBuilding;
+            foreach (var b in _campus.Buildings)
+                if (b.Kind == BuildingKind.Academic && b.Index < _paths.BuildingCount) { chapel = b.Index; break; }
+            _schedule.SetDayRules(plan.ChapelHours, chapel, plan.SaturdayClasses);
+        }
         _studentsAway = _awayEnabled && _calendar.StudentsAway(Time.Date);
 
         if (_threads == 1)

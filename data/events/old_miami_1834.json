@@ -1,0 +1,20 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "old_miami_1834",
+  "title": "Seven professors, 234 students",
+  "kind": "historical",
+  "date": "1834-09-01",
+  "date_precision": "year",
+  "text": "In the real Old Miami, the faculty had grown to seven professors and enrollment to 234 by 1834. How does your college compare?",
+  "effects": {},
+  "codex": [
+    "old_miami_grows"
+  ],
+  "sources": [
+    {
+      "title": "Wikipedia: Miami University",
+      "url": "https://en.wikipedia.org/wiki/Miami_University"
+    }
+  ],
+  "verified": false
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "self_government_1824",
+  "title": "Students govern themselves",
+  "kind": "historical",
+  "date": "1824-12-01",
+  "date_precision": "month",
+  "text": "Within the college's first month, President Bishop has let the students set up their own government to keep order among themselves. They take it seriously.",
+  "effects": {
+    "student_needs": {
+      "belonging": 8
+    }
+  },
+  "codex": [
+    "college_day"
+  ],
+  "sources": [
+    {
+      "title": "A. H. Upham, Old Miami, the Yale of the Early West (1909)",
+      "url": "https://ldsgenealogy.com/OH/Old-Miami-the-Yale-of-the-early-West.htm"
+    }
+  ],
+  "verified": false
+}

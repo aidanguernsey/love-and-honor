@@ -1,0 +1,23 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "theological_seminary_1838",
+  "title": "A theological seminary in Oxford",
+  "kind": "historical",
+  "date": "1838-09-01",
+  "date_precision": "year",
+  "text": "The Oxford Theological Seminary has been established. Its students and teachers add to the town's learned company, and to the demand for rooms.",
+  "effects": {
+    "scholarship": 1,
+    "applicants": 1.03
+  },
+  "codex": [
+    "old_miami_grows"
+  ],
+  "sources": [
+    {
+      "title": "Miami University: Historical Timeline (Old Miami)",
+      "url": "https://miamioh.edu/about-miami/history-traditions/timeline/old-miami/index.html"
+    }
+  ],
+  "verified": false
+}

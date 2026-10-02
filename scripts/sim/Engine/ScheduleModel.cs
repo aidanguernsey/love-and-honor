@@ -18,6 +18,26 @@ public sealed class ScheduleModel
     private readonly int _studentLunch, _studentDinner, _eveningStart;
     private readonly int _facultyLunch;
     private readonly int _freeBlock;
+    // Era rules for the day (set by the Simulation at midnight): chapel hours (bit per hour), where chapel is, and
+    // whether Saturday is a class day (the 1820s college day).
+    private int _chapelMask;
+    private short _chapelBuilding = PopulationStore.NoBuilding;
+    private bool _saturdayClasses;
+
+    /// <summary>Sets the day's era rules (sim thread, between ticks).</summary>
+    public void SetDayRules(int[] chapelHours, short chapelBuilding, bool saturdayClasses)
+    {
+        _chapelMask = 0;
+        foreach (int h in chapelHours) _chapelMask |= 1 << h;
+        _chapelBuilding = chapelBuilding;
+        _saturdayClasses = saturdayClasses;
+    }
+
+    private bool IsWeekend(int weekday) => _saturdayClasses ? weekday == 6 : weekday >= 5;
+
+    private bool Chapel(int hour, bool classes, bool weekend) =>
+        classes && !weekend && _chapelBuilding >= 0 && (_chapelMask & (1 << hour)) != 0;
+
     // Cumulative thresholds in [0, 65536) over FreeChoices, one table per situation.
     private readonly int[] _weekdayFree, _weekdayEvening, _weekend;
 
@@ -51,7 +71,12 @@ public sealed class ScheduleModel
 
     private short ResolveStudent(PopulationStore p, int a, int day, int weekday, int hour, out Activity activity, bool classes)
     {
-        bool weekend = weekday >= 5;
+        bool weekend = IsWeekend(weekday);
+        if (Chapel(hour, classes, weekend))
+        {
+            activity = Activity.Chapel;
+            return _chapelBuilding;
+        }
         if (classes && !weekend && TryClass(p, a, weekday, hour, out short classBuilding))
         {
             activity = Activity.Class;
@@ -89,12 +114,18 @@ public sealed class ScheduleModel
 
     private short ResolveFaculty(PopulationStore p, int a, int weekday, int hour, out Activity activity, bool classes)
     {
+        bool weekend = IsWeekend(weekday);
+        if (Chapel(hour, classes, weekend))
+        {
+            activity = Activity.Chapel;
+            return _chapelBuilding;
+        }
         if (hour < p.WakeHour[a] || hour >= p.BedHour[a])
         {
             activity = Activity.Sleep;
             return p.Home[a];
         }
-        if (weekday < 5)
+        if (!weekend)
         {
             if (classes && TryClass(p, a, weekday, hour, out short classBuilding))
             {

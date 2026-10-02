@@ -1,0 +1,19 @@
+{
+  "$schema": "../schemas/codex.schema.json",
+  "id": "college_day",
+  "title": "A college day in 1824",
+  "era_years": "1824",
+  "text": "Students rose before five. They studied from five to seven, recited from seven to eight and from nine to noon, studied again from two to five, and went to prayers, morning and evening. Tuition was $10 a session; a room with a servant's help cost $5 a year, and board with an Oxford family a dollar or so a week. Within the first month the students were governing themselves.",
+  "unlock": "start",
+  "sources": [
+    {
+      "title": "A. H. Upham, Old Miami, the Yale of the Early West (1909)",
+      "url": "https://ldsgenealogy.com/OH/Old-Miami-the-Yale-of-the-early-West.htm"
+    },
+    {
+      "title": "Wikipedia: Sesquicentennial Chapel",
+      "url": "https://en.wikipedia.org/wiki/Sesquicentennial_Chapel"
+    }
+  ],
+  "verified": false
+}

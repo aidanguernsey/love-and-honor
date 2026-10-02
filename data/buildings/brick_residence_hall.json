@@ -1,0 +1,29 @@
+{
+  "$schema": "../schemas/building.schema.json",
+  "_comment": "1820s catalogue (answers to Q36): a brick residence hall like North Hall (Elliott), for players who don't build Elliott itself. Placeholder numbers: cost in MODERN dollars (x 0.02 in the 1820s = $4,000), beds and build time are guesses.",
+  "id": "brick_residence_hall",
+  "name": "Brick Residence Hall",
+  "category": "residence",
+  "footprint": {
+    "w": 2,
+    "h": 4
+  },
+  "cost_usd": 200000,
+  "upkeep_usd_per_year": 3000,
+  "capacity": {
+    "kind": "beds",
+    "value": 64
+  },
+  "style": "georgian_revival",
+  "unlock_era": "founding",
+  "retire_era": "early20",
+  "construction_months": 12,
+  "needs_served": [
+    "sleep",
+    "social",
+    "belonging"
+  ],
+  "recipe": "brick_residence",
+  "model": null,
+  "design_ref": "§11.3"
+}

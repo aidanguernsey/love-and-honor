@@ -73,22 +73,62 @@ public class CampaignTests
     }
 
     [Fact]
-    public void Winning_Needs250StudentsAndAHall()
+    public void Winning_Needs250StudentsAndABrickHall()
     {
         var w = Chapter1();
         var p = w.Population;
         var g = w.Campus.Grid;
         // Stand-ins: 250 students and a residence hall (in play: years of building and intakes).
-        while (p.StudentCount < 250) p.Year[p.Add(AgentKind.Student)] = 1;
+        while (p.StudentCount < 250)
+        {
+            int s = p.Add(AgentKind.Student);
+            p.Year[s] = 1;
+            p.Home[s] = p.CurrentBuilding[s] = p.Dining[s] = p.StudySpot[s] = p.SocialSpot[s] = p.ExerciseSpot[s] = p.Home[0];
+        }
         w.Simulation.Tick();
         Assert.Equal(CampaignOutcome.Playing, w.Campaign!.Outcome); // no hall yet
         var old = w.Campus.Buildings[0];
+        // A wooden boarding house adds beds but isn't the residence hall the chapter asks for (answers to Q36).
         w.Campus.Add(new CampusBuilding { Index = (short)w.Campus.Buildings.Count, DefId = "boarding_house", Kind = BuildingKind.Residence,
+            X = old.X, Y = old.Y, W = 1, H = 1, EntranceTile = old.EntranceTile });
+        while (w.Simulation.Time.HourOfDay != 0) w.Simulation.Tick();
+        w.Simulation.Tick();
+        Assert.Equal(CampaignOutcome.Playing, w.Campaign.Outcome);
+        w.Campus.Add(new CampusBuilding { Index = (short)w.Campus.Buildings.Count, DefId = "brick_residence_hall", Kind = BuildingKind.Residence,
             X = old.X, Y = old.Y, W = 1, H = 1, EntranceTile = old.EntranceTile });
         while (w.Simulation.Time.HourOfDay != 0) w.Simulation.Tick();
         w.Simulation.Tick();
         Assert.Equal(CampaignOutcome.Won, w.Campaign.Outcome);
         Assert.StartsWith("Chapter complete", w.Campaign.View().OutcomeText);
+    }
+
+    [Fact]
+    public void The1820sDay_HasChapelAndSaturdayRecitations()
+    {
+        var w = Chapter1();
+        var p = w.Population;
+        // Monday Nov 8, 1824 at 20:00: evening prayers in Old Main (the first academic building).
+        RunUntil(w, new DateOnly(1824, 11, 8));
+        while (w.Simulation.Time.HourOfDay != 20) w.Simulation.Tick();
+        w.Simulation.Tick();
+        Assert.All(Enumerable.Range(0, p.Count), a => Assert.Equal(Activity.Chapel, p.CurrentActivity[a]));
+        Assert.All(Enumerable.Range(0, p.Count), a => Assert.Equal(0, p.CurrentBuilding[a]));
+        // Saturday Nov 13: recitations are held (only Sunday is free).
+        RunUntil(w, new DateOnly(1824, 11, 13));
+        int classes = 0;
+        for (int h = 0; h < 13; h++)
+        {
+            w.Simulation.Tick();
+            classes += Enumerable.Range(0, p.Count).Count(a => p.CurrentActivity[a] is Activity.Class or Activity.Teach);
+        }
+        Assert.True(classes > 0);
+        // Sunday Nov 14: no chapel at 6 and no classes.
+        RunUntil(w, new DateOnly(1824, 11, 14));
+        for (int h = 0; h < 13; h++)
+        {
+            w.Simulation.Tick();
+            Assert.DoesNotContain(Enumerable.Range(0, p.Count), a => p.CurrentActivity[a] is Activity.Class or Activity.Chapel);
+        }
     }
 
     [Fact]

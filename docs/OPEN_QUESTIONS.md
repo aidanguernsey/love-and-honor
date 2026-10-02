@@ -1,5 +1,28 @@
 # Open questions for Aidan
 
+**Answered 2026-10-02.** Aidan answered the ones that change something; every other question keeps its default
+(the defaults below are now decisions). Summary:
+
+| # | Answer | What changed |
+|---|---|---|
+| Q20, Q25 | Keep the ~15-year pace | Nothing (placeholders stay) |
+| Q30 | Deadline 1841 | Nothing |
+| Q36 | Only a brick hall wins Chapter 1 | Goal counts Elliott, Stoddard or a new 1820s **Brick Residence Hall** (64 beds, $4,000); boarding houses still add beds |
+| Q10 | Elliott/Stoddard look: close enough | Nothing (unverified) |
+| Q31 | Research a few more events | 4 new sourced events: student self-government (Dec 1824), theological department and farmers' college (1829), 234 students and 7 professors (1834), Oxford Theological Seminary (1838); 2 new History Book entries |
+| Q16 | The Slant Walk is the player's choice | Paving a long diagonal asks "Name this the Slant Walk?" (Yes / Not this one) |
+| Q26 | Trustees: nothing more for now | Nothing |
+| Q28 | Loans wait for Phase 2 | Nothing |
+| Q21 | Add Saturday classes and chapel | 1820s day per Upham (1909): rise at 5, recitations at 7, 9, 10, 11 Mon–Sat, chapel at 6 a.m. and 8 p.m. in Old Main (Saturday classes unverified) |
+| Q9 | Demolition waits for Phase 2 | Nothing |
+| Q2 | Research the 1824 start | Found real fees (tuition $10 a session, room $5 a year: budget now $20/$5) and Old Main's 1820 contract (>$6,000: Heritage Project cost now $6,000); no acreage or rent figures online (they're in the Archives' ledgers), so the starting square and land rents stay placeholders |
+| Q5, Q29 | Already settled | Q15 (path required) and the 1j ending screen |
+| all others | Defaults kept | — |
+
+The original questions follow for reference.
+
+---
+
 Collected while working through the Phase 1 checkpoints back-to-back (from 2026-10-02). **All of 1e–1k are done**
 (see CLAUDE.md "Current phase" and the screenshots in `docs/images/`). Each question lists the
 **default I went with** so work could continue; every default is easy to change. Answer in any order: a short

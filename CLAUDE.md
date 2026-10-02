@@ -237,6 +237,13 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
   generator kept in `tools/research/` (reproduces `data/timeline.json`; timeline is hand-edited from now on).
   Housekeeping: add a private remote and push (gh CLI not installed; needs the user to create the repo / sign in).
 
+- Answers to docs/OPEN_QUESTIONS.md (2026-10-02, summary table at the top of that file): Chapter 1 pace ~15 years and
+  deadline 1841 kept; only a brick hall wins Chapter 1 (scenario `goals.residence_hall_defs`, new `brick_residence_hall`);
+  the Slant Walk is the player's choice (`LandAction.DesignateSlantWalk/DeclineSlantWalk`, save format 2); the 1820s day
+  has chapel (6, 20) and Saturday recitations (`enrollment.json` era `chapel_hours`, wake/bed overrides; ScheduleModel
+  `SetDayRules`, set whenever the day changes so loads stay exact); 4 more sourced events; 1820s fees from Upham (1909).
+  Loans, demolition, extra Trustee factors: Phase 2. All other questions: defaults kept.
+
 ## Working rules
 - Work in small steps. At the end of each step: stop, summarize, explain how to verify, and wait for the user's go-ahead.
 - Commit after each working step with a clear message.

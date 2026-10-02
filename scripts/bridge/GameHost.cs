@@ -478,6 +478,7 @@ public partial class GameHost : Node3D
         hud["ticker"] = card is null ? "" : $"{hud["card_date"]}: {card.Title}";
         hud["heritage_bonus"] = (s.Placement?.HeritageBonus ?? 0) + s.LandHeritageBonus;
         hud["path_triangles"] = _pathRenderer.Triangles;
+        hud["slant_candidate"] = s.SlantWalkCandidateTiles > 0;
         hud["walks_last_hour"] = s.WalksLastTick;
         hud["tick_ms_p95"] = s.P95TickMs;
         hud["dropped_ticks"] = s.DroppedTicks;
@@ -574,7 +575,7 @@ public partial class GameHost : Node3D
                 if (_quote is not { } p) return "Pave a desire path: point at a shortcut worn into the lawn (Esc to stop).";
                 if (!p.Ok) return p.Problem;
                 var shape = PathPlanner.SlantWalk(_pathCfg, _pathTiles, _map.Map.Grid.Width, _map.Map.Grid.TileSizeM);
-                string slant = _snapshot is { LandHeritageBonus: 0 } && shape.Qualifies ? " A long diagonal: paving it makes it the Slant Walk!" : "";
+                string slant = _snapshot is { LandHeritageBonus: 0 } && shape.Qualifies ? " A long diagonal: once paved, you can name it the Slant Walk." : "";
                 return $"Pave this desire path: {p.Tiles} tiles of {SurfaceName()}, {LandSystem.Money(p.Cents)}{afford}. Click to pave.{slant}";
         }
     }
@@ -600,6 +601,10 @@ public partial class GameHost : Node3D
         int w = _map.Map.Grid.Width, t = _map.HoverTile;
         _runner!.Submit(new LandCommand(LandAction.PaveDesire, t % w, t / w, t % w, t / w));
     }
+
+    /// <summary>The Slant Walk prompt: name the paved diagonal the Slant Walk (true) or keep the honour for another.</summary>
+    public void AnswerSlantWalk(bool yes) =>
+        _runner?.Submit(new LandCommand(yes ? LandAction.DesignateSlantWalk : LandAction.DeclineSlantWalk, 0, 0, 0, 0));
 
     /// <summary>Launch option --demo-pave: once desire paths have worn in, paves the biggest one.</summary>
     private void DemoPave()
@@ -727,7 +732,7 @@ public partial class GameHost : Node3D
     private static string GoalsText(SimSnapshot s)
     {
         if (s.Campaign is not { StudentsGoal: > 0 } c) return "";
-        string hall = c.HallGoal ? (c.HasHall ? "✓ a residence hall" : "✗ a residence hall (none yet)") : "";
+        string hall = c.HallGoal ? (c.HasHall ? "✓ a brick residence hall" : "✗ a brick residence hall (Elliott, or a Brick Residence Hall)") : "";
         return $"{(c.Students >= c.StudentsGoal ? "✓" : "•")} {c.Students} of {c.StudentsGoal} students\n{hall}\nby {c.Deadline:MMMM d, yyyy}";
     }
 

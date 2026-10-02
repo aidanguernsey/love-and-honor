@@ -47,6 +47,8 @@ public sealed class SimSnapshot
     public readonly PathType[] PathTypes;
     public int LandVersion = -1;
     public double LandHeritageBonus;
+    /// <summary>Tiles of a paved diagonal waiting for "Name this the Slant Walk?" (0 = no question).</summary>
+    public int SlantWalkCandidateTiles;
     public long CashCents;
     public int ClearingTiles;
 
@@ -318,6 +320,7 @@ public sealed class SimRunner : IDisposable
             s.CashCents = land.Treasury.Cents;
             s.ClearingTiles = land.ActiveClearingTiles;
             s.LandHeritageBonus = land.HeritageBonus;
+            s.SlantWalkCandidateTiles = land.SlantWalkCandidate.Count;
             if (s.LandVersion != land.Version + _grid.Version)
             {
                 Array.Copy(_grid.LandState, s.LandStates, s.LandStates.Length);

@@ -27,6 +27,10 @@ public sealed class EnrollmentConfig
         public IntRange FacultySections { get; init; } = new();
         public int[] ClassHours { get; init; } = [];
         public string[] ClassDays { get; init; } = [];
+        /// <summary>Hours when everyone goes to chapel (first academic building), on class days in term.</summary>
+        public int[] ChapelHours { get; init; } = [];
+        public IntRange? StudentWakeHour { get; init; }
+        public IntRange? StudentBedHour { get; init; }
         public bool Verified { get; init; }
     }
 

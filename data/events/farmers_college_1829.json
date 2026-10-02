@@ -1,0 +1,22 @@
+{
+  "$schema": "../schemas/event.schema.json",
+  "id": "farmers_college_1829",
+  "title": "A course for farm boys",
+  "kind": "historical",
+  "date": "1829-09-01",
+  "date_precision": "year",
+  "text": "The college has opened a theological department and a \"farmers' college\": a three-year course for farm boys who can't stay for the full Bachelor of Arts. Families across the valley take notice.",
+  "effects": {
+    "applicants": 1.1
+  },
+  "codex": [
+    "old_miami_grows"
+  ],
+  "sources": [
+    {
+      "title": "Wikipedia: Miami University",
+      "url": "https://en.wikipedia.org/wiki/Miami_University"
+    }
+  ],
+  "verified": false
+}

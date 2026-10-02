@@ -122,6 +122,20 @@ public class PathTests
 
         land.Enqueue(new LandCommand(LandAction.PaveDesire, diagonal[5] % g.Width, diagonal[5] / g.Width, 0, 0));
         w.Simulation.ApplyPendingCommands();
+        // The player is asked (answers to Q16): declining keeps the honour free...
+        Assert.Contains(land.TakeMessages(), m => m.Contains("could become the Slant Walk"));
+        Assert.Equal(diagonal.Order(), land.SlantWalkCandidate.Order());
+        Assert.Empty(land.SlantWalk);
+        land.Enqueue(new LandCommand(LandAction.DeclineSlantWalk, 0, 0, 0, 0));
+        w.Simulation.ApplyPendingCommands();
+        Assert.Empty(land.SlantWalkCandidate);
+        Assert.Empty(land.SlantWalk);
+        Assert.Equal(0, land.HeritageBonus);
+        // ...and naming one makes it the Slant Walk. (Re-ask by marking the same tiles as a candidate again.)
+        foreach (int t in diagonal) { g.Types[t] = TileType.Grass; g.Wear[t] = 1f; }
+        land.Enqueue(new LandCommand(LandAction.PaveDesire, diagonal[5] % g.Width, diagonal[5] / g.Width, 0, 0));
+        land.Enqueue(new LandCommand(LandAction.DesignateSlantWalk, 0, 0, 0, 0));
+        w.Simulation.ApplyPendingCommands();
         var messages = land.TakeMessages();
         Assert.Contains(messages, m => m.Contains("is now the Slant Walk"));
         Assert.Equal(diagonal.Order(), land.SlantWalk.Order());

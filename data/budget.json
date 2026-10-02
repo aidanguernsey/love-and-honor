@@ -7,8 +7,9 @@
   "_eras_comment": "Per era id (eras.json); 'default' covers eras not listed. Tuition and room rent are per student per year, charged half each term (move-in and spring_term_start). Land rents: Miami's income from leasing its township land [VERIFY amounts]. State support per year.",
   "eras": {
     "founding": {
-      "tuition_per_year": 30,
-      "room_rent_per_year": 10,
+      "tuition_per_year": 20,
+      "room_rent_per_year": 5,
+      "_fees_comment": "Upham, Old Miami (1909): tuition $10 a session (two sessions a year assumed [VERIFY]), room and servant hire $5 a year. Land rents, salaries and administration are still placeholders: the rent ledgers are in the University Archives.",
       "land_rents_per_year": 3000,
       "state_support_per_year": 0,
       "faculty_salary_per_year": 600,

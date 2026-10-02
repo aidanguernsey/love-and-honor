@@ -7,6 +7,8 @@ public enum Activity : byte
     Sleep, Eat, Class, Study, Social, Exercise, Leisure, Teach, Work,
     /// <summary>Away from Oxford (students over the summer and winter breaks, 1h).</summary>
     Away,
+    /// <summary>Chapel / prayers (the 1820s college day, answers to Q21).</summary>
+    Chapel,
 }
 
 public enum FacultyRank : byte { None, Lecturer, Assistant, Associate, Full, Distinguished }

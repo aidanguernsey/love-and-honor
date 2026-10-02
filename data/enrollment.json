@@ -15,9 +15,12 @@
       "min_faculty": 3,
       "student_sections": 3,
       "faculty_sections": { "min": 2, "max": 3 },
-      "class_hours": [8, 11, 14],
-      "class_days": ["mon", "tue", "wed", "thu", "fri"],
-      "_class_comment": "An 1820s college day of recitations: placeholder [VERIFY] (early colleges also held Saturday classes and daily chapel; not modelled).",
+      "class_hours": [7, 9, 10, 11],
+      "class_days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+      "chapel_hours": [6, 20],
+      "student_wake_hour": { "min": 5, "max": 5 },
+      "student_bed_hour": { "min": 21, "max": 22 },
+      "_class_comment": "The 1824 college day per Upham, Old Miami (1909): rise before 5, study 5-7 and 2-5, recitations 7-8 and 9-12, prayers in the evening; a required 6 a.m. chapel per Wikipedia's Sesquicentennial Chapel article. Saturday classes are an assumption (common in early colleges) [VERIFY].",
       "verified": false
     },
     "default": {

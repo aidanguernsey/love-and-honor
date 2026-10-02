@@ -111,6 +111,19 @@ boot screen Continue / Load. Time-lapse (`Engine/Timelapse.cs`): keyframe + mont
 surface, path surface, path class), replayed with a slider (T) via `MapRenderer.SetLiveLand`, `PathRenderer.Update(arrays)`
 and `SiteView.AsOf(date)`. GIF/MP4 export deferred (approved cut). ~170 KB per save in 1825.
 
+**Chapter 1 balance pass (2026-10-02), after the user's playtest (dismissed in 1828, cash negative from the start):**
+the old economy lost money on every student (12 per professor at $600 vs $20-25 in fees: even an idle game was dismissed
+by 1835), Elliott built as a Heritage Project paid the modern hall's upkeep ($3,000/yr in 1820s money), and applicants
+ignored everything the player built. Fixes (user chose a Reputation stand-in, "option a"): B1 Heritage Projects carry
+their own upkeep (`heritage_projects.json upkeep_usd_per_year`; a finished project takes its timeline id as DefId);
+25 students per professor; applicant growth 6%. B2 `Engine/Reputation.cs` + `data/reputation.json`: Quality (teaching,
+students per professor, hall housing, classroom crowding, dining, happiness, Heritage) → Reputation drifts 10%/yr
+(§32) → applicants × (1 + 0.04 × change since the start); HUD value + breakdown tooltip. B3 `Engine/ScriptedPlayer.cs`
+(idle / sensible / minimal / spender play through the normal orders), `tools/BalanceRunner`, balance tests (Trait
+Balance; idle runs out of time, sensible wins by 1839 — 1838 now, minimal 1840, spender dismissed). B4 cash forecast
+(`BudgetSystem.Forecast`, budget panel, build-tool warning, VP Finance advisor `cash_forecast_negative`), faculty hiring
+pause (budget panel), save format 4, `--game-smoke` never autosaves. **Next: the user plays Chapter 1 again.**
+
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
 (4) art pipeline prep → (5) outreach drafts → (6) Phase 0 report.
@@ -329,6 +342,8 @@ tools/.venv/Scripts/python tools/map_pipeline/build_map.py                    # 
 tools/.venv/Scripts/python -m pytest tools/map_pipeline                       # pipeline tests
 dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks            # population benchmark, real map (exit 1 = over budget)
 dotnet run -c Release --project tests/LoveAndHonor.Sim.Benchmarks -- --quick # gated run only
+dotnet run -c Release --project tools/BalanceRunner                          # Chapter 1 with scripted players (--player, --log, --data DIR)
+dotnet test LoveAndHonor.sln --filter "Category!=Balance"                    # unit tests without the whole-chapter runs
 #   options: --map synthetic (Spike A campus), --edit-every N, --pace-all [--pace-speed S], --traffic-png FILE, --desire-png FILE
 ```
 Always benchmark with `-c Release`. The gated run pins to 4 E-cores on hybrid Intel CPUs (conservative

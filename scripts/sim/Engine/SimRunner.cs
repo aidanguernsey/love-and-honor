@@ -232,6 +232,15 @@ public sealed class SimRunner : IDisposable
         _signal.Set();
     }
 
+    /// <summary>Main thread: pause or resume faculty hiring (applied like other orders).</summary>
+    public void SubmitHiringPaused(bool paused)
+    {
+        if (_sim.Budget is null) return;
+        _sim.Budget.SetHiringPaused(paused);
+        Interlocked.Exchange(ref _commandsPending, 1);
+        _signal.Set();
+    }
+
     /// <summary>Main thread: the newest published snapshot. Valid until the next call.</summary>
     public SimSnapshot AcquireLatest()
     {

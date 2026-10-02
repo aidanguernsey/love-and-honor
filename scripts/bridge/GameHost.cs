@@ -94,6 +94,8 @@ public partial class GameHost : Node3D
     private bool _showHeritage = true;
     private double? _cashOverride;
     private bool _demoBuild;
+    /// <summary>Test runs (--game-smoke) never touch the player's autosave.</summary>
+    private readonly bool _noAutosave = OS.GetCmdlineUserArgs().Any(a => a.StartsWith("--game-smoke"));
     private int _demoStep, _demoVersion;
     // Screenshot options: --build-item=<id> picks a building once it's on offer, --build-rotation=<deg> turns it, and
     // --ghost-at=x,z (metres) pins the ghost there instead of following the mouse.
@@ -460,6 +462,7 @@ public partial class GameHost : Node3D
         (hud["reputation"], hud["reputation_tip"]) = ReputationText(s);
         hud["budget"] = BudgetText(s);
         hud["tuition"] = s.Budget is { } tv ? $"Tuition: {LandSystem.Money(tv.TuitionPerYearCents)} a year ({tv.TuitionLevel:P0} of the usual rate)" : "";
+        hud["hiring_paused"] = s.Budget?.HiringPaused ?? false;
         hud["dismissed"] = s.Budget?.Dismissed ?? false;
         var cv = s.Campaign;
         hud["goals"] = GoalsText(s);
@@ -706,6 +709,8 @@ public partial class GameHost : Node3D
         string head = $"{item.Name} · {LandSystem.Money(q.Cents)} · done about {q.EstimatedFinish:MMM d, yyyy}";
         if (!q.Ok) return $"{head}\n{q.Problem}";
         string afford = _snapshot.CashCents >= q.Cents ? "" : " Not enough money.";
+        if (afford.Length == 0 && _snapshot.Budget?.Forecast.RunsOutAfterSpending(q.Cents) is { } runsOut)
+            afford = $"\nCareful: after paying for it, cash would run out in {runsOut:MMMM yyyy} at today's numbers (the Trustees lose patience every month in the red).";
         string site = item.Site is null ? "" : q.OnHeritageSite ? " On the real site: Heritage bonus." : " Not on the real site (that's fine; no bonus).";
         string warn = q.Warning.Length > 0 ? "\n" + q.Warning : "";
         return $"{head}\nClick to build ({turn}).{site}{afford}{warn}";
@@ -813,7 +818,7 @@ public partial class GameHost : Node3D
     /// <summary>§31: autosave every semester (at move-in and the spring term).</summary>
     private void Autosave(SimSnapshot s)
     {
-        if (s.Date == _lastAutosaveCheck) return;
+        if (_noAutosave || s.Date == _lastAutosaveCheck) return;
         bool first = _lastAutosaveCheck == default;
         _lastAutosaveCheck = s.Date;
         if (first || _world?.Enrollment is not { } e || _world.Budget is not { } b) return;
@@ -888,6 +893,13 @@ public partial class GameHost : Node3D
         return $"Time-lapse: {date:MMMM yyyy}  ({_timelapseFrame} of {rec.Frames.Count} months recorded)";
     }
 
+    /// <summary>Budget panel: pause or resume faculty hiring.</summary>
+    public void ToggleHiring()
+    {
+        if (_runner is null || _snapshot?.Budget is not { } b) return;
+        _runner.SubmitHiringPaused(!b.HiringPaused);
+    }
+
     /// <summary>Y / Budget panel: − or + one tuition step.</summary>
     public void ChangeTuition(int direction)
     {
@@ -923,6 +935,11 @@ public partial class GameHost : Node3D
             sb.Append($"   Running budget: {(r.Operating >= 0 ? "surplus" : "deficit")} {LandSystem.Money(Math.Abs(r.Operating))}");
             sb.Append($" · building and land {LandSystem.Money(-r.Capital)}\n");
         }
+        var f = b.Forecast;
+        sb.Append(f.RunsOut is { } runsOut
+            ? $"Cash forecast: at today's numbers cash runs out in {runsOut:MMMM yyyy} (lowest {LandSystem.Money(f.Lowest)}).\n"
+            : $"Cash forecast: at today's numbers the lowest point in the next 12 months is {LandSystem.Money(f.Lowest)}.\n");
+        sb.Append("   Income comes in lumps: land rents on Jan 1, tuition at move-in and the spring term.\n\n");
         Report(b.YearToDate);
         if (b.LastYear is { } last) { sb.Append('\n'); Report(last); }
         sb.Append($"\nTrustee review {b.NextReview:MMM d, yyyy}: they want a running surplus and growing enrollment.");

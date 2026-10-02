@@ -334,6 +334,12 @@ public sealed class CampaignSystem
                     hit = months < m.Value;
                     fill["months"] = $"{Math.Max(0, months):0}";
                     break;
+                case "cash_forecast_negative" when _budget is not null:
+                    var forecast = _budget.Forecast(date);
+                    hit = forecast.RunsOut is not null;
+                    fill["month"] = $"{forecast.RunsOut:MMMM yyyy}";
+                    fill["lowest"] = LandSystem.Money(forecast.Lowest);
+                    break;
                 case "intake_limited" when view is { } v:
                     hit = date.Month == 9 && v.LastIntake < v.LastAdmitted;
                     fill["turned_away"] = $"{Math.Max(0, v.LastAdmitted - v.LastIntake)}";

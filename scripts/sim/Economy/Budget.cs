@@ -59,9 +59,24 @@ public sealed record BudgetLine(string Category, string Name, long Cents);
 /// judged on); capital = construction, land and grounds.</summary>
 public sealed record BudgetReport(string Title, DateOnly From, DateOnly To, BudgetLine[] Lines, long Revenue, long Operating, long Capital, long Net);
 
+/// <summary>Cash over the coming months at today's numbers (people, buildings, tuition): the lowest balance in each
+/// month (<paramref name="Months"/>: first day of each month), and the first day it would go below zero, if any.</summary>
+public sealed record CashForecast(DateOnly[] Months, long[] LowestCents, DateOnly? RunsOut)
+{
+    public long Lowest => LowestCents.Length > 0 ? LowestCents.Min() : 0;
+
+    /// <summary>The first month in which cash would go below zero after spending <paramref name="cents"/> now, or null.</summary>
+    public DateOnly? RunsOutAfterSpending(long cents)
+    {
+        for (int i = 0; i < Months.Length; i++)
+            if (LowestCents[i] - cents < 0) return Months[i];
+        return null;
+    }
+}
+
 /// <summary>What the UI shows about money and the Trustees (immutable; published in snapshots).</summary>
 public sealed record BudgetView(int Version, double Confidence, double TuitionLevel, long TuitionPerYearCents, BudgetReport YearToDate,
-    BudgetReport? LastYear, DateOnly NextReview, bool Dismissed, bool Verified);
+    BudgetReport? LastYear, DateOnly NextReview, bool Dismissed, bool Verified, CashForecast Forecast, bool HiringPaused);
 
 /// <summary>
 /// The operating budget and Trustee Confidence (§3, §8), Phase 1 1i. Sim thread only, at hour 0 after enrollment:
@@ -71,6 +86,8 @@ public sealed record BudgetView(int Version, double Confidence, double TuitionLe
 ///    the era's price multiplier), a twelfth each; the Trustees lose patience every month cash is negative;
 ///  - at the fiscal year's end: a budget report and the Trustees' review (balanced operating budget +, deficit −,
 ///    enrollment up +, down −). Confidence 0 = dismissed (§3).
+/// The player's levers: the tuition level and pausing faculty hiring (enrollment reads <see cref="HiringPaused"/>);
+/// <see cref="Forecast"/> projects cash a year ahead so a coming shortfall can be seen in time (balance pass).
 /// Construction, land and paths are paid when ordered (their systems) and show up here as capital spending.
 /// </summary>
 public sealed class BudgetSystem
@@ -97,6 +114,8 @@ public sealed class BudgetSystem
     private readonly Campus _campus;
     private readonly Func<CampusBuilding, double> _upkeepUsd;
     private readonly ConcurrentQueue<double> _tuitionOrders = new();
+    private readonly ConcurrentQueue<bool> _hiringOrders = new();
+    private readonly string _moveIn;
     private readonly List<string> _messages = [];
     private DateOnly _fiscalStart;
     // Fall enrollment (after move-in) this year and the year before: the Trustees compare the two.
@@ -107,14 +126,17 @@ public sealed class BudgetSystem
 
     public double Confidence { get; private set; }
     public double TuitionLevel { get; private set; } = 1.0;
+    /// <summary>The player has paused faculty hiring: move-in hires only up to the era's minimum.</summary>
+    public bool HiringPaused { get; private set; }
     public bool Dismissed { get; private set; }
     public int Version { get; private set; }
     public BudgetConfig Config => _cfg;
 
     /// <param name="upkeepUsd">Yearly upkeep of a campus building in modern dollars (building definition, else default).</param>
     public BudgetSystem(BudgetConfig cfg, EraTable eras, Treasury treasury, PopulationStore pop, Campus campus,
-        Func<CampusBuilding, double> upkeepUsd, double startingConfidence, DateOnly start)
+        Func<CampusBuilding, double> upkeepUsd, double startingConfidence, DateOnly start, string moveInMonthDay = "08-19")
     {
+        _moveIn = moveInMonthDay;
         _cfg = cfg;
         _eras = eras;
         _treasury = treasury;
@@ -138,9 +160,11 @@ public sealed class BudgetSystem
             w.Write(y.Lines.Length);
             foreach (var l in y.Lines) { w.Write(l.Category); w.Write(l.Name); w.Write(l.Cents); }
         }
+        w.Write(HiringPaused); // format 4
     }
 
-    public void ReadState(BinaryReader r)
+    /// <param name="format">Save format (the hiring pause from format 4).</param>
+    public void ReadState(BinaryReader r, int format)
     {
         Confidence = r.ReadDouble(); TuitionLevel = r.ReadDouble(); Dismissed = r.ReadBoolean(); Version = r.ReadInt32();
         _fiscalStart = Engine.SaveIO.ReadDate(r); _fallEnrollment = r.ReadInt32(); _previousFallEnrollment = r.ReadInt32();
@@ -153,6 +177,7 @@ public sealed class BudgetSystem
             for (int i = 0; i < lines.Length; i++) lines[i] = new BudgetLine(r.ReadString(), r.ReadString(), r.ReadInt64());
             _lastYear = new BudgetReport(title, from, to, lines, revenue, operating, capital, net);
         }
+        HiringPaused = format >= 4 && r.ReadBoolean();
         _view = null;
     }
 
@@ -161,7 +186,9 @@ public sealed class BudgetSystem
 
     public void SetTuitionLevel(double level) => _tuitionOrders.Enqueue(level);
 
-    public bool HasPendingCommands => !_tuitionOrders.IsEmpty;
+    public void SetHiringPaused(bool paused) => _hiringOrders.Enqueue(paused);
+
+    public bool HasPendingCommands => !_tuitionOrders.IsEmpty || !_hiringOrders.IsEmpty;
 
     public void ApplyCommands()
     {
@@ -171,6 +198,15 @@ public sealed class BudgetSystem
             if (Math.Abs(clamped - TuitionLevel) < 1e-9) continue;
             TuitionLevel = clamped;
             _messages.Add($"Tuition set to {TuitionLevel:P0} of the usual rate (applies from the next term; applicants respond at the next move-in).");
+            Version++;
+        }
+        while (_hiringOrders.TryDequeue(out bool paused))
+        {
+            if (paused == HiringPaused) continue;
+            HiringPaused = paused;
+            _messages.Add(paused
+                ? "Faculty hiring paused: no new professors at move-in beyond the minimum. Salaries stay flat, but more students per professor lowers Quality."
+                : "Faculty hiring resumed: move-in hires to the usual students-per-professor ratio again.");
             Version++;
         }
     }
@@ -220,15 +256,62 @@ public sealed class BudgetSystem
         }
         if (date.Day == 1)
         {
-            double multiplier = _eras.At(date.Year).PriceMultiplier;
-            double upkeep = _campus.Buildings.Where(b => b.Kind != BuildingKind.OffCampusHousing).Sum(b => _upkeepUsd(b)) * multiplier;
-            _treasury.Spend(date, Cents(_pop.FacultyCount * era.FacultySalaryPerYear / 12), $"Salaries, {_pop.FacultyCount} faculty", "salaries");
-            _treasury.Spend(date, Cents(era.AdministrationPerYear / 12), "Administration", "administration");
-            _treasury.Spend(date, Cents(upkeep / 12), "Building upkeep", "upkeep");
+            var (salaries, administration, upkeep) = MonthlyCosts(date, _pop.FacultyCount);
+            _treasury.Spend(date, salaries, $"Salaries, {_pop.FacultyCount} faculty", "salaries");
+            _treasury.Spend(date, administration, "Administration", "administration");
+            _treasury.Spend(date, upkeep, "Building upkeep", "upkeep");
             if (_treasury.Cents < 0) AdjustConfidence(_cfg.Trustees.NegativeCashPerMonth, "Cash has run out: the Trustees are alarmed.");
             changed = true;
         }
         if (changed) Version++;
+    }
+
+    /// <summary>One month's salaries, administration and upkeep (cents), as charged on the 1st.</summary>
+    private (long Salaries, long Administration, long Upkeep) MonthlyCosts(DateOnly date, int faculty)
+    {
+        var era = _cfg.EraFor(_eras.At(date.Year).Id);
+        double multiplier = _eras.At(date.Year).PriceMultiplier;
+        double upkeep = _campus.Buildings.Where(b => b.Kind != BuildingKind.OffCampusHousing).Sum(b => _upkeepUsd(b)) * multiplier;
+        return (Cents(faculty * era.FacultySalaryPerYear / 12), Cents(era.AdministrationPerYear / 12), Cents(upkeep / 12));
+    }
+
+    /// <summary>
+    /// Cash for the next <paramref name="months"/> months at today's numbers: the same people, buildings, tuition and
+    /// hall residents, the usual calendar of income (terms, land rents, state support) and monthly costs. Move-in's
+    /// new students and hires aren't guessed at, so it errs on the careful side once enrollment is growing.
+    /// </summary>
+    public CashForecast Forecast(DateOnly today, int months = 12)
+    {
+        int students = _pop.StudentCount, inHalls = 0;
+        for (int a = 0; a < _pop.Count; a++)
+            if (_pop.Kind[a] == AgentKind.Student && _pop.Housing[a] == HousingType.OnCampus) inHalls++;
+        int faculty = _pop.FacultyCount;
+        long cash = _treasury.Cents;
+        var first = new DateOnly(today.Year, today.Month, 1);
+        var monthStarts = new DateOnly[months];
+        var lowest = new long[months];
+        for (int m = 0; m < months; m++) { monthStarts[m] = first.AddMonths(m); lowest[m] = long.MaxValue; }
+        lowest[0] = cash;
+        DateOnly? runsOut = cash < 0 ? today : null;
+        var end = first.AddMonths(months);
+        for (var d = today.AddDays(1); d < end; d = d.AddDays(1))
+        {
+            var era = _cfg.EraFor(_eras.At(d.Year).Id);
+            if (d == On(_cfg.FiscalYearStart, d.Year)) cash += Cents(era.StateSupportPerYear);
+            if (d == On(_moveIn, d.Year) || d == On(_cfg.SpringTermStart, d.Year))
+                cash += Cents(students * era.TuitionPerYear * TuitionLevel / 2) + Cents(inHalls * era.RoomRentPerYear / 2);
+            if (d == On(_cfg.LandRentsDate, d.Year)) cash += Cents(era.LandRentsPerYear);
+            if (d.Day == 1)
+            {
+                var (s, a, u) = MonthlyCosts(d, faculty);
+                cash -= s + a + u;
+            }
+            int month = (d.Year - first.Year) * 12 + d.Month - first.Month;
+            lowest[month] = Math.Min(lowest[month], cash);
+            if (cash < 0 && runsOut is null) runsOut = d;
+        }
+        for (int m = 1; m < months; m++) if (lowest[m] == long.MaxValue) lowest[m] = lowest[m - 1];
+        return new CashForecast(monthStarts, lowest, runsOut);
     }
 
     private void Review(DateOnly date)
@@ -280,6 +363,7 @@ public sealed class BudgetSystem
         var next = On(_cfg.FiscalYearStart, today.Year);
         if (next <= today) next = On(_cfg.FiscalYearStart, today.Year + 1);
         return _view = new BudgetView(Version, Confidence, TuitionLevel, Cents(era.TuitionPerYear * TuitionLevel),
-            Report(_fiscalStart, today, $"This year so far (since {_fiscalStart:MMM d, yyyy})"), _lastYear, next, Dismissed, era.Verified);
+            Report(_fiscalStart, today, $"This year so far (since {_fiscalStart:MMM d, yyyy})"), _lastYear, next, Dismissed, era.Verified,
+            Forecast(today), HiringPaused);
     }
 }

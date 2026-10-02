@@ -38,6 +38,7 @@ var _demand_label: Label
 var _budget_panel: PanelContainer
 var _budget_label: Label
 var _tuition_label: Label
+var _hiring_button: Button
 var _dismissed_label: Label
 var _goals_label: Label
 var _ticker_label: Label
@@ -157,6 +158,7 @@ func _process(delta: float) -> void:
 	if _budget_panel.visible:
 		_budget_label.text = hud["budget"]
 		_tuition_label.text = hud["tuition"]
+		_hiring_button.text = "Faculty hiring: paused (resume)" if hud["hiring_paused"] else "Faculty hiring: on (pause)"
 	_test_clock += delta
 	for arg in OS.get_cmdline_user_args():
 		for key in ["--save-after=", "--timelapse-after="]:
@@ -458,6 +460,11 @@ func _build_budget_panel() -> void:
 		b.pressed.connect(func(): _host.ChangeTuition(d))
 		row.add_child(b)
 	col.add_child(row)
+	_hiring_button = Button.new()
+	_hiring_button.focus_mode = Control.FOCUS_NONE
+	_hiring_button.tooltip_text = "Pausing hiring keeps salaries flat while enrollment grows, but more students per professor lowers Quality and, slowly, Reputation."
+	_hiring_button.pressed.connect(func(): _host.ToggleHiring())
+	col.add_child(_hiring_button)
 	var close := Button.new()
 	close.text = "Close (Y / Esc)"
 	close.focus_mode = Control.FOCUS_NONE

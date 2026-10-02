@@ -157,12 +157,15 @@ public sealed class SimWorld
             : new EnrollmentSystem(data, enrollment.Config, enrollment.Eras, campus, fields, pop, rng, enrollment.CapacityOf, start);
         var budgetSystem = budget is null ? null
             : new Economy.BudgetSystem(budget.Config, budget.Eras, budget.Treasury, pop, campus, budget.UpkeepOf,
-                data.Balance.Trustees.StartingConfidence, start);
+                data.Balance.Trustees.StartingConfidence, start, budget.MoveIn);
         ReputationSystem? reputation = enrollmentSystem is null || budget is null ? null
             : new ReputationSystem(budget.Reputation, pop, enrollmentSystem,
                 () => (placement?.HeritageBonus ?? 0) + (land?.HeritageBonus ?? 0), start);
         if (enrollmentSystem is not null && budgetSystem is not null)
+        {
             enrollmentSystem.ApplicantFactor = () => budgetSystem.ApplicantFactor * (reputation?.ApplicantFactor ?? 1);
+            enrollmentSystem.HiringPaused = () => budgetSystem.HiringPaused;
+        }
         CampaignSystem? campaign = null;
         if (budget is not null)
         {

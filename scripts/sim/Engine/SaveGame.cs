@@ -19,7 +19,7 @@ namespace LoveAndHonor.Sim.Engine;
 public static class SaveGame
 {
     /// <summary>Bump when the payload changes; add a migration in <see cref="Restore"/> for older numbers.</summary>
-    public const int Format = 3;
+    public const int Format = 4;
     private static readonly byte[] Magic = "LHSV"u8.ToArray();
 
     public sealed class Header
@@ -103,7 +103,7 @@ public static class SaveGame
         var header = ReadHeader(input);
         if (header.Scenario != (w.Scenario?.Id ?? "")) throw new InvalidDataException($"The save is for scenario '{header.Scenario}'.");
         // Format migrations: 1 → 2 added the Slant Walk candidate (land section); 2 → 3 added Reputation (older saves
-        // start it at today's Quality).
+        // start it at today's Quality); 3 → 4 added the hiring pause (budget section).
         using var zip = new DeflateStream(input, CompressionMode.Decompress, leaveOpen: true);
         using var br = new BinaryReader(zip, Encoding.UTF8, leaveOpen: true);
         var sim = w.Simulation;
@@ -123,7 +123,7 @@ public static class SaveGame
         br.Expect("land"); if (br.ReadBoolean()) w.Land!.ReadState(br, header.Format);
         br.Expect("placement"); if (br.ReadBoolean()) w.Placement!.ReadState(br);
         br.Expect("enrollment"); if (br.ReadBoolean()) w.Enrollment!.ReadState(br);
-        br.Expect("budget"); if (br.ReadBoolean()) w.Budget!.ReadState(br);
+        br.Expect("budget"); if (br.ReadBoolean()) w.Budget!.ReadState(br, header.Format);
         br.Expect("campaign"); if (br.ReadBoolean()) w.Campaign!.ReadState(br);
         br.Expect("timelapse"); if (br.ReadBoolean()) sim.Timelapse!.ReadState(br);
         if (header.Format >= 3) { br.Expect("reputation"); if (br.ReadBoolean()) w.Reputation!.ReadState(br, sim.Time.Date); }

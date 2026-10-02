@@ -87,6 +87,8 @@ public sealed class EnrollmentSystem
     public Func<double> ApplicantFactor { get; set; } = () => 1.0;
     /// <summary>One-off boost to the next move-in's applicants (events, 1j); reset after use.</summary>
     public double ApplicantBoost { get; set; } = 1.0;
+    /// <summary>The player has paused faculty hiring (budget panel): move-in hires only up to the era's minimum.</summary>
+    public Func<bool> HiringPaused { get; set; } = () => false;
     /// <summary>Scales town boarding beds from now on (events, 1j).</summary>
     public double TownBoardingMultiplier { get; set; } = 1.0;
 
@@ -241,9 +243,12 @@ public sealed class EnrollmentSystem
             ctx.InitStudent(p, a, 1, PopulationStore.NoBuilding, _random);
         }
 
-        // Faculty to the era's student/faculty ratio (nobody is let go when enrollment falls).
+        // Faculty to the era's student/faculty ratio (nobody is let go when enrollment falls); only the minimum while
+        // the player has paused hiring.
         int faculty = p.FacultyCount;
-        int wanted = Math.Max(era.MinFaculty, (int)Math.Ceiling(p.StudentCount / era.StudentFacultyRatio));
+        int needed = Math.Max(era.MinFaculty, (int)Math.Ceiling(p.StudentCount / era.StudentFacultyRatio));
+        bool paused = HiringPaused();
+        int wanted = paused ? era.MinFaculty : needed;
         int hires = Math.Min(Math.Max(0, wanted - faculty), p.Capacity - p.Count);
         for (int i = 0; i < hires; i++)
         {
@@ -263,7 +268,9 @@ public sealed class EnrollmentSystem
         string limit = intake >= admitted ? "" : room <= intake && campusBeds + townBeds - students <= seats - students
             ? " (not enough beds: build a residence hall or boarding house)" : " (not enough classroom seats)";
         _messages.Add($"Move-in {date.Year}: {intake} new student{(intake == 1 ? "" : "s")} of {applicants} applicants{limit}" +
-                      (hires > 0 ? $"; {hires} new faculty" : "") + $". Enrollment {p.StudentCount}.");
+                      (hires > 0 ? $"; {hires} new faculty" : "") +
+                      (paused && needed > Math.Max(faculty, wanted) ? $"; hiring paused ({needed - Math.Max(faculty, wanted)} more professors needed)" : "") +
+                      $". Enrollment {p.StudentCount}.");
     }
 
     /// <summary>Hall beds first (by year, then by id), the rest board in town.</summary>

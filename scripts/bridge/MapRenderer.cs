@@ -79,7 +79,10 @@ public sealed class MapRenderer
 
     private int _hoverBuilding = -1, _hoverKeyTile = -2, _hoverKeyYear = -1;
 
-    public MapRenderer(Node3D parent, IDataSource source, RealMap map, DirectionalLight3D? sun, Godot.Environment? environment)
+    /// <param name="drawnElsewhere">Buildings drawn by someone else (the game's kit-assembled real buildings); they get
+    /// no extruded block.</param>
+    public MapRenderer(Node3D parent, IDataSource source, RealMap map, DirectionalLight3D? sun, Godot.Environment? environment,
+        Func<HistoricBuilding, bool>? drawnElsewhere = null)
     {
         var sw = Stopwatch.StartNew();
         Map = map;
@@ -114,7 +117,8 @@ public sealed class MapRenderer
         BuildTerrain(parent);
 
         _buildingMaterial = new ShaderMaterial { Shader = GD.Load<Shader>("res://assets/shaders/buildings.gdshader") };
-        foreach (var mi in BuildingMeshBuilder.Build(_buildings, map, Render.Extrusion, _palette, t.ChunkSizeTiles, _buildingMaterial))
+        var extruded = drawnElsewhere is null ? _buildings : _buildings.Where(b => !drawnElsewhere(b)).ToList();
+        foreach (var mi in BuildingMeshBuilder.Build(extruded, map, Render.Extrusion, _palette, t.ChunkSizeTiles, _buildingMaterial))
         {
             parent.AddChild(mi);
             BuildingTriangles += mi.Mesh.GetFaces().Length / 3;

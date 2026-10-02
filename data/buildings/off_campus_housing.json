@@ -11,6 +11,7 @@
   "style": "none",
   "unlock_era": "founding",
   "needs_served": ["sleep"],
+  "recipe": "frame_two_storey",
   "model": null,
   "design_ref": "§18.3"
 }

@@ -21,6 +21,7 @@
   "needs_served": [
     "study"
   ],
+  "recipe": "frame_one_storey",
   "model": null,
   "design_ref": "§25.1"
 }

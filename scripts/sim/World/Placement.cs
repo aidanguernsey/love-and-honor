@@ -170,6 +170,15 @@ public static class FootprintMath
     /// </summary>
     public static (Pose Pose, int W, int H) FitRectangle(float[] outline, int stepDeg)
     {
+        var (cx, cy, deg, fw, fh) = FitExtents(outline, stepDeg);
+        // Whole tiles, rounding up from 0.35 of a tile (a 14 m wide hall is 2 tiles, not 1).
+        int w = Math.Max(1, (int)MathF.Ceiling(fw - 0.35f)), h = Math.Max(1, (int)MathF.Ceiling(fh - 0.35f));
+        return (Snap(cx, cy, w, h, deg), w, h);
+    }
+
+    /// <summary>The fitted rectangle's exact centre, rotation and size (tile units), before snapping to tiles.</summary>
+    public static (float Cx, float Cy, int Deg, float W, float H) FitExtents(float[] outline, int stepDeg)
+    {
         int n = outline.Length / 2;
         float cx = 0, cy = 0;
         for (int i = 0; i < n; i++) { cx += outline[2 * i]; cy += outline[2 * i + 1]; }
@@ -190,9 +199,9 @@ public static class FootprintMath
         }
         var p0 = new Pose((int)MathF.Round(cx * 2), (int)MathF.Round(cy * 2), best.deg);
         var (mx, my) = ToMap(p0, (best.minX + best.maxX) / 2, (best.minY + best.maxY) / 2);
-        // Whole tiles, rounding up from 0.35 of a tile (a 14 m wide hall is 2 tiles, not 1).
-        int w = Math.Max(1, (int)MathF.Ceiling(best.maxX - best.minX - 0.35f)), h = Math.Max(1, (int)MathF.Ceiling(best.maxY - best.minY - 0.35f));
-        return (Snap(mx, my, w, h, best.deg), w, h);
+        float w = best.maxX - best.minX, h = best.maxY - best.minY;
+        // Long side first: the entrance (the local +y side) goes on a long wall, as in most Georgian halls.
+        return w >= h ? (mx, my, best.deg, w, h) : (mx, my, (best.deg + 90) % 360, h, w);
     }
 }
 

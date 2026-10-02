@@ -10,6 +10,7 @@
   "style": "georgian_revival",
   "unlock_era": "early20",
   "needs_served": ["study"],
+  "recipe": "georgian_hall_l",
   "model": null,
   "design_ref": "§11.1"
 }

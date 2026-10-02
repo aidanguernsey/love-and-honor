@@ -19,15 +19,19 @@ public sealed class PlacementRenderer
     private readonly RenderingConfig _render;
     private readonly Palette _palette;
     private readonly MeshInstance3D _ghost;
-    private readonly MeshInstance3D _sites;
+    private readonly Node3D _sites;
+    private readonly BuildingKit? _kit;
+    // Site id → (node, construction stage it was built for).
+    private readonly Dictionary<int, (Node3D Node, int Stage)> _siteNodes = [];
     private readonly MeshInstance3D _heritage;
     private readonly Node3D _heritageLabels;
     private readonly StandardMaterial3D _solid;
     private PlacementView? _shownView;
     private string _heritageKey = "";
 
-    public PlacementRenderer(Node3D parent, RealMap map, RenderingConfig render, Palette palette)
+    public PlacementRenderer(Node3D parent, RealMap map, RenderingConfig render, Palette palette, BuildingKit? kit = null)
     {
+        _kit = kit;
         _map = map;
         _render = render;
         _palette = palette;
@@ -41,7 +45,7 @@ public sealed class PlacementRenderer
             NoDepthTest = false,
         };
         _ghost = new MeshInstance3D { Name = "PlacementGhost", MaterialOverride = translucent, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
-        _sites = new MeshInstance3D { Name = "PlayerBuildings", MaterialOverride = _solid };
+        _sites = new Node3D { Name = "PlayerBuildings" };
         _heritage = new MeshInstance3D { Name = "HeritageSites", MaterialOverride = translucent, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
         _heritageLabels = new Node3D { Name = "HeritageLabels" };
         parent.AddChild(_ghost);
@@ -73,28 +77,51 @@ public sealed class PlacementRenderer
 
     // ---------------- player buildings ----------------
 
-    /// <summary>Rebuilds the player's buildings when the placement view changed.</summary>
+    /// <summary>
+    /// Updates the player's buildings when the placement view changed: each site is assembled from the kit (1f) and
+    /// rebuilt only when its construction stage (5% steps) changes; without a kit, plain boxes.
+    /// </summary>
     public void SetSites(PlacementView? view, IReadOnlyDictionary<string, CatalogItem> items)
     {
         if (view is null || ReferenceEquals(view, _shownView)) return;
         _shownView = view;
-        var mesh = new MeshData();
-        var p = _render.Placement;
+        var seen = new HashSet<int>();
         foreach (var s in view.Sites)
         {
             if (!items.TryGetValue(s.ItemId, out var item)) continue;
-            float full = Height(item.Def);
-            var corners = Corners(s.Pose, s.W, s.H);
-            if (s.Complete)
-                mesh.Box(corners, _map, full, KindColor(item.Category));
-            else
-            {
-                // Foundations first, then walls rising with progress (scaffold-coloured until finished).
-                float h = Math.Max(0.6f, full * s.Progress);
-                mesh.Box(corners, _map, h, Color(p.ConstructionColor, 1f));
-            }
+            seen.Add(s.Id);
+            int stage = s.Complete ? 20 : (int)(s.Progress * 20);
+            if (_siteNodes.TryGetValue(s.Id, out var existing) && existing.Stage == stage) continue;
+            existing.Node?.QueueFree();
+            var node = SiteNode(s, item, stage);
+            _sites.AddChild(node);
+            _siteNodes[s.Id] = (node, stage);
         }
-        _sites.Mesh = mesh.IsEmpty ? null : mesh.ToMesh();
+        foreach (var id in _siteNodes.Keys.Where(id => !seen.Contains(id)).ToList())
+        {
+            _siteNodes[id].Node.QueueFree();
+            _siteNodes.Remove(id);
+        }
+    }
+
+    private Node3D SiteNode(SiteView s, CatalogItem item, int stage)
+    {
+        float tile = _map.Grid.TileSizeM;
+        float progress = stage / 20f;
+        if (_kit is { } kit)
+        {
+            string recipe = (item.Site is { } site ? kit.Recipes.RecipeForTimeline(site.TimelineId) : null) ?? item.Def.Recipe ?? "georgian_hall";
+            float margin = kit.Recipes.Defaults.MarginM;
+            return kit.CreateOnTerrain(recipe, s.Pose.Cx * tile, s.Pose.Cy * tile, s.Pose.RotationDeg,
+                Math.Max(3f, s.W * tile - 2 * margin), Math.Max(3f, s.H * tile - 2 * margin), _map.Heights,
+                weathering: 0, seed: (ulong)s.Id * 7919UL, name: $"Site_{s.Id}", progress, lit: s.Complete);
+        }
+        var mesh = new MeshData();
+        float full = Height(item.Def);
+        var corners = Corners(s.Pose, s.W, s.H);
+        if (s.Complete) mesh.Box(corners, _map, full, KindColor(item.Category));
+        else mesh.Box(corners, _map, Math.Max(0.6f, full * progress), Color(_render.Placement.ConstructionColor, 1f));
+        return new MeshInstance3D { Name = $"Site_{s.Id}", Mesh = mesh.ToMesh(), MaterialOverride = _solid };
     }
 
     // ---------------- Heritage Project sites ----------------

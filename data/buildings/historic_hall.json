@@ -11,6 +11,7 @@
   "style": "georgian_revival",
   "unlock_era": "founding",
   "needs_served": ["sleep", "belonging"],
+  "recipe": "elliott_hall",
   "model": null,
   "design_ref": "§11.3"
 }

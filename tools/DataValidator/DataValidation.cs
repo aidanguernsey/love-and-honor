@@ -130,6 +130,31 @@ public static class DataValidation
             }
         }
 
+        // Building recipes: buildings name existing recipes; recipes name existing wall finishes and window styles;
+        // real_buildings name timeline entries and recipes.
+        if (docs.TryGetValue("building_recipes.json", out var recipesDoc))
+        {
+            var recipeIds = (recipesDoc["recipes"] as JsonObject)?.Where(kv => !kv.Key.StartsWith('_')).Select(kv => kv.Key).ToHashSet() ?? [];
+            var walls = (recipesDoc["walls"] as JsonObject)?.Select(kv => kv.Key).ToHashSet() ?? [];
+            var windows = (recipesDoc["window_styles"] as JsonObject)?.Select(kv => kv.Key).ToHashSet() ?? [];
+            foreach (var (id, r) in (recipesDoc["recipes"] as JsonObject)!)
+            {
+                if (id.StartsWith('_') || r is null) continue;
+                if (!walls.Contains(Str(r, "walls"))) issues.Add(new("building_recipes.json", $"/recipes/{id}/walls", $"unknown wall finish '{Str(r, "walls")}'"));
+                if (!windows.Contains(Str(r, "windows"))) issues.Add(new("building_recipes.json", $"/recipes/{id}/windows", $"unknown window style '{Str(r, "windows")}'"));
+            }
+            var timelineIds = (docs.GetValueOrDefault("timeline.json")?["entries"] as JsonArray)?.Select(e => Str(e!, "id")).ToHashSet() ?? [];
+            foreach (var (tid, rv) in (recipesDoc["real_buildings"] as JsonObject)!)
+            {
+                if (tid.StartsWith('_')) continue;
+                if (timelineIds.Count > 0 && !timelineIds.Contains(tid)) issues.Add(new("building_recipes.json", $"/real_buildings/{tid}", "unknown timeline id"));
+                if (!recipeIds.Contains(rv!.GetValue<string>())) issues.Add(new("building_recipes.json", $"/real_buildings/{tid}", $"unknown recipe '{rv}'"));
+            }
+            foreach (var (rel, node) in docs.Where(d => d.Key.StartsWith("buildings/")))
+                if (node["recipe"] is not null && !recipeIds.Contains(Str(node, "recipe")))
+                    issues.Add(new(rel, "/recipe", $"unknown recipe '{Str(node, "recipe")}'"));
+        }
+
         // Heritage Projects: unique ids, timeline entry and building definition exist.
         if (docs.TryGetValue("heritage_projects.json", out var heritage) && heritage["projects"] is JsonArray projects)
         {

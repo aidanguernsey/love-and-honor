@@ -123,7 +123,10 @@ public sealed class Simulation
         for (int c = 0; c < _chunkCount; c++) _chunkWalkers[c] = new int[_chunkSize];
         _chunkWalkerCount = new int[_chunkCount];
 
-        for (int a = 0; a < _pop.Count; a++) _pop.Happiness[a] = _needs.Happiness(_pop.Needs, a);
+        double happiness = 0;
+        for (int a = 0; a < _pop.Count; a++) happiness += _pop.Happiness[a] = _needs.Happiness(_pop.Needs, a);
+        // Before the first tick, so the HUD doesn't show 0% happiness at the start.
+        LastTick = new TickStats(-1, 0, 0, 0, 0, 0, 0, 0, _pop.Count > 0 ? (float)(happiness / _pop.Count) : 0, false, 0);
     }
 
     /// <summary>The tick at which pending map edits get their new flow fields, or -1.</summary>

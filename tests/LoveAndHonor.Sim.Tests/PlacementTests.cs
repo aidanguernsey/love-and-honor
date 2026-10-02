@@ -86,8 +86,8 @@ public class PlacementTests
         var corners = FootprintMath.Corners(truth, 3, 7);
         float[] outline = [.. corners.SelectMany(c => new[] { c.X, c.Y })];
         var (pose, w, h) = FootprintMath.FitRectangle(outline, 15);
-        Assert.Equal(30, pose.RotationDeg);
-        Assert.Equal((3, 7), (w, h));
+        Assert.Equal(120, pose.RotationDeg); // the same rectangle turned so its long side is the front
+        Assert.Equal((7, 3), (w, h));
         Assert.InRange(pose.Cx, 40, 41);
         Assert.InRange(pose.Cy, 30, 31);
     }

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Kit assembler recipes (§28.1a)",
+  "type": "object",
+  "required": ["defaults", "window_styles", "walls", "recipes", "real_buildings"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "color": { "type": "string", "pattern": "^(#[0-9A-Fa-f]{6}|[a-z_]+(:[0-9]+)?)$" },
+    "recipe": {
+      "type": "object",
+      "required": ["shape", "storeys", "walls", "roof", "windows", "quoins", "belt_courses", "door", "portico_bays", "cupola", "chimneys", "verified"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "shape": {
+          "type": "object",
+          "required": ["type"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "enum": ["rect", "l"] },
+            "wing_width": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+            "wing_depth": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 }
+          }
+        },
+        "storeys": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "walls": { "type": "string" },
+        "roof": {
+          "type": "object",
+          "required": ["type", "pitch_deg"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "enum": ["hip", "gable"] },
+            "pitch_deg": { "type": "number", "minimum": 10, "maximum": 60 }
+          }
+        },
+        "windows": { "type": "string" },
+        "quoins": { "type": "boolean" },
+        "belt_courses": { "type": "boolean" },
+        "door": { "enum": ["front", "front_and_back"] },
+        "portico_bays": { "enum": [0, 1, 3] },
+        "cupola": { "type": "boolean" },
+        "chimneys": { "enum": [0, 1, 2, 4] },
+        "verified": { "type": "boolean" }
+      }
+    }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "defaults": {
+      "type": "object",
+      "required": ["margin_m", "roof_overhang_m", "cornice_height_m", "plinth_extra_m", "massing_distance_m"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "margin_m": { "type": "number", "minimum": 0 },
+        "roof_overhang_m": { "type": "number", "minimum": 0 },
+        "cornice_height_m": { "type": "number", "minimum": 0 },
+        "plinth_extra_m": { "type": "number", "minimum": 0 },
+        "massing_distance_m": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "window_styles": {
+      "type": "object",
+      "patternProperties": { "^_": {} },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["cols", "rows_upper", "rows_lower"],
+        "additionalProperties": false,
+        "properties": {
+          "cols": { "type": "integer", "minimum": 1, "maximum": 8 },
+          "rows_upper": { "type": "integer", "minimum": 1, "maximum": 8 },
+          "rows_lower": { "type": "integer", "minimum": 1, "maximum": 8 }
+        }
+      }
+    },
+    "walls": {
+      "type": "object",
+      "patternProperties": { "^_": {} },
+      "additionalProperties": { "$ref": "#/$defs/color" }
+    },
+    "recipes": {
+      "type": "object",
+      "patternProperties": { "^_": {} },
+      "additionalProperties": { "$ref": "#/$defs/recipe" }
+    },
+    "real_buildings": {
+      "type": "object",
+      "patternProperties": { "^_": {} },
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

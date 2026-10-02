@@ -11,6 +11,7 @@
   "style": "georgian_revival",
   "unlock_era": "early20",
   "needs_served": ["food", "social"],
+  "recipe": "georgian_hall",
   "model": null,
   "design_ref": "§11.4"
 }

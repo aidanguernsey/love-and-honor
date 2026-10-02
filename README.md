@@ -93,6 +93,11 @@ Launch options (after `--`): `--scenario=chapter1_the_hill|preview_2026`, `--spe
 `--build-item=ID`, `--build-rotation=DEG`, `--ghost-at=x,z` (screenshots of the ghost), `--game-smoke[=seconds]`
 (print stats and quit), `--screenshot=FILE` (with `--game-smoke`).
 
+Building kit check (Phase 1 1f): click **1f — Building kit check** on the boot screen, or run
+`& $env:GODOT --path . res://scenes/spikes/building_kit_test.tscn`. Every kit recipe side by side, a hall at three
+construction stages, triangle counts; N toggles night (window glow). Options: `--night`, `--camera=...`,
+`--kit-smoke[=seconds]`, `--screenshot=FILE`.
+
 Spike B terrain (real Oxford, 1 m lidar + OSM): click **Spike B** on the boot screen, or run it directly:
 
 ```powershell

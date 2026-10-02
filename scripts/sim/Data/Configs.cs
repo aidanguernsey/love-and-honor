@@ -149,6 +149,8 @@ public sealed class BuildingDef
     public string? RetireEra { get; init; }
     /// <summary>Overrides the size-class construction time (placement.json).</summary>
     public double? ConstructionMonths { get; init; }
+    /// <summary>Kit assembler recipe (building_recipes.json), or null.</summary>
+    public string? Recipe { get; init; }
     public string[] NeedsServed { get; init; } = [];
 
     public sealed class FootprintSize

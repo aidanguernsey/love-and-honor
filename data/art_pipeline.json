@@ -73,6 +73,7 @@
   "special_materials": {
     "mat_glass": { "color": "#2E3A46", "roughness": 0.15, "metallic": 0.0, "emission_energy": 0.0 },
     "mat_iron": { "color": "#1F2023", "roughness": 0.55, "metallic": 0.6, "emission_energy": 0.0 },
-    "mat_window_glow": { "color": "#FFD28A", "roughness": 1.0, "metallic": 0.0, "emission_energy": 1.5 }
+    "mat_window_glow": { "color": "#FFD28A", "roughness": 1.0, "metallic": 0.0, "emission_energy": 1.5 },
+    "mat_wood": { "color": "#8B6A45", "roughness": 0.9, "metallic": 0.0, "emission_energy": 0.0 }
   }
 }

@@ -62,6 +62,7 @@ public partial class GameHost : Node3D
 
     // Building (1e).
     private BuildingCatalog? _catalog;
+    private BuildingKit _kit = null!;
     private Dictionary<string, CatalogItem> _items = [];
     private PlacementRenderer _placementRenderer = null!;
     private CatalogItem? _buildItem;
@@ -100,12 +101,17 @@ public partial class GameHost : Node3D
                 _ghostAt = new Vector2(float.Parse(gx, System.Globalization.CultureInfo.InvariantCulture), float.Parse(gz, System.Globalization.CultureInfo.InvariantCulture));
 
         var map = RealMapLoader.Load(source);
+        _kit = new BuildingKit(source);
+        // Real buildings with a kit recipe that stand at the start are assembled from the kit (1f) instead of extruded.
+        bool FromKit(HistoricBuilding b) => b.Entry is { } e && _kit.Recipes.RecipeForTimeline(e.Id) is not null
+                                            && b.StandsIn(_scenario.MapYear, showUndatedAlways: false);
         _map = new MapRenderer(this, source, map, GetNodeOrNull<DirectionalLight3D>(SunPath),
-            GetNodeOrNull<WorldEnvironment>(EnvironmentPath)?.Environment);
+            GetNodeOrNull<WorldEnvironment>(EnvironmentPath)?.Environment, FromKit);
+        foreach (var b in _map.Buildings.Where(FromKit)) AddRealBuilding(b, map);
         var start = _scenario.Start;
         _map.SetDate(_scenario.MapYear, Math.Min(365, start.DayOfYear));
         _map.SetBuildingsYear(_scenario.MapYear); // later real buildings are the player's to build
-        _placementRenderer = new PlacementRenderer(this, map, _map.Render, new Palette(source.ReadText("branding.json")));
+        _placementRenderer = new PlacementRenderer(this, map, _map.Render, new Palette(source.ReadText("branding.json")), _kit);
         _startFocus = FocusPoint(map);
         RenderingServer.ViewportSetMeasureRenderTime(GetViewport().GetViewportRid(), true);
 
@@ -141,6 +147,8 @@ public partial class GameHost : Node3D
         float hour = s.HourOfDay + (float)_runner.TickFraction;
         _map.SetDate(s.Date.Year, Math.Min(365, s.Date.DayOfYear), async: true);
         _map.SetHour(_dayNight ? hour : FixedDaylightHour);
+        // Windows glow from dusk to dawn (§28.1).
+        _kit.SetNight(1f - Mathf.SmoothStep(-4f, 4f, _map.SunElevation));
 
         if (s.LandVersion != _landVersion && s.LandVersion >= 0)
         {
@@ -533,6 +541,17 @@ public partial class GameHost : Node3D
     };
 
     // ---------------- internals ----------------
+
+    /// <summary>A real building drawn from its kit recipe on its real outline (size, centre and turn fitted to it).</summary>
+    private void AddRealBuilding(HistoricBuilding b, RealMap map)
+    {
+        var recipe = _kit.Recipes.RecipeForTimeline(b.Entry!.Id)!;
+        var (cx, cy, deg, w, h) = FootprintMath.FitExtents(b.Footprint.Outline, 15);
+        float tile = map.Grid.TileSizeM;
+        float weathering = Math.Clamp((_scenario.MapYear - b.BuiltYear) / 120f, 0f, 1f);
+        AddChild(_kit.CreateOnTerrain(recipe, cx * tile, cy * tile, deg, w * tile, h * tile, map.Heights, weathering,
+            (ulong)b.BuiltYear * 31UL + (ulong)b.Entry.Id.Length, $"Real_{b.Entry.Id}"));
+    }
 
     private Vector2 FocusPoint(RealMap map)
     {

@@ -18,6 +18,7 @@
   "unlock_era": "founding",
   "construction_months": 6,
   "needs_served": [],
+  "recipe": "georgian_house",
   "model": null,
   "design_ref": "§25.1"
 }

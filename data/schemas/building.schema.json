@@ -140,6 +140,10 @@
       },
       "uniqueItems": true
     },
+    "recipe": {
+      "type": "string",
+      "description": "kit assembler recipe in building_recipes.json (how it looks)"
+    },
     "model": {
       "type": [
         "string",

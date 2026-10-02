@@ -191,6 +191,49 @@ Herringbone brick paths belong to the terrain/path shader, not to models.
 window insert (panes drawn by the window shader, §10), so window styles vary without multiplying wall pieces. It is a single combined piece for now
 because its only job is to exercise the pipeline.
 
+## 8a. Kit v1 and the assembler (Phase 1 1f)
+
+Thirteen **scripted placeholder** pieces now exist, made by `tools/blender/make_kit_v1.py` (re-run it to regenerate):
+
+```powershell
+& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --factory-startup --python tools\blender\make_kit_v1.py
+```
+
+| Piece | LOD0 tris | LOD1 | Notes |
+|---|---|---|---|
+| `kit_georgian_wall_plain_3m` | 2 | | narrow bays |
+| `kit_georgian_wall_opening_window_3m` | 26 | 4 (flat facade) | glass quad with 0..1 UVs; frame, sashes and muntins drawn by `window.gdshader` |
+| `kit_georgian_wall_opening_door_3m` | 32 | 6 | door leaves, fanlight (shader), hood |
+| `kit_georgian_wall_base_3m` | 4 | | water table |
+| `kit_georgian_corner_quoin` | 4 | | per storey at outer corners |
+| `kit_georgian_cornice_3m`, `_cornice_corner` | 6, 8 | | |
+| `kit_georgian_beltcourse_3m` | 2 | | between storeys |
+| `kit_georgian_column_doric` | 36 | | 6 m, scaled to the portico height |
+| `kit_georgian_pediment_3bay` | 13 | | scaled for 1-bay porticos |
+| `kit_georgian_portico_steps_3m` | 24 | | |
+| `kit_georgian_cupola_small` | 60 | | |
+| `kit_georgian_chimney_single` | 20 | | |
+
+- **Only visible faces are modelled:** wall pieces have no back or side faces; the assembler closes the building.
+- **The assembler** (`scripts/sim/View/BuildingAssembler.cs`, Godot-free and unit-tested) builds a building from a
+  recipe (`data/building_recipes.json`) and a size: rectangles and L-shapes; whole bays fitted to every wall
+  (stretched by at most ±25%); windows on every bay but the door bay; quoins and cornice corners at outer corners;
+  belt courses; hip or gable roofs, generated rather than made from roof pieces (an L-shape gets two hip roofs that
+  merge); gable end walls; chimneys; porticos of 1 or 3 bays with steps; a cupola. It also adds a stone plinth down to
+  the lowest ground, timber scaffolding and an open timber floor while under construction, and a simple block for distance.
+- **Three distances** (bridge `BuildingKit`): full detail up to the bldg category's first LOD distance (150 m); then
+  flat facades (pieces' `_LOD1`; quoins, belt courses, steps and base courses dropped); then the plain block beyond
+  `massing_distance_m` (650 m).
+- **Materials:** walls use `building_wall.gdshader` (subtle world-space brick or clapboard pattern that fades with
+  distance; weathering from vertex alpha = the era look), glass uses `window.gdshader` (pane style per recipe, warm glow
+  at night in a random 55% of windows, never in unfinished buildings), the rest use the shared palette materials.
+  New special material `mat_wood` (scaffolding).
+- **Budgets:** typical buildings 0.7–3.6k triangles at full detail (generic hall 3.3k, Elliott 3.6k, Old Main 4.6k).
+  Large halls go over 5k at full detail (a 48 × 38 m L-hall is 7.3k), so they are held to ≤ 35 triangles per window
+  bay, with the middle distance inside 5k (tests in `BuildingAssemblerTests`).
+- **Check scene:** boot menu → **1f — Building kit check** (`scenes/spikes/building_kit_test.tscn`): every recipe, a
+  hall at three construction stages, triangle counts, N for night.
+
 ## 9. The example: `kit_georgian_wall_window_3m` (placeholder)
 
 Built by a script so anyone can regenerate it:
@@ -217,6 +260,9 @@ Check it in Godot: boot menu → **Step 4 — Art import check**, or run
 
 Decided by the user on 2026-09-30. None of this is built yet: it applies from Phase 1. Each one goes into the
 Phase 0 report as a suggested GAME_DESIGN.md update (§28.1a, §30).
+
+Status (1f): items 1–3 are built (window shader, assembler + recipes, weathering as a shader setting); item 4 waits
+for characters; item 5 is still untested.
 
 1. **Window panes are drawn by a shader, not geometry. (Decided.)**
    - Why: a typical 3-storey, 11-bay hall has about 90 window bays around it. §28.1a allows 1–5k triangles per

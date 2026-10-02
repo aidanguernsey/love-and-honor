@@ -19,6 +19,7 @@
   "needs_served": [
     "study"
   ],
+  "recipe": "old_main",
   "model": null,
   "design_ref": "§25.1"
 }

@@ -35,3 +35,23 @@ slower overall (an era multiplier)?
 
 **Q9 — demolition.** Finished buildings can't be demolished yet (only construction can be cancelled). *Default:*
 demolition comes with the Heritage score (Phase 2), since §12.3 ties it to a Heritage penalty. OK?
+
+## 1f — Buildings v1
+
+**Q10 — Elliott and Stoddard (you walk past them).** Their recipes are guesses: 4 storeys, gable roof, chimneys at the
+ends, 6-over-6 windows, plain brick, no portico, the door in the middle of a long side. What's right? (Number of
+storeys, roof shape, where the doors are, anything distinctive.) *Default:* the guess, marked `verified: false`.
+
+**Q11 — Old Main (demolished 1958).** 3 storeys, hip roof, cupola, 12-over-12 windows: all guesses. *Default:* keep
+until archival photos are checked (1j research).
+
+**Q12 — roofs generated, not kit pieces.** The art plan listed roof kit pieces (hip, end, corners); the assembler
+generates roofs instead (cheaper, fits any size, L-shapes for free). *Default:* generated roofs. OK?
+
+**Q13 — big buildings and the 5k-triangle budget.** §28.1a says a typical building is 1–5k triangles. Big halls
+(e.g. a 48 × 38 m L-shaped hall, 4 storeys) are 7k at full detail. *Default:* allow it for big buildings (≤ 35
+triangles per window bay), with the middle-distance version inside 5k. OK, or should big halls get simpler windows?
+
+**Q14 — only buildings with a recipe are drawn from the kit.** In the 2026 preview that's just Elliott and Stoddard; the
+other ~80 real buildings stay plain blocks until arbitrary footprints are supported (Phase 2, per the approved plan).
+*Default:* as planned.

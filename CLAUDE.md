@@ -45,6 +45,16 @@ rebuild grows the field set, tested equal to a full rebuild); nobody uses them u
 boxes, Heritage site outlines + labels (H) in `bridge/PlacementRenderer.cs`; the game freezes the real buildings drawn at
 the scenario's map year (`MapRenderer.SetBuildingsYear`), so Elliott no longer pops up by itself in 1828. Rules in
 `data/placement.json`. Next: **1f** (buildings v1).
+**From 2026-10-02 the user asked for checkpoints back-to-back** (no stop between them); open questions collect in
+`docs/OPEN_QUESTIONS.md` with the default taken.
+**1f done (2026-10-02):** kit v1 + assembler (`docs/ART_PIPELINE.md` §8a): 13 scripted placeholder pieces
+(`tools/blender/make_kit_v1.py`), `View/BuildingAssembler.cs` (rect/L, bays, door, quoins, cornices, belts, generated
+hip/gable roofs, chimneys, portico, cupola, plinth, scaffolding, far block), recipes in `data/building_recipes.json`
+(generic: frame 1/2 storeys, Georgian house, hall, L-hall; real: Old Main, Elliott, Stoddard; building defs name a
+`recipe`), `window.gdshader` (panes + night glow) and `building_wall.gdshader` (brick/clapboard, weathering). Bridge
+`BuildingKit` merges a building into 3 distance meshes. The game draws real buildings with a recipe from the kit on
+their fitted outline (long side = front) and the player's buildings from the kit at each 5% construction stage. Check
+scene `scenes/spikes/building_kit_test.tscn`. Next: **1g** (paths).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -113,6 +123,9 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
   Heritage bonus is only recorded (no Heritage score yet); demolishing finished buildings isn't in; the starting campus is
   mostly forest (151 lawn tiles), so the first job in Chapter 1 is clearing. Real footprints fitted to tiles: Elliott 2x3,
   Old Main 5x2.
+- 1f: real buildings' storeys/roofs/windows in their recipes are guesses; roofs are generated, not kit pieces; large
+  halls exceed 5k tris at full detail (per-bay rule instead); only buildings with recipes are drawn from the kit (the
+  other 80 real buildings stay extruded blocks until arbitrary footprints, Phase 2), so at night only they glow.
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 

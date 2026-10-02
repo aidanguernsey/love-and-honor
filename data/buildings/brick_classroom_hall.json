@@ -21,6 +21,7 @@
   "needs_served": [
     "study"
   ],
+  "recipe": "georgian_hall",
   "model": null,
   "design_ref": "§25.1"
 }

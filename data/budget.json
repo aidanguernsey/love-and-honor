@@ -1,0 +1,45 @@
+{
+  "$schema": "./schemas/budget.schema.json",
+  "_comment": "Operating budget and Trustee Confidence (§3, §8), Phase 1 checkpoint 1i. Amounts in an era's eras.* section are in THAT era's dollars (not modern x multiplier); building upkeep comes from the building definitions (modern dollars x the era's price_multiplier). Every amount is a [TWEAK] placeholder; the 1820s figures are not researched yet.",
+  "fiscal_year_start": "08-01",
+  "spring_term_start": "01-26",
+  "land_rents_date": "01-01",
+  "_eras_comment": "Per era id (eras.json); 'default' covers eras not listed. Tuition and room rent are per student per year, charged half each term (move-in and spring_term_start). Land rents: Miami's income from leasing its township land [VERIFY amounts]. State support per year.",
+  "eras": {
+    "founding": {
+      "tuition_per_year": 30,
+      "room_rent_per_year": 10,
+      "land_rents_per_year": 3000,
+      "state_support_per_year": 0,
+      "faculty_salary_per_year": 600,
+      "administration_per_year": 800,
+      "verified": false
+    },
+    "default": {
+      "tuition_per_year": 17000,
+      "room_rent_per_year": 15000,
+      "land_rents_per_year": 0,
+      "state_support_per_year": 70000000,
+      "faculty_salary_per_year": 95000,
+      "administration_per_year": 40000000,
+      "verified": false
+    }
+  },
+  "_default_upkeep_comment": "Yearly upkeep in modern dollars for real buildings with no building definition, by kind (x the era's price_multiplier).",
+  "default_upkeep": { "academic": 300000, "residence": 150000, "dining": 200000, "library": 300000, "recreation": 200000, "other": 100000 },
+  "tuition": {
+    "_comment": "The player sets tuition as a multiple of the era's base rate. Applicants change by 1 - elasticity x (level - 1) (§8.4: out-of-state demand is elastic).",
+    "min_level": 0.5,
+    "max_level": 2.0,
+    "step": 0.1,
+    "elasticity": 0.8
+  },
+  "trustees": {
+    "_comment": "§3: Confidence 0-100, starts at balance.json trustees.starting_confidence. Reviewed once a year at the fiscal year end; 0 = dismissed.",
+    "balanced_budget": 5,
+    "deficit": -8,
+    "enrollment_up": 3,
+    "enrollment_down": -6,
+    "negative_cash_per_month": -3
+  }
+}

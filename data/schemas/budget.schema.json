@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Operating budget and Trustee Confidence (§3, §8)",
+  "type": "object",
+  "required": ["fiscal_year_start", "spring_term_start", "land_rents_date", "eras", "default_upkeep", "tuition", "trustees"],
+  "additionalProperties": false,
+  "patternProperties": { "^_": {} },
+  "$defs": {
+    "monthDay": { "type": "string", "pattern": "^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$" },
+    "money": { "type": "number", "minimum": 0 },
+    "era": {
+      "type": "object",
+      "required": ["tuition_per_year", "room_rent_per_year", "land_rents_per_year", "state_support_per_year", "faculty_salary_per_year", "administration_per_year", "verified"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "tuition_per_year": { "$ref": "#/$defs/money" },
+        "room_rent_per_year": { "$ref": "#/$defs/money" },
+        "land_rents_per_year": { "$ref": "#/$defs/money" },
+        "state_support_per_year": { "$ref": "#/$defs/money" },
+        "faculty_salary_per_year": { "$ref": "#/$defs/money" },
+        "administration_per_year": { "$ref": "#/$defs/money" },
+        "verified": { "type": "boolean" }
+      }
+    }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "fiscal_year_start": { "$ref": "#/$defs/monthDay" },
+    "spring_term_start": { "$ref": "#/$defs/monthDay" },
+    "land_rents_date": { "$ref": "#/$defs/monthDay" },
+    "eras": { "type": "object", "required": ["default"], "additionalProperties": { "$ref": "#/$defs/era" } },
+    "default_upkeep": {
+      "type": "object",
+      "required": ["academic", "residence", "dining", "library", "recreation", "other"],
+      "additionalProperties": { "$ref": "#/$defs/money" }
+    },
+    "tuition": {
+      "type": "object",
+      "required": ["min_level", "max_level", "step", "elasticity"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "min_level": { "type": "number", "exclusiveMinimum": 0 },
+        "max_level": { "type": "number", "exclusiveMinimum": 0 },
+        "step": { "type": "number", "exclusiveMinimum": 0 },
+        "elasticity": { "type": "number", "minimum": 0 }
+      }
+    },
+    "trustees": {
+      "type": "object",
+      "required": ["balanced_budget", "deficit", "enrollment_up", "enrollment_down", "negative_cash_per_month"],
+      "additionalProperties": false,
+      "patternProperties": { "^_": {} },
+      "properties": {
+        "balanced_budget": { "type": "number" },
+        "deficit": { "type": "number" },
+        "enrollment_up": { "type": "number" },
+        "enrollment_down": { "type": "number" },
+        "negative_cash_per_month": { "type": "number" }
+      }
+    }
+  }
+}

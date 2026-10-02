@@ -415,6 +415,10 @@ public partial class GameHost : Node3D
         hud["clearing_tiles"] = s.ClearingTiles;
         hud["construction"] = ConstructionText(s);
         hud["demand"] = DemandText(s);
+        hud["confidence"] = s.Budget is { } bv ? $"{bv.Confidence:0}" : "—";
+        hud["budget"] = BudgetText(s);
+        hud["tuition"] = s.Budget is { } tv ? $"Tuition: {LandSystem.Money(tv.TuitionPerYearCents)} a year ({tv.TuitionLevel:P0} of the usual rate)" : "";
+        hud["dismissed"] = s.Budget?.Dismissed ?? false;
         hud["heritage_bonus"] = (s.Placement?.HeritageBonus ?? 0) + s.LandHeritageBonus;
         hud["path_triangles"] = _pathRenderer.Triangles;
         hud["walks_last_hour"] = s.WalksLastTick;
@@ -642,6 +646,32 @@ public partial class GameHost : Node3D
         string site = item.Site is null ? "" : q.OnHeritageSite ? " On the real site: Heritage bonus." : " Not on the real site (that's fine; no bonus).";
         string warn = q.Warning.Length > 0 ? "\n" + q.Warning : "";
         return $"{head}\nClick to build ({turn}).{site}{afford}{warn}";
+    }
+
+    /// <summary>Y / Budget panel: − or + one tuition step.</summary>
+    public void ChangeTuition(int direction)
+    {
+        if (_runner is null || _snapshot?.Budget is not { } b || _world?.Budget is not { } budget) return;
+        _runner.SubmitTuitionLevel(b.TuitionLevel + direction * budget.Config.Tuition.Step);
+    }
+
+    /// <summary>The budget panel (§8, 1i): this year so far and last year, by category.</summary>
+    private static string BudgetText(SimSnapshot s)
+    {
+        if (s.Budget is not { } b) return "";
+        var sb = new System.Text.StringBuilder();
+        void Report(LoveAndHonor.Sim.Economy.BudgetReport r)
+        {
+            sb.Append(r.Title).Append('\n');
+            foreach (var line in r.Lines) sb.Append($"   {line.Name}: {LandSystem.Money(line.Cents)}\n");
+            sb.Append($"   Running budget: {(r.Operating >= 0 ? "surplus" : "deficit")} {LandSystem.Money(Math.Abs(r.Operating))}");
+            sb.Append($" · building and land {LandSystem.Money(-r.Capital)}\n");
+        }
+        Report(b.YearToDate);
+        if (b.LastYear is { } last) { sb.Append('\n'); Report(last); }
+        sb.Append($"\nTrustee review {b.NextReview:MMM d, yyyy}: they want a running surplus and growing enrollment.");
+        if (!b.Verified) sb.Append("\nThese amounts are placeholders, not historical figures.");
+        return sb.ToString();
     }
 
     /// <summary>§12.7 demand, the 1h part: beds and seats against capacity, and the enrollment calendar.</summary>

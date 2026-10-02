@@ -447,7 +447,7 @@ public sealed class PlacementSystem
                 _messages.Add($"Not enough money for the {item.Name}: it costs {LandSystem.Money(q.Cents)}, you have {LandSystem.Money(treasury.Cents)}.");
                 continue;
             }
-            treasury.Spend(date, q.Cents, $"Construction: {item.Name}");
+            treasury.Spend(date, q.Cents, $"Construction: {item.Name}", "construction");
             var site = new ConstructionSite
             {
                 Id = _nextSiteId++, Item = item, Pose = c.Pose, Tiles = q.Tiles, Entrance = q.Entrance, CostCents = q.Cents,
@@ -470,7 +470,7 @@ public sealed class PlacementSystem
         double left = 1.0 - site.Progress;
         double share = site.Ordered == date ? 1.0 : left * Catalog.Config.Construction.CancelRefundFraction;
         long refund = (long)Math.Round(site.CostCents * share);
-        _land.Treasury.Receive(date, refund, $"Cancelled: {site.Item.Name}");
+        _land.Treasury.Receive(date, refund, $"Cancelled: {site.Item.Name}", "construction");
         _sites.Remove(site);
         if (site.Item.HeritageId is { } h) _heritageTaken.Remove(h);
         foreach (int t in site.Tiles)

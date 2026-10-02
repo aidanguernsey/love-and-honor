@@ -94,3 +94,24 @@ Saturday classes and daily chapel. *Default:* not modelled yet. Add them?
 
 **Q24 — breaks.** Students leave Oxford for the whole summer and winter break (they "go home" and don't walk around
 campus). *Default:* as described.
+
+## 1i — Economy
+
+**Q25 — 1820s money.** Tuition $30 a year, room rent $10, township land rents $3,000 a year, a professor's salary $600,
+administration $800, no state support. With these the first year runs a ~$1,200 surplus, so Elliott Hall ($5,000)
+is affordable after two or three years. *Default:* placeholders until the 1j research (Miami's real finances relied
+on its township land leases). Faster or slower pacing?
+
+**Q26 — what the Trustees care about.** Once a year (Aug 1): +5 for a running surplus, −8 for a deficit, +3 if fall
+enrollment grew, −6 if it fell; −3 every month cash is negative; dismissed at 0. *Default:* as described. Other
+factors you want early (happiness, Heritage, the Chapter 1 goals)?
+
+**Q27 — tuition.** The player sets tuition from 50% to 200% of the era's rate; it applies to all students from the
+next term and changes applicants (20% higher tuition ≈ 16% fewer applicants). §8.4 describes cohort pricing (locked
+for each entering class). *Default:* simple version now, cohort pricing later. OK?
+
+**Q28 — paying for buildings.** Everything is paid in cash; bonds, donors and partnerships (§8.5) aren't in.
+*Default:* add them in Phase 2. Want a simple loan earlier for Chapter 1?
+
+**Q29 — being dismissed.** At Trustee Confidence 0 a banner appears and the game pauses. *Default:* the proper ending
+screen comes with Chapter 1's win/fail conditions (1j).

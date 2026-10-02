@@ -77,6 +77,14 @@ enrollment.json defaults. `PeopleContext` (PopulationGenerator.cs) sets people u
 only buildings whose flow fields exist. Students are **away** in calendar phases with `students_away` (summer, winter
 break): Activity.Away, needs held steady. Snapshots carry AgentCount/StudentCount/FacultyCount and an `EnrollmentView`;
 VisualCrowd caps walkers by AgentCount. HUD Demand panel: beds, seats, years, next move-in. Next: **1i** (economy).
+**1i done (2026-10-02):** budget (`Economy/Budget.cs`, `data/budget.json`): Treasury ledger entries carry a category;
+`BudgetSystem` (all scenario worlds) charges tuition (× the player's tuition level) and hall room rent half per term
+(move-in, spring start), land rents yearly (Jan 1), state support at the fiscal year start (Aug 1), and monthly
+salaries/administration/upkeep (building defs' upkeep × era multiplier; real buildings via timeline `building_def` —
+Old Main now `college_building`). Fiscal-year review: report by category + Trustee Confidence (§3: surplus +5,
+deficit −8, fall enrollment up +3/down −6, −3 per month of negative cash; 0 = dismissed). Tuition level 50–200%
+changes applicants (elasticity 0.8). 1824–25 runs a $1,230 surplus (land rents carry it). HUD: Trustee Confidence,
+Budget panel (Y) with tuition −/+, dismissal banner. Money prints negatives as "−$". Next: **1j** (Chapter 1 content).
 
 ### Phase 0 record — Foundations & technical spikes (§37)
 Steps: (1) scaffold → (2) Spike A population at scale → (3) Spike B Oxford terrain + timeline →
@@ -157,6 +165,9 @@ updates U1–U16). The user approved all 16 and they are applied in GAME_DESIGN.
   simulated (retention assumes 3.0); faculty are hired automatically (hiring/salaries come with the budget).
   Lesson: the Godot `--build-solutions` output can hide C# compile errors (and a leftover game process can lock the
   assembly): check with `dotnet build LoveAndHonor.csproj`.
+- 1i: all 1820s money is placeholder (tuition $30/yr, room $10, land rents $3,000/yr, salary $600/yr, administration
+  $800/yr); everything is paid in cash (no bonds/donors yet, §8.5); tuition applies to everyone (no cohort pricing,
+  §8.4); dismissal only shows a banner and pauses (proper ending in 1j).
 - Hotkeys: §27.5 says "1–5 speed" but there are 5 speed states incl. pause; implemented Space = pause,
   1–4 = 1×/2×/4×/8× (5 reserved for skip-to-next-event, §6.1). Flag for the user.
 

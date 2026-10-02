@@ -5,7 +5,7 @@ extends CanvasLayer
 ## · B build menu · Z/X turn the building · Del cancel
 ## construction · H Heritage sites · N day/night cycle · Esc stop tool / close menu / main menu.
 ## The day/night and Heritage-site settings are remembered in user://settings.cfg (`--day-night=on|off` overrides
-## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs), `--build-menu` (open the build list).
+## the first for one run). More launch options: `--cash=N` (starting cash), `--demo-land`, `--demo-build` (GameHost.cs), `--build-menu` (open the build list), `--budget` (open the budget).
 ## Launch options (after `--`; start from the boot scene with `--play`): `--speed=N` (0–4), `--camera=...` (see camera_rig.gd), `--game-smoke[=seconds]`
 ## (print GAME_SMOKE stats once the sim has run that long, then quit), `--screenshot=<file.png>` (with --game-smoke).
 
@@ -33,6 +33,10 @@ var _tool_hint: Label
 var _day_night_button: CheckButton
 var _heritage_button: CheckButton
 var _demand_label: Label
+var _budget_panel: PanelContainer
+var _budget_label: Label
+var _tuition_label: Label
+var _dismissed_label: Label
 var _category_buttons := {}
 var _build_popup: PanelContainer
 var _build_list: VBoxContainer
@@ -58,6 +62,7 @@ func _ready() -> void:
 	_build_build_menu()
 	_build_right_panel()
 	_build_ticker()
+	_build_budget_panel()
 	_loading_label = _label(22, "Loading…")
 	_anchor(_loading_label, 0.5, 0.5, 0.5, 0.5)
 	_loading_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
@@ -96,6 +101,7 @@ func _process(delta: float) -> void:
 		_started = true
 		_host.SetSpeedIndex(_start_speed)
 		if "--build-menu" in OS.get_cmdline_user_args(): _open_build_list("")  # screenshots
+		if "--budget" in OS.get_cmdline_user_args(): _toggle_budget()  # screenshots
 
 	_date_label.text = "%s   %s" % [hud["date"], hud["time"]]
 	var phase: String = hud["phase"]
@@ -108,6 +114,13 @@ func _process(delta: float) -> void:
 	_stat_labels["enrollment"].text = "%s students · %s faculty" % [_thousands(hud["students"]), _thousands(hud["faculty"])]
 	_stat_labels["happiness"].text = "%d%%" % roundi(hud["happiness"])
 	_stat_labels["cash"].text = hud["cash"]
+	_stat_labels["trustees"].text = hud["confidence"]
+	if _budget_panel.visible:
+		_budget_label.text = hud["budget"]
+		_tuition_label.text = hud["tuition"]
+	if hud["dismissed"] and not _dismissed_label.visible:
+		_dismissed_label.visible = true
+		_host.SetSpeedIndex(0)
 	_overlay_button.text = "Overlays: %s (O)" % hud["overlay"]
 	_demand_label.text = hud["demand"]
 
@@ -171,9 +184,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_Z: _host.RotateBuild(-1)
 		KEY_X: _host.RotateBuild(1)
 		KEY_H: _heritage_button.button_pressed = not _heritage_button.button_pressed
+		KEY_Y: _toggle_budget()
 		KEY_N: _day_night_button.button_pressed = not _day_night_button.button_pressed
 		KEY_ESCAPE:
-			if _build_popup.visible: _build_popup.visible = false
+			if _budget_panel.visible: _budget_panel.visible = false
+			elif _build_popup.visible: _build_popup.visible = false
 			elif _host.GetTool() != "": _host.SetTool("")
 			else: get_tree().change_scene_to_file("res://scenes/boot.tscn")
 
@@ -226,7 +241,12 @@ func _build_top_bar() -> void:
 	_add_stat(row, "enrollment", "Enrollment", "—", "Everyone is simulated. Students arrive at move-in (August), graduate or leave at commencement (May), and are away over the summer and winter breaks. Details under Demand.")
 	_add_stat(row, "happiness", "Happiness", "—", "Average student and faculty happiness from their needs (§10.1).")
 	_add_stat(row, "reputation", "Reputation", "—", "Rankings come later (Phase 2).")
-	_add_stat(row, "trustees", "Trustee Confidence", "—", "Trustee Confidence comes with the budget and Chapter 1 goals (1i, 1j).")
+	_add_stat(row, "trustees", "Trustee Confidence", "—", "Trustee Confidence (0-100, §3): reviewed every August 1 (balanced budget and growing enrollment raise it); falls whenever cash runs out. At 0 the Trustees dismiss you. Budget: Y.")
+	var budget_button := Button.new()
+	budget_button.text = "Budget (Y)"
+	budget_button.focus_mode = Control.FOCUS_NONE
+	budget_button.pressed.connect(_toggle_budget)
+	row.add_child(budget_button)
 
 
 func _build_build_menu() -> void:
@@ -325,6 +345,54 @@ func _build_right_panel() -> void:
 	_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_notice_label.custom_minimum_size = Vector2(240, 0)
 	col.add_child(_notice_label)
+
+
+func _build_budget_panel() -> void:
+	_budget_panel = _panel()
+	_anchor(_budget_panel, 0.5, 0.5, 0.5, 0.5)
+	_budget_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_budget_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_budget_panel.visible = false
+	var col := VBoxContainer.new()
+	col.custom_minimum_size = Vector2(460, 0)
+	_budget_panel.add_child(col)
+	col.add_child(_label(18, "Budget (§8)"))
+	_budget_label = _label(13)
+	_budget_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_budget_label.custom_minimum_size = Vector2(460, 0)
+	col.add_child(_budget_label)
+	var row := HBoxContainer.new()
+	_tuition_label = _label(14)
+	_tuition_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(_tuition_label)
+	for spec in [["−", -1], ["+", 1]]:
+		var b := Button.new()
+		b.text = spec[0]
+		b.custom_minimum_size = Vector2(36, 30)
+		b.focus_mode = Control.FOCUS_NONE
+		b.tooltip_text = "Higher tuition brings in more per student but fewer applicants (from the next move-in)."
+		var d: int = spec[1]
+		b.pressed.connect(func(): _host.ChangeTuition(d))
+		row.add_child(b)
+	col.add_child(row)
+	var close := Button.new()
+	close.text = "Close (Y / Esc)"
+	close.focus_mode = Control.FOCUS_NONE
+	close.pressed.connect(_toggle_budget)
+	col.add_child(close)
+
+	_dismissed_label = _label(26, "The Trustees have lost confidence and dismissed you.\nThe chapter ends here (game over screens come with Chapter 1, 1j).")
+	_anchor(_dismissed_label, 0.5, 0.3, 0.5, 0.3)
+	_dismissed_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_dismissed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_dismissed_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	_dismissed_label.add_theme_constant_override("outline_size", 10)
+	_dismissed_label.visible = false
+	add_child(_dismissed_label)
+
+
+func _toggle_budget() -> void:
+	_budget_panel.visible = not _budget_panel.visible
 
 
 func _build_ticker() -> void:

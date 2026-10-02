@@ -382,6 +382,7 @@
       ],
       "kind": "academic",
       "campus": "main",
+      "building_def": "college_building",
       "built_year": 1818,
       "built_precision": "year",
       "demolished_year": 1958,

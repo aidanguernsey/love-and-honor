@@ -35,26 +35,29 @@ public sealed class LandConfig
     public static LandConfig Load(IDataSource source) => SimJson.Parse<LandConfig>(source.ReadText(File), File);
 }
 
-/// <summary>Money (§8.1 operating cash), kept as whole cents so it's exact and deterministic. Phase 1 1d: just a
-/// balance and a ledger; the budget (revenue, expenses, the yearly screen) comes in 1i.</summary>
+/// <summary>One movement of money: negative = spending. Category groups it in the budget (Economy/Budget.cs).</summary>
+public readonly record struct LedgerEntry(DateOnly Date, long Cents, string Reason, string Category);
+
+/// <summary>Money (§8.1 operating cash), kept as whole cents so it's exact and deterministic: a balance and a ledger
+/// whose categories feed the yearly budget (1i).</summary>
 public sealed class Treasury(long startingCents)
 {
     public long Cents { get; private set; } = startingCents;
     public double Dollars => Cents / 100.0;
-    public List<(DateOnly Date, long Cents, string Reason)> Ledger { get; } = [];
+    public List<LedgerEntry> Ledger { get; } = [];
 
     public bool CanAfford(long cents) => cents <= Cents;
 
-    public void Spend(DateOnly date, long cents, string reason)
+    public void Spend(DateOnly date, long cents, string reason, string category = "other")
     {
         Cents -= cents;
-        Ledger.Add((date, -cents, reason));
+        Ledger.Add(new LedgerEntry(date, -cents, reason, category));
     }
 
-    public void Receive(DateOnly date, long cents, string reason)
+    public void Receive(DateOnly date, long cents, string reason, string category = "other")
     {
         Cents += cents;
-        Ledger.Add((date, cents, reason));
+        Ledger.Add(new LedgerEntry(date, cents, reason, category));
     }
 }
 
@@ -184,14 +187,14 @@ public sealed class LandSystem
             var tiles = Tiles(_cfg, c, _grid.Width, _grid.Height, _grid.LandState, _grid.Ownership, _grid.Types, _clearing);
             if (c.Action == LandAction.Clear)
             {
-                Treasury.Spend(date, q.Cents, $"Clearing {tiles.Count} tiles");
+                Treasury.Spend(date, q.Cents, $"Clearing {tiles.Count} tiles", "land");
                 foreach (int t in tiles) _clearing[t] = 1;
                 _jobs.Add(new ClearingJob(tiles));
                 _messages.Add($"Clearing {tiles.Count} tiles of forest: {Money(q.Cents)}, about {Math.Ceiling(q.Days)} days of work.");
             }
             else
             {
-                Treasury.Spend(date, q.Cents, $"Bought {tiles.Count} tiles");
+                Treasury.Spend(date, q.Cents, $"Bought {tiles.Count} tiles", "land");
                 int town = 0;
                 foreach (int t in tiles)
                 {
@@ -238,7 +241,7 @@ public sealed class LandSystem
             AddSurfaceEdit(t, edits);
             laid++;
         }
-        Treasury.Spend(date, q.Cents, c.Action == LandAction.PaveDesire ? "Paving a desire path" : "Laying a path");
+        Treasury.Spend(date, q.Cents, c.Action == LandAction.PaveDesire ? "Paving a desire path" : "Laying a path", "grounds");
         string name = _paths.Surfaces[surface].Name.ToLowerInvariant();
         if (c.Action == LandAction.PaveDesire)
         {
@@ -431,5 +434,6 @@ public sealed class LandSystem
         return list;
     }
 
-    public static string Money(long cents) => cents >= 100_000_00 ? $"${cents / 100.0:N0}" : $"${cents / 100.0:N2}";
+    public static string Money(long cents) =>
+        cents < 0 ? "−" + Money(-cents) : cents >= 100_000_00 ? $"${cents / 100.0:N0}" : $"${cents / 100.0:N2}";
 }

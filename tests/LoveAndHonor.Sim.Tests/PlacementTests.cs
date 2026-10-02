@@ -277,8 +277,10 @@ public class PlacementTests
         var second = p.Sites[0];
         p.Enqueue(PlacementCommand.Cancel(second.Id));
         w.Simulation.ApplyPendingCommands();     // later: half of the unspent part
-        long expected = cash - 800_00 + (long)Math.Round(800_00 * (1 - second.Progress) * 0.5);
-        Assert.Equal(expected, w.Land.Treasury.Cents);
+        // Salaries and upkeep come out monthly (1i), so check the construction entries of the ledger.
+        long refund = (long)Math.Round(800_00 * (1 - second.Progress) * 0.5);
+        var construction = w.Land.Treasury.Ledger.Where(e => e.Category == "construction").Select(e => e.Cents).ToList();
+        Assert.Equal([-800_00, 800_00, -800_00, refund], construction);
     }
 
     [Fact]

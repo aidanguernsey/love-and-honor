@@ -28,6 +28,8 @@ public sealed class SimWorld
     public PlacementSystem? Placement { get; init; }
     /// <summary>Set for scenarios with enrollment (Phase 1 1h).</summary>
     public EnrollmentSystem? Enrollment { get; init; }
+    /// <summary>Set for scenario worlds (Phase 1 1i): the budget and Trustee Confidence.</summary>
+    public Economy.BudgetSystem? Budget { get; init; }
     public ScenarioConfig? Scenario { get; init; }
     public double CampusMs { get; init; }
     public double FlowFieldsMs { get; init; }
@@ -91,30 +93,39 @@ public sealed class SimWorld
             .Select(i => i.HeritageId!);
         var placement = new PlacementSystem(map.Grid, map.Heights, land, campus, catalog, standing);
         EnrollmentSetup? enrollment = null;
+        // A campus building's definition: player buildings by id, real ones through their timeline entry's building_def.
+        var timelineDefs = timeline.Entries.Where(e => e.BuildingDef is not null).ToDictionary(e => e.Id, e => e.BuildingDef!);
+        BuildingDef? DefOf(CampusBuilding b)
+        {
+            string? def = data.Buildings.ContainsKey(b.DefId) ? b.DefId : timelineDefs.GetValueOrDefault(b.DefId);
+            return def is not null && data.Buildings.TryGetValue(def, out var d) ? d : null;
+        }
+        var budgetCfg = Economy.BudgetConfig.Load(source);
+        double UpkeepOf(CampusBuilding b) => DefOf(b)?.UpkeepUsdPerYear
+            ?? budgetCfg.DefaultUpkeep.GetValueOrDefault(b.Kind.ToString().ToLowerInvariant(), budgetCfg.DefaultUpkeep["other"]);
+        var budgetSetup = new BudgetSetup(budgetCfg, eras, land.Treasury, UpkeepOf, EnrollmentConfig.Load(source).IntakeDate);
         if (s.Enrollment)
         {
-            // Capacity of a campus building: its building definition (player buildings by id, real ones through their
-            // timeline entry's building_def), else enrollment.json's default for its kind.
+            // Capacity of a campus building: its building definition, else enrollment.json's default for its kind.
             var cfg = EnrollmentConfig.Load(source);
-            var timelineDefs = timeline.Entries.Where(e => e.BuildingDef is not null).ToDictionary(e => e.Id, e => e.BuildingDef!);
             int CapacityOf(CampusBuilding b)
             {
-                string? def = data.Buildings.ContainsKey(b.DefId) ? b.DefId : timelineDefs.GetValueOrDefault(b.DefId);
-                if (def is not null && data.Buildings.TryGetValue(def, out var d)) return d.Capacity.Value;
+                if (DefOf(b) is { } d) return d.Capacity.Value;
                 return cfg.DefaultCapacity.GetValueOrDefault(b.Kind.ToString().ToLowerInvariant());
             }
             enrollment = new EnrollmentSetup(cfg, eras, CapacityOf, s.PopulationCapacity);
         }
         return Assemble(data, rng, campus, sw.Elapsed.TotalMilliseconds, threads, students ?? s.Students, faculty ?? s.Faculty,
-            chunkSize, map, report, s.Start, land, s, placement, enrollment);
+            chunkSize, map, report, s.Start, land, s, placement, enrollment, budgetSetup);
     }
 
     private sealed record EnrollmentSetup(EnrollmentConfig Config, EraTable Eras, Func<CampusBuilding, int> CapacityOf, int? Capacity);
+    private sealed record BudgetSetup(Economy.BudgetConfig Config, EraTable Eras, Treasury Treasury, Func<CampusBuilding, double> UpkeepOf, string MoveIn);
 
     private static SimWorld Assemble(SimData data, RngStreams rng, Campus campus, double campusMs, int? threads, int? students,
         int? faculty, int? chunkSize, RealMap? map, RealCampusReport? report,
         DateOnly? startDate = null, LandSystem? land = null, ScenarioConfig? scenario = null, PlacementSystem? placement = null,
-        EnrollmentSetup? enrollment = null)
+        EnrollmentSetup? enrollment = null, BudgetSetup? budget = null)
     {
         int t = threads ?? data.Balance.Performance.SimWorkerThreads;
         var sw = Stopwatch.StartNew();
@@ -129,13 +140,19 @@ public sealed class SimWorld
         var pop = PopulationGenerator.Generate(data, campus, fields, rng, students, faculty, enrollment?.Capacity, plan);
         var enrollmentSystem = enrollment is null ? null
             : new EnrollmentSystem(data, enrollment.Config, enrollment.Eras, campus, fields, pop, rng, enrollment.CapacityOf, start);
+        var budgetSystem = budget is null ? null
+            : new Economy.BudgetSystem(budget.Config, budget.Eras, budget.Treasury, pop, campus, budget.UpkeepOf,
+                data.Balance.Trustees.StartingConfidence, start);
+        if (enrollmentSystem is not null && budgetSystem is not null) enrollmentSystem.ApplicantFactor = () => budgetSystem.ApplicantFactor;
         double popMs = sw.Elapsed.TotalMilliseconds;
 
         return new SimWorld
         {
             Data = data, Rng = rng, Campus = campus, Fields = fields, Population = pop,
-            Simulation = new Simulation(data, campus, fields, pop, rng, t, chunkSize, startDate, land, placement, enrollmentSystem),
-            Map = map, CampusReport = report, Land = land, Placement = placement, Enrollment = enrollmentSystem, Scenario = scenario,
+            Simulation = new Simulation(data, campus, fields, pop, rng, t, chunkSize, startDate, land, placement, enrollmentSystem,
+                budgetSystem, budget?.MoveIn ?? "08-19"),
+            Map = map, CampusReport = report, Land = land, Placement = placement, Enrollment = enrollmentSystem, Budget = budgetSystem,
+            Scenario = scenario,
             CampusMs = campusMs, FlowFieldsMs = fieldsMs, PopulationMs = popMs,
         };
     }

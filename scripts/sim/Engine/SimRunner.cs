@@ -57,6 +57,8 @@ public sealed class SimSnapshot
     public int AgentCount, StudentCount, FacultyCount;
     /// <summary>Enrollment figures (1h), or null for a fixed population.</summary>
     public EnrollmentView? Enrollment;
+    /// <summary>Budget and Trustee Confidence (1i), or null.</summary>
+    public Economy.BudgetView? Budget;
 
     public SimSnapshot(int agentCount, int tileCount)
     {
@@ -197,6 +199,15 @@ public sealed class SimRunner : IDisposable
         _signal.Set();
     }
 
+    /// <summary>Main thread: set tuition as a multiple of the era's rate (applied like other orders).</summary>
+    public void SubmitTuitionLevel(double level)
+    {
+        if (_sim.Budget is null) return;
+        _sim.Budget.SetTuitionLevel(level);
+        Interlocked.Exchange(ref _commandsPending, 1);
+        _signal.Set();
+    }
+
     /// <summary>Main thread: the newest published snapshot. Valid until the next call.</summary>
     public SimSnapshot AcquireLatest()
     {
@@ -261,6 +272,11 @@ public sealed class SimRunner : IDisposable
         s.AgentCount = p.Count;
         s.StudentCount = p.StudentCount;
         s.FacultyCount = p.FacultyCount;
+        if (_sim.Budget is { } budget)
+        {
+            s.Budget = budget.View(time.Date);
+            foreach (var m in budget.TakeMessages()) _messages.Enqueue(m);
+        }
         if (_sim.Enrollment is { } enrollment)
         {
             s.Enrollment = enrollment.View(time.Date);

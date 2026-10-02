@@ -21,6 +21,12 @@ public sealed class BalanceConfig
     public NeedsSection Needs { get; init; } = new();
     public WalkingSection Walking { get; init; } = new();
     public RetentionSection Retention { get; init; } = new();
+    public TrusteesSection Trustees { get; init; } = new();
+
+    public sealed class TrusteesSection
+    {
+        public double StartingConfidence { get; init; } = 60;
+    }
 
     /// <summary>§32 retention: R = base + happiness·H/100 + gpa·GPA/4 + belonging·B/100 − financial_stress·FS/100, clamped.</summary>
     public sealed class RetentionSection
@@ -155,6 +161,8 @@ public sealed class BuildingDef
     public FootprintSize Footprint { get; init; } = new();
     /// <summary>Modern dollars (× the era's price multiplier); null = can't be built new (landmark / Heritage Project only).</summary>
     public double? CostUsd { get; init; }
+    /// <summary>Yearly upkeep in modern dollars (× the era's price multiplier), §8.3.</summary>
+    public double UpkeepUsdPerYear { get; init; }
     public CapacityInfo Capacity { get; init; } = new();
     public string Style { get; init; } = "";
     public string UnlockEra { get; init; } = "";

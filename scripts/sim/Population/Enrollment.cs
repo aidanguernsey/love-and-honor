@@ -79,6 +79,10 @@ public sealed class EnrollmentSystem
     private int _lastApplicants, _lastIntake, _lastGraduates, _lastLeavers;
 
     public int Alumni { get; private set; }
+    /// <summary>Scales applicants (the budget's tuition level, 1i); 1 by default.</summary>
+    public Func<double> ApplicantFactor { get; set; } = () => 1.0;
+    /// <summary>This year's move-in date.</summary>
+    public DateOnly IntakeDateIn(int year) => On(_cfg.IntakeDate, year);
     public double Scholarship { get; private set; }
     public int Version { get; private set; }
 
@@ -195,7 +199,7 @@ public sealed class EnrollmentSystem
         // Freshmen: applicants x admit rate, capped by free beds (halls + town boarding) and free seats.
         int students = p.StudentCount;
         int campusBeds = CampusBeds, townBeds = TownBeds(), seats = Seats;
-        int applicants = (int)Math.Round(era.ApplicantsPerYear * Math.Pow(era.ApplicantGrowthPerYear, Math.Max(0, date.Year - _startYear)));
+        int applicants = (int)Math.Round(era.ApplicantsPerYear * Math.Pow(era.ApplicantGrowthPerYear, Math.Max(0, date.Year - _startYear)) * ApplicantFactor());
         int admitted = (int)Math.Round(applicants * era.AdmitRate);
         int room = Math.Max(0, Math.Min(campusBeds + townBeds - students, seats - students));
         int intake = Math.Min(admitted, Math.Min(room, p.Capacity - p.Count));

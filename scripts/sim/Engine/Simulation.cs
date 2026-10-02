@@ -90,13 +90,19 @@ public sealed class Simulation
     public PlacementSystem? Placement { get; }
     /// <summary>Yearly intake, graduation and hiring (Phase 1 1h), or null for a fixed population.</summary>
     public EnrollmentSystem? Enrollment { get; }
+    /// <summary>Operating budget and Trustee Confidence (Phase 1 1i), or null.</summary>
+    public Economy.BudgetSystem? Budget { get; }
+    private readonly string _moveIn;
     private readonly bool _awayEnabled;
     private readonly Campus _campus;
 
     public Simulation(SimData data, Campus campus, FlowFieldSet fields, PopulationStore population, RngStreams rng,
         int? threads = null, int? chunkSize = null, DateOnly? startDate = null, LandSystem? land = null,
-        PlacementSystem? placement = null, EnrollmentSystem? enrollment = null)
+        PlacementSystem? placement = null, EnrollmentSystem? enrollment = null, Economy.BudgetSystem? budget = null,
+        string moveInMonthDay = "08-19")
     {
+        Budget = budget;
+        _moveIn = moveInMonthDay;
         Land = land;
         Placement = placement;
         Enrollment = enrollment;
@@ -232,6 +238,7 @@ public sealed class Simulation
     {
         ApplyLandCommands();
         ApplyPlacementCommands();
+        Budget?.ApplyCommands();
     }
 
     public void Tick()
@@ -253,6 +260,8 @@ public sealed class Simulation
             }
             if (Enrollment is not null && Enrollment.DailyUpdate(Time.Date))
                 _chunkCount = (_pop.Count + _chunkSize - 1) / _chunkSize;
+            Budget?.DailyUpdate(Time.Date, new DateOnly(Time.Date.Year, int.Parse(_moveIn[..2], System.Globalization.CultureInfo.InvariantCulture),
+                int.Parse(_moveIn[3..], System.Globalization.CultureInfo.InvariantCulture)));
         }
         bool swapped = false;
         double swapWait = 0;
